@@ -11,8 +11,8 @@ function AccountMenu() {
         user ? (
           <>
             <div className="dd-head"><strong>{user.name}</strong><span className="muted">{user.email}</span></div>
-            <Link role="menuitem" to="/account" onClick={close}>My account</Link>
             <Link role="menuitem" to="/orders" onClick={close}>My orders</Link>
+            <Link role="menuitem" to="/account" onClick={close}>My account</Link>
             <button role="menuitem" onClick={() => { close(); signOut(); }}>Log out</button>
           </>
         ) : (
@@ -57,14 +57,12 @@ export function CustomerLayout() {
         <nav className="topnav" aria-label="Main">
           <NavLink to="/" end>Retail</NavLink>
           <NavLink to="/bulk">Bulk orders</NavLink>
-          <NavLink to="/orders">My orders</NavLink>
         </nav>
         <div className="tools">
           <Link to="/cart" className="cartlink" aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}>
             <Icon name="bag" />
             <span><span className="cart-word">Cart </span>({count})</span>
           </Link>
-          <span className="pill">Demo storefront</span>
           <AccountMenu />
         </div>
       </header>

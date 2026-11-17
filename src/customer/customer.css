@@ -8,7 +8,7 @@
   & h3 { font-size: 15px; margin: 0; }
   & .lede { margin: 0 0 20px; color: var(--muted); }
 
-  /* header: logo, search, tabs, cart, demo pill, account */
+  /* header: logo, search, tabs, cart, account */
   & .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 28px; padding: 12px 28px; background: rgba(255,255,255,.97); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
   & .search { position: relative; flex: 0 1 300px; margin: 0; }
   & .search .icon { position: absolute; left: 12px; top: 9px; width: 20px; height: 20px; color: var(--muted); pointer-events: none; }
@@ -20,7 +20,6 @@
   & .tools { display: flex; align-items: center; gap: 14px; }
   & .cartlink { display: inline-flex; align-items: center; gap: 8px; height: 40px; text-decoration: none; font-weight: 550; }
   & .cartlink .icon { color: var(--green); }
-  & .pill { padding: 5px 12px; border-radius: 999px; background: var(--green-tint); border: 1px solid var(--green-line); color: var(--forest); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
 
   /* retail / bulk: products on the left, cart on the right */
   & .shop { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 36px; align-items: start; }
@@ -196,7 +195,7 @@
     & .page { padding-block: 20px 48px; }
     & h1 { font-size: 27px; }
     & .topbar { padding: 10px 16px; }
-    & .pill, & .cart-word { display: none; }
+    & .cart-word { display: none; }
     & .grid { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
     & .pcard { padding: 8px 8px 10px; }
     & .row-item { flex-basis: calc(50% - 8px); min-width: 150px; }
