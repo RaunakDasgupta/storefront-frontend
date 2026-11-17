@@ -103,10 +103,8 @@ tbody tr:hover { background: #fafafa; }
 .status-select.paid { background: #cce6ff; color: #003a5a; }
 .status-select.pending { background: #ffe9a8; color: #5e4200; }
 .status-select.packed { background: #e6dcff; color: #3d1f8a; }
-.items-cell { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 .thumb { width: 32px; height: 32px; aspect-ratio: 1; border-radius: 6px; flex: none; }
 .rank-name { display: inline-flex; align-items: center; gap: 10px; font-weight: 550; }
-@media (max-width: 900px) { .hide-md { display: none; } }
 @media (max-width: 640px) {
   .hide-sm { display: none; }
   th, td { padding: 12px; }

@@ -2,7 +2,8 @@ import { useSearchParams } from "react-router-dom";
 import type { Channel } from "../../shared/data";
 import { STEPS } from "../../shared/orderlogic";
 import { useOrders } from "../../shared/orders";
-import { Icon, OrdersTable } from "../../shared/ui";
+import { Icon } from "../../shared/ui";
+import { OrderGrid } from "../OrderGrid";
 
 const FILTERS = ["All", ...STEPS] as const;
 const CHANNELS: { id: Channel; label: string }[] = [
@@ -57,9 +58,7 @@ export function StaffOrders() {
           <input type="search" aria-label="Search orders" placeholder="Search order or customer" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
-      <section className="cardbox">
-        {rows.length === 0 ? <p className="muted pad">No {channel} orders match.</p> : <OrdersTable rows={rows} onStep={setStep} />}
-      </section>
+      {rows.length === 0 ? <p className="muted">No {channel} orders match.</p> : <OrderGrid orders={rows} onStep={setStep} />}
     </>
   );
 }

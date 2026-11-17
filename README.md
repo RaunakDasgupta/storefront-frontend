@@ -63,7 +63,7 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 | Route             | What it does                                                                               |
 | ----------------- | ------------------------------------------------------------------------------------------ |
 | `/staff`          | Overview: a Retail and a Bulk summary (revenue and order count each), then recent retail and recent bulk orders as cards in a 3 x 2 grid that scrolls sideways. A card opens that order in the Orders list. |
-| `/staff/orders`   | Orders placed in the storefront, with **Retail orders** and **Bulk orders** on separate tabs (`?type=bulk`), status tabs (All, Confirmed, Preparing, Packed, Ready for dispatch) and search. **Staff change an order's status from the dropdown in its row**, and the customer's tracker updates (live if the storefront is open in another tab). |
+| `/staff/orders`   | Every order placed in the storefront as cards in a 3 x 2 grid that scrolls sideways, with **Retail orders** and **Bulk orders** on separate tabs (`?type=bulk`), status tabs (All, Confirmed, Preparing, Packed, Ready for dispatch) and search. **Staff change an order's status from the dropdown on its card**, and the customer's tracker updates (live if the storefront is open in another tab). |
 | `/staff/products` | Products with SKU, size, retail or bulk type, price and inventory, a low-stock filter and search |
 | `/staff/import`   | Import SKUs from CSV                                                                       |
 | `/staff/login`    | Staff log in                                                                               |

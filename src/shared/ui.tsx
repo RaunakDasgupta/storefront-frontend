@@ -1,8 +1,8 @@
 // Small building blocks used by both the customer and the staff app. No routes, no auth, no app state.
 import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { fmtDate, imageSrc, money, type Product } from "./data";
-import { STEPS, type Order } from "./orderlogic";
+import { imageSrc, money, type Product } from "./data";
+import type { Order } from "./orderlogic";
 
 const ICONS = {
   bag: <><path d="M5 8h14l-1 12H6L5 8z" /><path d="M9 8a3 3 0 016 0" /></>,
@@ -103,34 +103,3 @@ export function Menu({ label, trigger, children, buttonClass = "iconbtn", panelC
 export const itemsText = (o: Order) => o.items.map((i) => `${i.name}${i.size ? ` (${i.size})` : ""} × ${i.qty}`).join(", ");
 
 export const STEP_BADGE = ["pending", "paid", "packed", "fulfilled"] as const;
-
-/** Staff order list: who ordered, what, when, and where it is in fulfilment. */
-export function OrdersTable({ rows, onStep }: { rows: Order[]; onStep?: (id: string, step: number) => void }) {
-  return (
-    <div className="tablewrap">
-      <table>
-        <thead><tr><th>Order</th><th>Customer</th><th className="hide-md">Items</th><th className="hide-sm">Date</th><th>Status</th><th className="num">Total</th></tr></thead>
-        <tbody>
-          {rows.map((o) => (
-            <tr key={o.id}>
-              <td>{o.id}</td>
-              <td>{o.customer.name}</td>
-              <td className="hide-md items-cell" title={itemsText(o)}>{itemsText(o)}</td>
-              <td className="hide-sm">{fmtDate(o.date)}</td>
-              <td>
-                {onStep ? (
-                  <select className={`status-select ${STEP_BADGE[o.step]}`} aria-label={`Status of ${o.id}`} value={o.step} onChange={(e) => onStep(o.id, Number(e.target.value))}>
-                    {STEPS.map((label, i) => <option key={label} value={i}>{label}</option>)}
-                  </select>
-                ) : (
-                  <span className={`badge ${STEP_BADGE[o.step]}`}>{STEPS[o.step]}</span>
-                )}
-              </td>
-              <td className="num">{money(o.total)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
