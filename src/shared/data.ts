@@ -66,9 +66,3 @@ export function salesByDay(list: Order[] = orders) {
     return { iso, day: d.toLocaleDateString("en-IN", { weekday: "short" }), total: revenueOf(list.filter((o) => o.date === iso)) };
   });
 }
-
-/** Units sold per SKU, all time (sample data). */
-export const unitsSold: Record<string, number> = {
-  "TOT-001": 212, "MUG-001": 148, "CAP-001": 131, "SHT-001": 96,
-  "LMP-001": 74, "NTB-001": 188, "BTL-001": 120, "BNE-001": 83,
-};

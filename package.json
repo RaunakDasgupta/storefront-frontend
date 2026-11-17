@@ -6,7 +6,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/csv.test.ts"
+    "test": "node --test src/shared/csv.test.ts"
   },
   "type": "module",
   "private": true,

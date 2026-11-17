@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { useCatalog } from "./catalog";
+import { useCatalog } from "../shared/catalog";
 
 type Cart = {
   lines: { id: string; qty: number }[];

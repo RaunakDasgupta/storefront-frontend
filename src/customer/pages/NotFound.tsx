@@ -5,7 +5,7 @@ export function NotFound() {
     <div className="wrap page empty">
       <h1>Page not found</h1>
       <p className="muted">That page doesn't exist or has moved.</p>
-      <Link to="/" className="btn primary inline">Back to the store</Link>
+      <Link to="/shop" className="btn primary inline">Back to the shop</Link>
     </div>
   );
 }
