@@ -24,10 +24,6 @@
 
   /* retail / bulk: products on the left, cart on the right */
   & .shop { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 36px; align-items: start; }
-  & .cats { display: flex; flex-wrap: wrap; gap: 6px 24px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
-  & .cats button { padding: 10px 0; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; background: none; font: inherit; font-weight: 550; color: var(--muted); cursor: pointer; }
-  & .cats button:hover { color: var(--ink); }
-  & .cats button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--green); }
 
   & .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 24px 18px; }
   & .size { margin: 1px 0 0; font-size: 12.5px; color: var(--muted); }
@@ -75,7 +71,6 @@
   & .bulk-banner .btn:hover { background: #fff; transform: translateY(-1px); }
 
   /* category tabs with counts */
-  & .cats button span { margin-left: 4px; font-size: 12px; font-weight: 500; opacity: .65; }
 
   /* product cards */
   & .pcard { display: flex; flex-direction: column; padding: 10px 10px 12px; border: 1px solid transparent; border-radius: 16px; transition: border-color .2s, box-shadow .2s, transform .2s; }
@@ -91,8 +86,21 @@
   & .in-cart .qty span { font-weight: 700; color: var(--forest); }
 
 
+
+  /* categories: a proper strip of photo chips */
+  & .block-title { font-size: 20px; font-weight: 750; margin: 0 0 12px; }
+  & .cat-strip { display: flex; gap: 10px; margin: 0 -4px 30px; padding: 4px 4px 6px; overflow-x: auto; scrollbar-width: none; }
+  & .cat-chip { flex: none; display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: inherit; font-weight: 650; color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s, background .2s, transform .2s; }
+  & .cat-chip .pimg { width: 40px; height: 40px; aspect-ratio: 1; border-radius: 50%; }
+  & .cat-chip small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+  & .cat-chip:hover { border-color: var(--green); box-shadow: 0 4px 14px rgba(43,138,30,.15); transform: translateY(-1px); }
+  & .cat-chip[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
+  & .cat-chip[aria-pressed="true"] small { color: rgba(255,255,255,.85); }
+  & .list-head h2 { display: flex; align-items: baseline; gap: 10px; }
+  & .list-head h2 .muted { font-size: 13px; font-weight: 500; }
+
   /* overview rows: one scrollable row per category, then a See more tile */
-  & .row-section { margin-bottom: 28px; }
+  & .row-section { margin-bottom: 24px; }
   & .row-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
   & .row-head h2 { font-size: 20px; font-weight: 750; }
   & .row-wrap { position: relative; }
@@ -189,8 +197,6 @@
     & h1 { font-size: 27px; }
     & .topbar { padding: 10px 16px; }
     & .pill, & .cart-word { display: none; }
-    & .cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; gap: 20px; }
-    & .cats button { flex: none; white-space: nowrap; }
     & .grid { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
     & .pcard { padding: 8px 8px 10px; }
     & .row-item { flex-basis: calc(50% - 8px); min-width: 150px; }

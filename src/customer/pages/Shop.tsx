@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../../shared/catalog";
 import type { Channel, Product } from "../../shared/data";
-import { Icon } from "../../shared/ui";
+import { Icon, ProductImage } from "../../shared/ui";
 import { useMyOrders } from "../myOrders";
 import { BulkBanner, CartPanel, OrderSummary, ProductCard } from "../parts";
 
@@ -38,7 +38,7 @@ function Section({ title, items, to }: { title: string; items: Product[]; to: st
             <Link to={to} className="see-more">
               <span className="see-more-icon"><Icon name="arrow" /></span>
               <strong>See more</strong>
-              <span>{more} more in {title}</span>
+              <span>{more} more {more === 1 ? "product" : "products"}</span>
             </Link>
           )}
         </div>
@@ -53,7 +53,7 @@ function Section({ title, items, to }: { title: string; items: Product[]; to: st
   );
 }
 
-/** Retail (/) and Bulk orders (/bulk): intro, category tabs, product grid and the cart beside it. Search comes from the header (?q=). */
+/** Retail (/) and Bulk orders (/bulk): intro, categories, one Featured row (or the full list once a category, search or See more is chosen) and the cart beside it. Search comes from the header (?q=). */
 export function Shop({ channel }: { channel: Channel }) {
   const { products } = useCatalog();
   const orders = useMyOrders();
@@ -66,14 +66,18 @@ export function Shop({ channel }: { channel: Channel }) {
   const shown = inChannel.filter((p) => (!category || p.category === category) && (!q || `${p.name} ${p.size ?? ""} ${p.category}`.toLowerCase().includes(q)));
 
   const base = channel === "bulk" ? "/bulk" : "/";
-  // no search or category picked: show one row per category; otherwise show the full filtered list
-  const overview = !category && !q;
+  const all = params.get("view") === "all";
+  // nothing picked: show a single Featured row. A category, a search or See more shows the full list instead.
+  const overview = !category && !q && !all;
 
   function pick(c: string) {
     const next = new URLSearchParams(params);
-    c ? next.set("category", c) : next.delete("category");
+    next.delete("view");
+    category === c ? next.delete("category") : next.set("category", c);
     setParams(next, { replace: true });
   }
+
+  const heading = category || (q ? "Search results" : "All products");
 
   return (
     <>
@@ -94,22 +98,39 @@ export function Shop({ channel }: { channel: Channel }) {
 
         <div className="shop">
           <div className="shop-main">
-            <div className="cats" role="group" aria-label="Categories">
-              <button aria-pressed={!category} onClick={() => pick("")}>All products <span>{inChannel.length}</span></button>
-              {categories.map((c) => <button key={c} aria-pressed={category === c} onClick={() => pick(c)}>{c} <span>{inChannel.filter((p) => p.category === c).length}</span></button>)}
-            </div>
+            <section aria-labelledby="cats-title">
+              <h2 id="cats-title" className="block-title">Categories</h2>
+              <div className="cat-strip" role="group" aria-label="Categories">
+                {categories.map((c) => {
+                  const first = inChannel.find((p) => p.category === c)!;
+                  return (
+                    <button key={c} className="cat-chip" aria-pressed={category === c} onClick={() => pick(c)}>
+                      <ProductImage p={first} small />
+                      <span>{c}</span>
+                      <small>{inChannel.filter((p) => p.category === c).length}</small>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
 
             {overview ? (
-              categories.map((c) => (
-                <Section key={c} title={c} items={inChannel.filter((p) => p.category === c)} to={`${base}?category=${encodeURIComponent(c)}`} />
-              ))
-            ) : shown.length === 0 ? (
-              <div className="empty">
-                <h2>No products found</h2>
-                <p className="muted">Try a different search or category.</p>
-              </div>
+              <Section title="Featured" items={inChannel} to={`${base}?view=all`} />
             ) : (
-              <div className="grid">{shown.map((p) => <ProductCard key={p.id} p={p} />)}</div>
+              <>
+                <div className="row-head list-head">
+                  <h2>{heading} <span className="muted">{shown.length} {shown.length === 1 ? "product" : "products"}</span></h2>
+                  <Link to={base} className="link">Back to featured</Link>
+                </div>
+                {shown.length === 0 ? (
+                  <div className="empty">
+                    <h2>No products found</h2>
+                    <p className="muted">Try a different search or category.</p>
+                  </div>
+                ) : (
+                  <div className="grid">{shown.map((p) => <ProductCard key={p.id} p={p} />)}</div>
+                )}
+              </>
             )}
           </div>
           <CartPanel />

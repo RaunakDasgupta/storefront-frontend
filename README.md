@@ -43,7 +43,7 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 
 | Route                | What it does                                                                       |
 | -------------------- | ---------------------------------------------------------------------------------- |
-| `/`                  | Retail: intro, a bulk-orders banner, one scrollable row of products per category, cart panel and your latest order |
+| `/`                  | Retail: intro, a bulk-orders banner, a Categories strip, one Featured row, cart panel and your latest order |
 | `/bulk`              | Bulk orders: cartons and pallets, with the same cart panel                         |
 | `/orders`            | My orders: every order with its items and a 4-step progress tracker (log in required) |
 | `/cart`              | The cart as its own page (used on phones)                                          |
@@ -52,7 +52,7 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 | `/account`           | Profile (log in required)                                                          |
 
 - **Landing page:** the bulk banner sits right under the intro so it is hard to miss. Product cards turn into a quantity stepper once an item is in the cart. The cart panel sits beside the products and scrolls away with the page (the header's Cart link is always visible).
-- **Rows and See more:** without a search or category, each category is one horizontal row of up to 5 products that you can scroll (arrow buttons on desktop, swipe on touch). When a category has more than 5, the row ends with a **See more** tile, and every row has a **See all** link. Both open the full list for that category (`/?category=Home%20care`), the same view as picking the category tab. A search from the header also shows the full list.
+- **Categories and Featured:** the landing page shows a Categories strip (a photo chip per category) and a single Featured row of up to 5 products that you can scroll (arrow buttons on desktop, swipe on touch). When there are more than 5, the row ends with a **See more** tile, and the row header has a **See all** link. Both open the full list (`/?view=all`). Picking a category chip opens that category's full list (`/?category=Home%20care`); picking the active chip again, or **Back to featured**, returns to the landing page. A search from the header also shows the full list. There is no separate "All products" tab.
 - **Search** is in the header and filters the page you are on (`/?q=soap`, `/bulk?q=carton`). Category tabs use `?category=`.
 - **Demo checkout:** "Place demo order" needs a log in, then creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. No payment is collected. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the staff portal. Orders do not advance on their own, since fulfilment would come from a warehouse system.
 - The profile avatar is blank when logged out and opens a menu with Log in and Create account.
