@@ -87,7 +87,16 @@ export function StaffProducts() {
         </div>
       </div>
       {rows.length === 0 ? <p className="muted">No {channel} products match.</p> : <ProductGrid products={rows} onEdit={setEditing} onDelete={setDeleting} />}
-      {deleting && <ConfirmDelete key={deleting.id} product={deleting} onCancel={() => setDeleting(null)} onConfirm={confirmDelete} />}
+      {deleting && (
+        <ConfirmDelete
+          key={deleting.id}
+          title={`Delete ${deleting.name}?`}
+          text={`${deleting.sku}${deleting.size ? ` · ${deleting.size}` : ""} will be removed from the ${deleting.channel} storefront. Orders that already include it keep their items. You can undo this right after.`}
+          confirmLabel="Delete product"
+          onCancel={() => setDeleting(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {editing && <ProductEditor key={editing.id} product={editing} onClose={() => setEditing(null)} />}
     </>
   );

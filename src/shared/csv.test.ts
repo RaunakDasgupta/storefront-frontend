@@ -1,7 +1,7 @@
 // Run with `npm test` (Node's built-in test runner, no extra packages).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { SAMPLE_ORDERS, isOrder, makeOrder, makeOrders, nextOrderId, orderTotal, revenueOf, withChannel, withStep, type Order } from "./orderlogic.ts";
+import { SAMPLE_ORDERS, isOrder, makeOrder, makeOrders, nextOrderId, orderTotal, revenueOf, withChannel, withOrderAt, withStep, withoutOrder, type Order } from "./orderlogic.ts";
 import { parseCsv, parseSkuCsv } from "./csv.ts";
 import { isSafeImage, parseProductForm, toForm } from "./productform.ts";
 import { seedProducts } from "./data.ts";
@@ -126,4 +126,15 @@ test("isSafeImage allows https links and bundled files only", () => {
   assert.equal(isSafeImage("javascript:alert(1)"), false);
   assert.equal(isSafeImage("data:image/png;base64,AAAA"), false);
   assert.equal(isSafeImage("/etc/passwd"), false);
+});
+
+test("deleting an order and undoing it restores the same list", () => {
+  const index = SAMPLE_ORDERS.findIndex((o) => o.id === "ORD_0999");
+  const gone = withoutOrder(SAMPLE_ORDERS, "ORD_0999");
+  assert.equal(gone.length, SAMPLE_ORDERS.length - 1);
+  assert.ok(!gone.some((o) => o.id === "ORD_0999"));
+  const back = withOrderAt(gone, SAMPLE_ORDERS[index], index);
+  assert.deepEqual(back.map((o) => o.id), SAMPLE_ORDERS.map((o) => o.id));
+  assert.equal(withOrderAt(back, SAMPLE_ORDERS[index], index), back, "an order that is already there is not added twice");
+  assert.equal(withoutOrder(SAMPLE_ORDERS, "ORD_9999").length, SAMPLE_ORDERS.length);
 });

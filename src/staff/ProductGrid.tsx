@@ -11,7 +11,7 @@ function Stock({ stock }: { stock: number }) {
 /** Products as cards in the scrolling 3 x 2 grid: photo, name and size, SKU and category, type, stock and price. The pencil opens the editor and the bin asks to delete. */
 export function ProductGrid({ products, onEdit, onDelete }: { products: Product[]; onEdit: (p: Product) => void; onDelete: (p: Product) => void }) {
   return (
-    <ScrollGrid count={products.length} tall>
+    <ScrollGrid count={products.length} rows="tall">
       {products.map((p) => (
         <article key={p.id} className="oc pc">
           <span className="pc-main">

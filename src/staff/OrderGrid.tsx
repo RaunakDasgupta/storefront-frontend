@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { fmtDate, money } from "../shared/data";
 import { STEPS, itemCount, type Order } from "../shared/orderlogic";
-import { STEP_BADGE, itemsText } from "../shared/ui";
+import { Icon, STEP_BADGE, itemsText } from "../shared/ui";
 import { ScrollGrid } from "./ScrollGrid";
 
 function Body({ o }: { o: Order }) {
@@ -16,14 +16,14 @@ function Body({ o }: { o: Order }) {
 
 /**
  * Orders as cards in the scrolling 3 x 2 grid.
- * Read-only cards open that order in the Orders list; with `onStep` the card has a status dropdown instead.
+ * Read-only cards open that order in the Orders list; with `onStep` the card has a status dropdown instead, and `onDelete` adds a Delete button.
  */
-export function OrderGrid({ orders, onStep }: { orders: Order[]; onStep?: (id: string, step: number) => void }) {
+export function OrderGrid({ orders, onStep, onDelete }: { orders: Order[]; onStep?: (id: string, step: number) => void; onDelete?: (o: Order) => void }) {
   return (
-    <ScrollGrid count={orders.length}>
+    <ScrollGrid count={orders.length} rows={onStep ? "taller" : undefined}>
       {orders.map((o) =>
         onStep ? (
-          <article key={o.id} className="oc">
+          <article key={o.id} className="oc editable">
             <span className="oc-top">
               <strong>{o.id}</strong>
               <select className={`status-select ${STEP_BADGE[o.step]}`} aria-label={`Status of ${o.id}`} value={o.step} onChange={(e) => onStep(o.id, Number(e.target.value))}>
@@ -31,6 +31,11 @@ export function OrderGrid({ orders, onStep }: { orders: Order[]; onStep?: (id: s
               </select>
             </span>
             <Body o={o} />
+            {onDelete && (
+              <span className="pc-actions">
+                <button className="pc-btn pc-del" aria-label={`Delete ${o.id}`} onClick={() => onDelete(o)}><Icon name="trash" /> Delete</button>
+              </span>
+            )}
           </article>
         ) : (
           <Link key={o.id} to={`/staff/orders?type=${o.channel}&q=${o.id}`} className="oc" aria-label={`Open ${o.id}`}>

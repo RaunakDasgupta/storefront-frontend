@@ -17,6 +17,17 @@ export type Order = { id: string; date: string; channel: Channel; customer: { na
 export const withStep = (list: Order[], id: string, step: number): Order[] =>
   ([0, 1, 2, 3] as const).includes(step as Step) ? list.map((o) => (o.id === id ? { ...o, step: step as Step } : o)) : list;
 
+/** The list without one order. */
+export const withoutOrder = (list: Order[], id: string): Order[] => list.filter((o) => o.id !== id);
+
+/** The list with an order put back at a position (ignored if that id is already there). */
+export function withOrderAt(list: Order[], order: Order, index: number): Order[] {
+  if (list.some((o) => o.id === order.id)) return list;
+  const next = [...list];
+  next.splice(Math.min(Math.max(index, 0), next.length), 0, order);
+  return next;
+}
+
 export const itemCount = (o: Order) => o.items.reduce((n, i) => n + i.qty, 0);
 export const orderTotal = (items: OrderItem[]) => items.reduce((s, i) => s + i.qty * i.price, 0);
 export const revenueOf = (list: Order[]) => list.reduce((s, o) => s + o.total, 0);

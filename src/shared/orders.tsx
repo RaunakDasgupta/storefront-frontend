@@ -1,7 +1,7 @@
 // One orders store for both apps: customers place orders in the storefront, staff see them in the portal.
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Channel } from "./data";
-import { SAMPLE_ORDERS, isOrder, makeOrders, withChannel, withStep, type Order, type OrderItem } from "./orderlogic";
+import { SAMPLE_ORDERS, isOrder, makeOrders, withChannel, withOrderAt, withStep, withoutOrder, type Order, type OrderItem } from "./orderlogic";
 
 // shortcut: orders live in this browser's localStorage; replace with your orders API.
 const KEY = "everyday.orders";
@@ -10,6 +10,10 @@ type Orders = {
   orders: Order[];
   /** Adds one new order (at "Confirmed", newest first) per channel that has items, and returns them. */
   place: (customer: Order["customer"], groups: { channel: Channel; items: OrderItem[] }[]) => Order[];
+  /** Staff delete an order. Returns it with its position so the delete can be undone; the customer's My orders loses it too. */
+  remove: (id: string) => { order: Order; index: number } | undefined;
+  /** Puts a deleted order back where it was. */
+  restore: (order: Order, index: number) => void;
   /** Staff moves an order to a new fulfilment step; customers see it on their next view (or live in another tab). */
   setStep: (id: string, step: number) => void;
 };
@@ -47,7 +51,21 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* private mode: lasts this session */ }
   };
 
-  return <Ctx.Provider value={{ orders, place, setStep }}>{children}</Ctx.Provider>;
+  const save = (next: Order[]) => {
+    setOrders(next);
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* private mode: lasts this session */ }
+  };
+
+  const remove: Orders["remove"] = (id) => {
+    const index = orders.findIndex((o) => o.id === id);
+    if (index < 0) return undefined;
+    save(withoutOrder(orders, id));
+    return { order: orders[index], index };
+  };
+
+  const restore: Orders["restore"] = (order, index) => save(withOrderAt(orders, order, index));
+
+  return <Ctx.Provider value={{ orders, place, setStep, remove, restore }}>{children}</Ctx.Provider>;
 }
 
 export function useOrders() {

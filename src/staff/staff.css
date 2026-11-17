@@ -82,6 +82,10 @@
   & .pc-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-tint); }
   & .pc-del:hover { border-color: var(--danger); color: var(--danger); background: #fff4f4; }
   & .order-grid.tall { grid-template-rows: repeat(2, 188px); }
+  & .order-grid.taller { grid-template-rows: repeat(2, 232px); }
+  /* editable order cards: the status dropdown gets its own full-width row so its label is never cut off */
+  & .oc.editable .oc-top { flex-direction: column; align-items: stretch; gap: 8px; }
+  & .oc.editable .oc-top .status-select { max-width: none; width: 100%; height: 32px; padding: 0 10px; }
   & .btn.danger { background: var(--danger); color: #fff; }
   & .btn.danger:hover { background: #a3081d; }
   & .confirm { width: min(440px, calc(100vw - 32px)); }
