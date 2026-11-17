@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { homeFor, useAuth } from "./auth";
 import { useCart } from "./cart";
-import { money, type Product } from "./data";
+import { imageSrc, money, type Product } from "./data";
 
 const ICONS = {
   bag: <><path d="M5 8h14l-1 12H6L5 8z" /><path d="M9 8a3 3 0 016 0" /></>,
@@ -27,12 +27,14 @@ export function ProductImage({ p, alt = "", className = "", eager, small }: { p:
   return (
     <img
       className={`pimg ${className}`.trim()}
-      src={small ? `/products/thumbs/${p.id}.jpg` : `/products/${p.id}.jpg`}
+      src={imageSrc(p, small)}
       alt={alt}
       width={small ? 200 : 900}
       height={small ? 200 : 900}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
+      referrerPolicy="no-referrer"
+      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/products/placeholder.svg"; }}
     />
   );
 }

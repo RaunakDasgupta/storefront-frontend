@@ -1,10 +1,11 @@
 import { Link, useParams } from "react-router-dom";
-import { byId } from "../data";
+import { useCatalog } from "../catalog";
 import { useCart } from "../cart";
 import { Price, ProductImage } from "../components";
 import { NotFound } from "./NotFound";
 
 export function ProductPage() {
+  const { byId } = useCatalog();
   const p = byId(useParams().id ?? "");
   const { add } = useCart();
   if (!p) return <NotFound />;

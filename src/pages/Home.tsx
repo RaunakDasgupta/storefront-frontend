@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
-import { categories, products, type Product } from "../data";
+import { useCatalog } from "../catalog";
+import type { Product } from "../data";
 import { Icon, ProductCard, ProductImage } from "../components";
 
 const PERKS = [
@@ -18,8 +19,7 @@ const REVIEWS = [
   { name: "Marta L.", item: "Desk Lamp", text: "The warm light is easy on the eyes and the base is heavy enough that it never tips." },
 ];
 
-const BEST_SELLERS = ["everyday-tote", "notebook-set", "canvas-cap", "ceramic-mug", "linen-shirt", "wool-beanie"]
-  .map((id) => products.find((p) => p.id === id)!);
+const BEST_SELLER_IDS = ["everyday-tote", "notebook-set", "canvas-cap", "ceramic-mug", "linen-shirt", "wool-beanie"];
 
 function Stars() {
   return <span className="stars" role="img" aria-label="5 out of 5 stars">{[0, 1, 2, 3, 4].map((i) => <Icon key={i} name="star" filled />)}</span>;
@@ -71,6 +71,8 @@ function Newsletter() {
 }
 
 export function Home() {
+  const { products, categories } = useCatalog();
+  const bestSellers = BEST_SELLER_IDS.map((id) => products.find((p) => p.id === id)).filter((p): p is Product => !!p);
   const [filter, setFilter] = useState<string | null>(null);
   const { hash } = useLocation();
   const shown = products.filter((p) => !filter || (filter === "Sale" ? p.was : p.category === filter));
@@ -99,7 +101,7 @@ export function Home() {
           </div>
           <div className="collage-wrap">
             <div className="collage" aria-hidden="true">
-              {[products[0], products[2], products[4]].map((p) => <ProductImage key={p.id} p={p} eager />)}
+              {[products[0], products[2], products[4]].filter(Boolean).map((p) => <ProductImage key={p.id} p={p} eager />)}
             </div>
             <span className="float top"><Icon name="star" filled /> 4.9 from 2,300 reviews</span>
             <span className="float bottom"><Icon name="truck" /> Free shipping over ₹999</span>
@@ -134,7 +136,7 @@ export function Home() {
 
       <section className="wrap block" aria-labelledby="best-title">
         <h2 id="best-title">Best sellers</h2>
-        <Carousel items={BEST_SELLERS} />
+        <Carousel items={bestSellers} />
       </section>
 
       <section className="wrap block">

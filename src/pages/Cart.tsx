@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
-import { byId, money } from "../data";
+import { useCatalog } from "../catalog";
+import { money } from "../data";
 import { useCart } from "../cart";
 import { ProductImage } from "../components";
 
 export function CartPage() {
   const { lines, total, setQty } = useCart();
+  const { byId } = useCatalog();
 
   if (lines.length === 0) {
     return (

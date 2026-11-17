@@ -1,17 +1,17 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ProductImage } from "./components";
-import { products } from "./data";
+import { useCatalog } from "./catalog";
 
 const PANES = {
   store: { headline: "Everyday goods, made to last.", text: "Track your orders, save your details and check out faster." },
   staff: { headline: "Run the store from one place.", text: "Manage orders, products and inventory in the staff portal." },
 };
 
-const ART = [products[0], products[2], products[4]];
-
 export function AuthShell({ title, subtitle, children, foot, staff }: { title: string; subtitle: string; children: ReactNode; foot?: ReactNode; staff?: boolean }) {
   const pane = staff ? PANES.staff : PANES.store;
+  const { products } = useCatalog();
+  const art = [products[0], products[2], products[4]].filter(Boolean);
   return (
     <div className="split">
       <aside className="brandpane">
@@ -22,7 +22,7 @@ export function AuthShell({ title, subtitle, children, foot, staff }: { title: s
         <div>
           <h2>{pane.headline}</h2>
           <p>{pane.text}</p>
-          <div className="pane-art" aria-hidden="true">{ART.map((p) => <ProductImage key={p.id} p={p} />)}</div>
+          <div className="pane-art" aria-hidden="true">{art.map((p) => <ProductImage key={p.id} p={p} />)}</div>
         </div>
         <p className="pane-copy">© {new Date().getFullYear()} Storefront</p>
       </aside>

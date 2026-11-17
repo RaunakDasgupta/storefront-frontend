@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { byId } from "./data";
+import { useCatalog } from "./catalog";
 
 type Cart = {
   lines: { id: string; qty: number }[];
@@ -12,6 +12,7 @@ type Cart = {
 const Ctx = createContext<Cart | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { byId } = useCatalog();
   const [lines, setLines] = useState<Cart["lines"]>([]);
 
   const add: Cart["add"] = (id) =>
