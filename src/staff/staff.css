@@ -76,10 +76,18 @@
   & .pc-meta { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
   & .pc-meta .muted { font-size: 12.5px; white-space: nowrap; }
   & .oc { position: relative; }
-  & .pc-edit { position: absolute; top: 10px; right: 10px; z-index: 1; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--muted); cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
-  & .pc-edit:hover { color: var(--green); border-color: var(--green); background: var(--green-tint); }
-  & .pc-edit .icon { width: 16px; height: 16px; }
-  & .pc-text { padding-right: 30px; }
+  & .pc-actions { display: flex; gap: 8px; }
+  & .pc-btn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink); cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+  & .pc-btn .icon { width: 15px; height: 15px; }
+  & .pc-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-tint); }
+  & .pc-del:hover { border-color: var(--danger); color: var(--danger); background: #fff4f4; }
+  & .order-grid.tall { grid-template-rows: repeat(2, 188px); }
+  & .btn.danger { background: var(--danger); color: #fff; }
+  & .btn.danger:hover { background: #a3081d; }
+  & .confirm { width: min(440px, calc(100vw - 32px)); }
+  & .confirm-body { padding-bottom: 18px; }
+  & .confirm-body h2 { margin: 0 0 8px; font-size: 20px; }
+  & .confirm-body p { margin: 0; }
 
   /* edit product dialog */
   & .editor { width: min(580px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 0; border-radius: 18px; color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.35); overflow: hidden; }

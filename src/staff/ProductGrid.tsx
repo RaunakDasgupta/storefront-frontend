@@ -8,13 +8,12 @@ function Stock({ stock }: { stock: number }) {
   return <span className="muted">{stock} in stock</span>;
 }
 
-/** Products as cards in the scrolling 3 x 2 grid: photo, name and size, SKU and category, type, stock and price. The pencil opens the editor. */
-export function ProductGrid({ products, onEdit }: { products: Product[]; onEdit: (p: Product) => void }) {
+/** Products as cards in the scrolling 3 x 2 grid: photo, name and size, SKU and category, type, stock and price. The pencil opens the editor and the bin asks to delete. */
+export function ProductGrid({ products, onEdit, onDelete }: { products: Product[]; onEdit: (p: Product) => void; onDelete: (p: Product) => void }) {
   return (
-    <ScrollGrid count={products.length}>
+    <ScrollGrid count={products.length} tall>
       {products.map((p) => (
         <article key={p.id} className="oc pc">
-          <button className="pc-edit" aria-label={`Edit ${p.name} (${p.sku})`} title="Edit" onClick={() => onEdit(p)}><Icon name="edit" /></button>
           <span className="pc-main">
             <ProductImage p={p} small className="pc-img" />
             <span className="pc-text">
@@ -26,6 +25,10 @@ export function ProductGrid({ products, onEdit }: { products: Product[]; onEdit:
           <span className="oc-foot">
             <span className="pc-meta"><span className={p.channel === "bulk" ? "badge paid" : "badge"}>{p.channel === "bulk" ? "Bulk" : "Retail"}</span><Stock stock={p.stock} /></span>
             <strong>{money(p.price)}</strong>
+          </span>
+          <span className="pc-actions">
+            <button className="pc-btn" aria-label={`Edit ${p.name} (${p.sku})`} onClick={() => onEdit(p)}><Icon name="edit" /> Edit</button>
+            <button className="pc-btn pc-del" aria-label={`Delete ${p.name} (${p.sku})`} onClick={() => onDelete(p)}><Icon name="trash" /> Delete</button>
           </span>
         </article>
       ))}

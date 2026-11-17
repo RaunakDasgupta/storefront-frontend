@@ -11,7 +11,11 @@ type Catalog = {
   customized: boolean;
   /** Staff edit one product's details (the SKU stays fixed). Shoppers see the change straight away. */
   update: (id: string, edit: ProductEdit) => void;
-  /** Adds new SKUs and updates existing ones (matched by SKU). Never deletes. */
+  /** Staff delete a product. Returns it with its position so the delete can be undone. Existing orders keep their items. */
+  remove: (id: string) => { product: Product; index: number } | undefined;
+  /** Puts a deleted product back where it was. */
+  restore: (product: Product, index: number) => void;
+  /** Adds new SKUs and updates existing ones (matched by SKU). CSV imports never delete. */
   importRows: (rows: SkuRow[]) => { added: number; updated: number };
   reset: () => void;
 };
@@ -33,7 +37,7 @@ function isProduct(p: unknown): p is Product {
 function load(): Product[] | null {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? "null");
-    return Array.isArray(saved) && saved.length > 0 && saved.every(isProduct) ? saved : null;
+    return Array.isArray(saved) && saved.every(isProduct) ? saved : null;
   } catch { return null; }
 }
 
@@ -68,12 +72,27 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const update: Catalog["update"] = (id, edit) => commit(products.map((p) => (p.id === id ? { ...p, ...edit } : p)));
 
+  const remove: Catalog["remove"] = (id) => {
+    const index = products.findIndex((p) => p.id === id);
+    if (index < 0) return undefined;
+    commit(products.filter((p) => p.id !== id));
+    return { product: products[index], index };
+  };
+  const restore: Catalog["restore"] = (product, index) => {
+    if (products.some((p) => p.id === product.id)) return;
+    const next = [...products];
+    next.splice(Math.min(index, next.length), 0, product);
+    commit(next);
+  };
+
   const value: Catalog = {
     products,
     categories: [...new Set(products.map((p) => p.category))],
     byId: (id) => products.find((p) => p.id === id),
     customized: saved !== null,
     update,
+    remove,
+    restore,
     importRows,
     reset: () => commit(null),
   };

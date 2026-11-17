@@ -140,7 +140,12 @@ export function Shop({ channel }: { channel: Channel }) {
 
         <div className="shop">
           <div className="shop-main">
-            {overview ? (
+            {overview && inChannel.length === 0 ? (
+              <div className="empty">
+                <h2>No {channel} products yet</h2>
+                <p className="muted">Check back soon.</p>
+              </div>
+            ) : overview ? (
               <>
                 <Section title="Featured" items={inChannel} to={`${base}?view=all`} />
                 <CategoryBrowser categories={categories} />
