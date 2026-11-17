@@ -6,6 +6,7 @@ type User = { role: Role; name: string };
 type Auth = {
   user: User | null;
   signIn: (role: Role, identity: string, password: string) => Promise<void>;
+  signUp: (name: string, email: string, password: string) => Promise<void>;
   signOut: () => void;
 };
 
@@ -31,7 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     save({ role, name: identity.split("@")[0] });
   };
 
-  return <Ctx.Provider value={{ user, signIn, signOut: () => save(null) }}>{children}</Ctx.Provider>;
+  const signUp: Auth["signUp"] = async (name, email, password) => {
+    // shortcut: mock registration that creates no account; replace with POST /api/auth/customer/register.
+    if (!name || !email || !password) throw new Error("Fill in every field.");
+    save({ role: "customer", name });
+  };
+
+  return <Ctx.Provider value={{ user, signIn, signUp, signOut: () => save(null) }}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {

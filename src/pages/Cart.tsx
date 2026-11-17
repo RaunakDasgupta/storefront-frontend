@@ -8,17 +8,19 @@ export function CartPage() {
 
   if (lines.length === 0) {
     return (
-      <div className="empty">
+      <div className="wrap page empty">
         <h1>Your cart is empty</h1>
-        <p className="muted">Looks like you haven't added anything yet.</p>
         <Link to="/" className="btn primary inline">Continue shopping</Link>
       </div>
     );
   }
 
   return (
-    <>
-      <h1>Cart</h1>
+    <div className="wrap page">
+      <div className="section-head">
+        <h1>Your cart</h1>
+        <Link to="/" className="link">Continue shopping</Link>
+      </div>
       <ul className="lines">
         {lines.map(({ id, qty }) => {
           const p = byId(id);
@@ -27,7 +29,7 @@ export function CartPage() {
             <li key={id}>
               <ProductImage p={p} />
               <div>
-                <Link to={`/products/${id}`}>{p.name}</Link>
+                <Link to={`/products/${id}`} className="pname">{p.name}</Link>
                 <p className="muted">{money(p.price)}</p>
               </div>
               <div className="qty">
@@ -41,10 +43,11 @@ export function CartPage() {
         })}
       </ul>
       <div className="summary">
-        <p>Subtotal <strong>{money(total)}</strong></p>
+        <p className="total">Estimated total <strong>{money(total)}</strong></p>
+        <p className="muted">Taxes and shipping are calculated at checkout.</p>
         {/* shortcut: no payment provider yet; wire this to checkout when one is chosen. */}
-        <button className="btn primary inline" disabled>Checkout coming soon</button>
+        <button className="btn primary" disabled>Check out</button>
       </div>
-    </>
+    </div>
   );
 }

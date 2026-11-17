@@ -1,20 +1,21 @@
 import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { homeFor, useAuth, type Role } from "./auth";
+import { AuthShell } from "./AuthShell";
 
 const ROLES: Role[] = ["customer", "employee"];
 
 const COPY: Record<Role, { label: string; subtitle: string; identityLabel: string; identityType: string; identityError: string }> = {
   customer: {
     label: "Customer",
-    subtitle: "Welcome back. Sign in to view your orders and account.",
+    subtitle: "Log in to see your orders and saved details.",
     identityLabel: "Email",
     identityType: "email",
     identityError: "Enter a valid email address.",
   },
   employee: {
     label: "Employee",
-    subtitle: "Sign in to the staff portal with your work account.",
+    subtitle: "Log in to the staff portal with your work account.",
     identityLabel: "Work email or employee ID",
     identityType: "text",
     identityError: "Enter your work email or employee ID.",
@@ -72,84 +73,74 @@ export function LoginPage() {
   }
 
   return (
-    <main className="shell">
-      <Link to="/" className="brand" aria-label="Storefront home">
-        <span className="brand-mark" aria-hidden="true">S</span>
-        <span className="brand-name">Storefront</span>
-      </Link>
+    <AuthShell
+      title="Log in"
+      subtitle={c.subtitle}
+      // staff accounts are provisioned, not self-served
+      foot={role === "customer" ? <>New to Storefront? <Link to="/signup" className="link">Create account</Link></> : undefined}
+    >
+      <div className="tabs" role="tablist" aria-label="Account type">
+        {ROLES.map((r) => (
+          <button
+            key={r}
+            ref={(el) => { tabRefs.current[r] = el; }}
+            type="button"
+            role="tab"
+            id={`tab-${r}`}
+            aria-selected={r === role}
+            aria-controls="panel"
+            tabIndex={r === role ? 0 : -1}
+            onClick={() => pick(r)}
+            onKeyDown={onTabKey}
+          >
+            {COPY[r].label}
+          </button>
+        ))}
+      </div>
 
-      <section className="card" data-role={role}>
-        <h1>Sign in</h1>
-        <p className="sub">{c.subtitle}</p>
-
-        <div className="tabs" role="tablist" aria-label="Account type">
-          {ROLES.map((r) => (
-            <button
-              key={r}
-              ref={(el) => { tabRefs.current[r] = el; }}
-              type="button"
-              role="tab"
-              id={`tab-${r}`}
-              aria-selected={r === role}
-              aria-controls="panel"
-              tabIndex={r === role ? 0 : -1}
-              onClick={() => pick(r)}
-              onKeyDown={onTabKey}
-            >
-              {COPY[r].label}
-            </button>
-          ))}
+      <form id="panel" role="tabpanel" aria-labelledby={`tab-${role}`} onSubmit={onSubmit} noValidate>
+        <div className="field">
+          <label htmlFor="identity">{c.identityLabel}</label>
+          <input
+            id="identity"
+            ref={identityRef}
+            type={c.identityType}
+            autoComplete="username"
+            value={identity}
+            onChange={(e) => setIdentity(e.target.value)}
+            aria-invalid={error?.field === "identity" || undefined}
+          />
         </div>
 
-        <form id="panel" role="tabpanel" aria-labelledby={`tab-${role}`} onSubmit={onSubmit} noValidate>
-          <div className="field">
-            <label htmlFor="identity">{c.identityLabel}</label>
-            <input
-              id="identity"
-              ref={identityRef}
-              type={c.identityType}
-              autoComplete="username"
-              value={identity}
-              onChange={(e) => setIdentity(e.target.value)}
-              aria-invalid={error?.field === "identity" || undefined}
-            />
+        <div className="field">
+          <div className="label-row">
+            <label htmlFor="password">Password</label>
+            <a href="#" className="link">Forgot password?</a>
           </div>
+          <input
+            id="password"
+            ref={passwordRef}
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            aria-invalid={error?.field === "password" || undefined}
+          />
+        </div>
 
-          <div className="field">
-            <div className="label-row">
-              <label htmlFor="password">Password</label>
-              <a href="#" className="link">Forgot password?</a>
-            </div>
-            <input
-              id="password"
-              ref={passwordRef}
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              aria-invalid={error?.field === "password" || undefined}
-            />
-          </div>
+        <p className="error" role="alert" hidden={!error}>{error?.message}</p>
 
-          <p className="error" role="alert" hidden={!error}>{error?.message}</p>
+        <button type="submit" className="btn primary" disabled={busy}>Log in</button>
 
-          <button type="submit" className="btn primary" disabled={busy}>Sign in</button>
-
-          {role === "employee" && (
-            <>
-              <div className="divider"><span>or</span></div>
-              <button type="button" className="btn secondary" onClick={() => fail("SSO isn't connected yet.")}>
-                Continue with company SSO
-              </button>
-            </>
-          )}
-        </form>
-      </section>
-
-      {/* staff accounts are provisioned, not self-served */}
-      {role === "customer" && (
-        <p className="foot">New here? <a href="#" className="link">Create an account</a></p>
-      )}
-    </main>
+        {role === "employee" && (
+          <>
+            <div className="divider"><span>or</span></div>
+            <button type="button" className="btn secondary" onClick={() => fail("Single sign-on isn't set up yet.")}>
+              Continue with company SSO
+            </button>
+          </>
+        )}
+      </form>
+    </AuthShell>
   );
 }

@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { RequireRole } from "./auth";
 import { StaffLayout, StoreLayout } from "./components";
 import { LoginPage } from "./LoginPage";
+import { SignupPage } from "./SignupPage";
 import { Account } from "./pages/Account";
 import { CartPage } from "./pages/Cart";
 import { Home } from "./pages/Home";
@@ -13,6 +14,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
       <Route element={<StoreLayout />}>
         <Route index element={<Home />} />
         <Route path="products/:id" element={<ProductPage />} />

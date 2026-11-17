@@ -5,11 +5,11 @@ import { OrdersTable } from "./Staff";
 export function Account() {
   const { user } = useAuth();
   return (
-    <>
-      <h1>Hi, {user?.name}</h1>
+    <div className="wrap page">
+      <h1>Hi, <span className="cap">{user?.name}</span></h1>
       <h2>Recent orders</h2>
       {/* shortcut: shows the shared mock orders; fetch this customer's own orders once there is an API. */}
-      <OrdersTable rows={orders.slice(0, 3)} />
-    </>
+      <div className="cardbox"><OrdersTable rows={orders.slice(0, 3)} /></div>
+    </div>
   );
 }
