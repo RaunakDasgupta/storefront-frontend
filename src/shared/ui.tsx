@@ -99,6 +99,9 @@ export function Menu({ label, trigger, children, buttonClass = "iconbtn", panelC
   );
 }
 
+/** "Detergent (Carton of 12 x 1 kg) × 1, ..." so a bulk pack is distinct from the retail item. */
+const itemsText = (o: Order) => o.items.map((i) => `${i.name}${i.size ? ` (${i.size})` : ""} × ${i.qty}`).join(", ");
+
 const STEP_BADGE = ["pending", "paid", "packed", "fulfilled"] as const;
 
 /** Staff order list: who ordered, what, when, and where it is in fulfilment. */
@@ -112,7 +115,7 @@ export function OrdersTable({ rows, onStep }: { rows: Order[]; onStep?: (id: str
             <tr key={o.id}>
               <td>{o.id}</td>
               <td>{o.customer.name}</td>
-              <td className="hide-md items-cell" title={o.items.map((i) => `${i.name} × ${i.qty}`).join(", ")}>{o.items.map((i) => `${i.name} × ${i.qty}`).join(", ")}</td>
+              <td className="hide-md items-cell" title={itemsText(o)}>{itemsText(o)}</td>
               <td className="hide-sm">{fmtDate(o.date)}</td>
               <td>
                 {onStep ? (

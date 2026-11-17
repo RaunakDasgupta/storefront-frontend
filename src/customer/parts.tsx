@@ -88,10 +88,16 @@ export function CartPanel() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const items = lines.flatMap((l) => { const p = byId(l.id); return p ? [{ p, qty: l.qty }] : []; });
+  const mixed = items.some(({ p }) => p.channel === "bulk") && items.some(({ p }) => p.channel === "retail");
 
   function placeOrder() {
     if (!user) return navigate("/login", { state: { from: pathname } });
-    place({ name: user.name, email: user.email }, items.map(({ p, qty }) => ({ id: p.id, name: p.name, size: p.size, qty, price: p.price })));
+    // retail and bulk items are fulfilled separately, so they become separate orders
+    const line = ({ p, qty }: (typeof items)[number]) => ({ id: p.id, name: p.name, size: p.size, qty, price: p.price });
+    place({ name: user.name, email: user.email }, [
+      { channel: "retail", items: items.filter(({ p }) => p.channel === "retail").map(line) },
+      { channel: "bulk", items: items.filter(({ p }) => p.channel === "bulk").map(line) },
+    ]);
     clear();
     navigate("/orders");
   }
@@ -127,6 +133,7 @@ export function CartPanel() {
 
       <p className="order-total"><span>Order total</span><strong>{money(total)}</strong></p>
       <button className="btn primary" disabled={items.length === 0} onClick={placeOrder}>Place demo order</button>
+      {mixed && <p className="demo-note"><Icon name="truck" /> Retail and bulk items are placed as two separate orders.</p>}
       <p className="demo-note"><Icon name="info" /> Demo checkout. No payment collected.</p>
     </aside>
   );
@@ -149,7 +156,7 @@ export function OrderSummary({ o }: { o: Order }) {
   return (
     <div className="order">
       <div>
-        <h3>Order {o.id} <span className="muted">{itemCount(o)} {itemCount(o) === 1 ? "item" : "items"}</span></h3>
+        <h3>Order {o.id} <span className="muted">{o.channel === "bulk" ? "Bulk · " : "Retail · "}{itemCount(o)} {itemCount(o) === 1 ? "item" : "items"}</span></h3>
         <p className="muted">{STEP_MESSAGE[o.step]}</p>
       </div>
       <Tracker step={o.step} />

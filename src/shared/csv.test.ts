@@ -1,7 +1,7 @@
 // Run with `npm test` (Node's built-in test runner, no extra packages).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { SAMPLE_ORDERS, isOrder, makeOrder, nextOrderId, orderTotal, revenueOf, withStep } from "./orderlogic.ts";
+import { SAMPLE_ORDERS, isOrder, makeOrder, makeOrders, nextOrderId, orderTotal, revenueOf, withChannel, withStep, type Order } from "./orderlogic.ts";
 import { parseCsv, parseSkuCsv } from "./csv.ts";
 
 test("parseCsv handles quotes, escaped quotes, newlines in cells, CRLF and a BOM", () => {
@@ -58,7 +58,7 @@ test("compare_at_price is kept only when it is higher than the price", () => {
 test("a new order gets the next id, a total from its items, and starts at Confirmed", () => {
   assert.equal(nextOrderId(SAMPLE_ORDERS), "ORD_1002");
   const items = [{ id: "detergent", name: "Detergent", qty: 2, price: 249 }, { id: "shampoo", name: "Shampoo", qty: 1, price: 199 }];
-  const order = makeOrder(SAMPLE_ORDERS, { name: "A", email: "a@b.co" }, items, "2026-11-17");
+  const order = makeOrder(SAMPLE_ORDERS, { name: "A", email: "a@b.co" }, items, "retail", "2026-11-17");
   assert.equal(order.id, "ORD_1002");
   assert.equal(order.total, 697);
   assert.equal(order.step, 0);
@@ -83,4 +83,19 @@ test("withStep moves one order and ignores unknown ids or invalid steps", () => 
   assert.equal(SAMPLE_ORDERS.find((o) => o.id === "ORD_1000")?.step, 0, "the original list is not mutated");
   assert.equal(withStep(SAMPLE_ORDERS, "ORD_1000", 7), SAMPLE_ORDERS);
   assert.equal(withStep(SAMPLE_ORDERS, "ORD_9999", 2).length, SAMPLE_ORDERS.length);
+});
+
+test("makeOrders splits retail and bulk items into separate sequential orders", () => {
+  const retail = [{ id: "detergent", name: "Detergent", qty: 1, price: 249 }];
+  const bulk = [{ id: "detergent-carton", name: "Detergent", qty: 1, price: 2699 }];
+  const made = makeOrders(SAMPLE_ORDERS, { name: "A", email: "a@b.co" }, [{ channel: "retail", items: retail }, { channel: "bulk", items: bulk }], "2026-11-17");
+  assert.deepEqual(made.map((o) => [o.id, o.channel, o.total]), [["ORD_1002", "retail", 249], ["ORD_1003", "bulk", 2699]]);
+  assert.equal(makeOrders(SAMPLE_ORDERS, { name: "A", email: "a@b.co" }, [{ channel: "retail", items: [] }, { channel: "bulk", items: bulk }]).length, 1);
+});
+
+test("sample orders have a channel, and old saved orders get one from their items", () => {
+  assert.ok(SAMPLE_ORDERS.some((o) => o.channel === "bulk") && SAMPLE_ORDERS.some((o) => o.channel === "retail"));
+  const { channel: _drop, ...old } = SAMPLE_ORDERS.find((o) => o.channel === "bulk")!;
+  assert.equal(isOrder(old), true);
+  assert.equal(withChannel(old as Order).channel, "bulk");
 });

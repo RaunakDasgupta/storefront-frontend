@@ -1,5 +1,5 @@
 // Order types and pure helpers. No React here so the tests can run under `node --test`.
-import { seedProducts } from "./data.ts";
+import { seedProducts, type Channel } from "./data.ts";
 
 export const STEPS = ["Confirmed", "Preparing", "Packed", "Ready for dispatch"] as const;
 export const STEP_MESSAGE = [
@@ -11,7 +11,7 @@ export const STEP_MESSAGE = [
 
 export type Step = 0 | 1 | 2 | 3;
 export type OrderItem = { id: string; name: string; size?: string; qty: number; price: number };
-export type Order = { id: string; date: string; customer: { name: string; email: string }; items: OrderItem[]; total: number; step: Step };
+export type Order = { id: string; date: string; channel: Channel; customer: { name: string; email: string }; items: OrderItem[]; total: number; step: Step };
 
 /** Returns the list with one order moved to a new fulfilment step. Unknown ids and invalid steps leave it unchanged. */
 export const withStep = (list: Order[], id: string, step: number): Order[] =>
@@ -24,15 +24,29 @@ export const revenueOf = (list: Order[]) => list.reduce((s, o) => s + o.total, 0
 const num = (o: Order) => Number(o.id.replace(/\D/g, "")) || 0;
 export const nextOrderId = (list: Order[]) => `ORD_${String(Math.max(1000, ...list.map(num)) + 1).padStart(4, "0")}`;
 
-export function makeOrder(list: Order[], customer: Order["customer"], items: OrderItem[], date = new Date().toISOString().slice(0, 10)): Order {
-  return { id: nextOrderId(list), date, customer, items, total: orderTotal(items), step: 0 };
+export function makeOrder(list: Order[], customer: Order["customer"], items: OrderItem[], channel: Channel = "retail", date = new Date().toISOString().slice(0, 10)): Order {
+  return { id: nextOrderId(list), date, channel, customer, items, total: orderTotal(items), step: 0 };
+}
+
+/** One order per channel that has items, so retail and bulk items are fulfilled separately. Ids stay sequential. */
+export function makeOrders(list: Order[], customer: Order["customer"], groups: { channel: Channel; items: OrderItem[] }[], date?: string): Order[] {
+  const made: Order[] = [];
+  for (const g of groups) if (g.items.length) made.push(makeOrder([...made, ...list], customer, g.items, g.channel, date));
+  return made;
+}
+
+/** Orders saved before channels existed get one from their items (bulk if the first item is a bulk pack). */
+export function withChannel(o: Order): Order {
+  if (o.channel === "retail" || o.channel === "bulk") return o;
+  const first = o.items[0] && seedProducts.find((p) => p.id === o.items[0].id);
+  return { ...o, channel: first?.channel ?? "retail" };
 }
 
 /** Guards what comes back from localStorage. */
 export function isOrder(o: unknown): o is Order {
   const x = o as Order;
   return !!x && typeof x.id === "string" && typeof x.date === "string" && typeof x.customer?.email === "string" && typeof x.customer?.name === "string" &&
-    Array.isArray(x.items) && Number.isFinite(x.total) && [0, 1, 2, 3].includes(x.step);
+    Array.isArray(x.items) && Number.isFinite(x.total) && [0, 1, 2, 3].includes(x.step) && (x.channel === undefined || x.channel === "retail" || x.channel === "bulk");
 }
 
 // shortcut: sample orders for the demo. The first one belongs to the demo customer login.
@@ -42,7 +56,8 @@ const line = (id: string, qty: number): OrderItem => {
 };
 const sample = (n: number, name: string, email: string, date: string, step: Step, lines: [string, number][]): Order => {
   const items = lines.map(([id, q]) => line(id, q));
-  return { id: `ORD_${String(n).padStart(4, "0")}`, date, customer: { name, email }, items, total: orderTotal(items), step };
+  const channel = seedProducts.find((p) => p.id === lines[0][0])?.channel ?? "retail";
+  return { id: `ORD_${String(n).padStart(4, "0")}`, date, channel, customer: { name, email }, items, total: orderTotal(items), step };
 };
 
 export const SAMPLE_ORDERS: Order[] = [

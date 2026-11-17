@@ -1,15 +1,25 @@
 import { useSearchParams } from "react-router-dom";
+import type { Channel } from "../../shared/data";
 import { STEPS } from "../../shared/orderlogic";
 import { useOrders } from "../../shared/orders";
 import { Icon, OrdersTable } from "../../shared/ui";
 
 const FILTERS = ["All", ...STEPS] as const;
+const CHANNELS: { id: Channel; label: string }[] = [
+  { id: "retail", label: "Retail orders" },
+  { id: "bulk", label: "Bulk orders" },
+];
 
-/** Every order placed in the storefront. Staff change an order's status here and customers see it update. The status filter and search live in the URL, so the overview can link straight to "Confirmed". */
+/**
+ * Orders placed in the storefront, with retail and bulk orders on separate tabs.
+ * Staff change an order's status here and customers see it update.
+ * The channel, status filter and search live in the URL, so the overview can link straight to a list.
+ */
 export function StaffOrders() {
   const { orders, setStep } = useOrders();
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
+  const channel: Channel = params.get("type") === "bulk" ? "bulk" : "retail";
   const statusParam = params.get("status") ?? "All";
   const status = (FILTERS as readonly string[]).includes(statusParam) ? statusParam : "All";
 
@@ -19,13 +29,23 @@ export function StaffOrders() {
     setParams(next, { replace: true });
   }
 
+  const inChannel = orders.filter((o) => o.channel === channel);
   const needle = q.trim().toLowerCase();
-  const rows = orders.filter((o) => (status === "All" || STEPS[o.step] === status) && (!needle || `${o.id} ${o.customer.name} ${o.customer.email}`.toLowerCase().includes(needle)));
-  const count = (s: string) => orders.filter((o) => s === "All" || STEPS[o.step] === s).length;
+  const rows = inChannel.filter((o) => (status === "All" || STEPS[o.step] === status) && (!needle || `${o.id} ${o.customer.name} ${o.customer.email}`.toLowerCase().includes(needle)));
+  const count = (s: string) => inChannel.filter((o) => s === "All" || STEPS[o.step] === s).length;
 
   return (
     <>
       <div className="page-head"><h1>Orders</h1></div>
+
+      <div className="channel-switch" role="group" aria-label="Order type">
+        {CHANNELS.map((c) => (
+          <button key={c.id} aria-pressed={channel === c.id} onClick={() => update({ type: c.id === "retail" ? null : c.id, status: null })}>
+            {c.label} <span>{orders.filter((o) => o.channel === c.id).length}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="toolbar">
         <div className="tabs" role="group" aria-label="Filter by status">
           {FILTERS.map((s) => (
@@ -38,7 +58,7 @@ export function StaffOrders() {
         </div>
       </div>
       <section className="cardbox">
-        {rows.length === 0 ? <p className="muted pad">No orders match.</p> : <OrdersTable rows={rows} onStep={setStep} />}
+        {rows.length === 0 ? <p className="muted pad">No {channel} orders match.</p> : <OrdersTable rows={rows} onStep={setStep} />}
       </section>
     </>
   );

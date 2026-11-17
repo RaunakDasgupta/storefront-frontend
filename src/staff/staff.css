@@ -47,11 +47,20 @@
   & .search .icon { position: absolute; left: 12px; top: 9px; width: 20px; height: 20px; color: var(--muted); pointer-events: none; }
   & .search input { padding-left: 38px; border-color: #cfcfcf; border-radius: 999px; }
 
+  /* retail / bulk switch above the status tabs */
+  & .channel-switch { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
+  & .channel-switch button { padding: 8px 18px; border: 0; border-radius: 999px; background: transparent; font: inherit; font-weight: 650; color: var(--muted); cursor: pointer; transition: background .2s, color .2s; }
+  & .channel-switch button span { margin-left: 4px; font-weight: 500; opacity: .75; }
+  & .channel-switch button:hover { color: var(--ink); }
+  & .channel-switch button[aria-pressed="true"] { background: var(--green); color: #fff; }
+
   /* overview */
   & .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
-  & .kpi { margin: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px; }
-  & .kpi p { margin: 0; }
-  & .kpi strong { font-size: 28px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; }
+  & .kpi { margin: 0; padding: 18px 20px; }
+  & .kpi h2 { margin: 0 0 10px; font-size: 14px; font-weight: 650; color: var(--muted); }
+  & .kpi-stats { display: flex; gap: 40px; }
+  & .kpi-stats p { margin: 0; }
+  & .kpi-stats strong { font-size: 28px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; }
 
   /* import */
   & .import-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
@@ -83,7 +92,7 @@
   @media (max-width: 640px) {
     & h1 { font-size: 26px; }
     & .pill { display: none; }
-      & .kpi strong { font-size: 24px; }
+      & .kpi-stats strong { font-size: 24px; }
     & .search { flex: 1 1 100%; margin-bottom: 12px; }
     & .toolbar { gap: 0; }
     & .tabs { width: 100%; gap: 20px; }
