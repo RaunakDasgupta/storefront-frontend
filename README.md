@@ -65,7 +65,7 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 | `/staff/import`   | Import SKUs from CSV                                                                       |
 | `/staff/login`    | Staff log in                                                                               |
 
-Navigation is a left sidebar on desktop and a bottom tab bar on phones, so the four sections are always one tap away. "Needs attention" on the overview links straight to the pending orders and the low-stock products. The sales chart is built from the same sample orders as the Revenue card, so the two always agree.
+The staff portal uses the same look as the storefront (white, green, rounded, underline tabs). Navigation is a row of tabs in the header on desktop and a bottom tab bar on phones, so the four sections are always one tap away. "Needs attention" on the overview links straight to the pending orders and the low-stock products. The sales chart is built from the same sample orders as the Revenue card, so the two always agree.
 
 ### Importing SKUs from CSV
 
