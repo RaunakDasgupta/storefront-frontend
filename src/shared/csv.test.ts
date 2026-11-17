@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { SAMPLE_ORDERS, isOrder, makeOrder, makeOrders, nextOrderId, orderTotal, revenueOf, withChannel, withStep, type Order } from "./orderlogic.ts";
 import { parseCsv, parseSkuCsv } from "./csv.ts";
+import { isSafeImage, parseProductForm, toForm } from "./productform.ts";
+import { seedProducts } from "./data.ts";
 
 test("parseCsv handles quotes, escaped quotes, newlines in cells, CRLF and a BOM", () => {
   const text = '﻿a,b,c\r\n"x, y","say ""hi""","line1\nline2"\r\n\r\n';
@@ -98,4 +100,30 @@ test("sample orders have a channel, and old saved orders get one from their item
   const { channel: _drop, ...old } = SAMPLE_ORDERS.find((o) => o.channel === "bulk")!;
   assert.equal(isOrder(old), true);
   assert.equal(withChannel(old as Order).channel, "bulk");
+});
+
+test("the product edit form accepts valid values, rupee formatting and a blank photo", () => {
+  const base = toForm(seedProducts[0]);
+  const { value, errors } = parseProductForm({ ...base, name: "  Detergent Plus ", price: "₹1,249", was: "1,499", stock: "12", image: "" });
+  assert.deepEqual(errors, {});
+  assert.equal(value?.name, "Detergent Plus");
+  assert.equal(value?.price, 1249);
+  assert.equal(value?.was, 1499);
+  assert.equal(value?.image, undefined);
+});
+
+test("the product edit form reports each bad field", () => {
+  const base = toForm(seedProducts[0]);
+  const { value, errors } = parseProductForm({ ...base, name: " ", price: "abc", stock: "2.5", was: "10", channel: "wholesale", image: "javascript:alert(1)" });
+  assert.equal(value, undefined);
+  assert.deepEqual(Object.keys(errors).sort(), ["channel", "image", "name", "price", "stock"]);
+  assert.match(parseProductForm({ ...base, price: "500", was: "400" }).errors.was ?? "", /higher/);
+});
+
+test("isSafeImage allows https links and bundled files only", () => {
+  assert.equal(isSafeImage("https://cdn.example.com/a.png"), true);
+  assert.equal(isSafeImage("/products/detergent.jpg"), true);
+  assert.equal(isSafeImage("javascript:alert(1)"), false);
+  assert.equal(isSafeImage("data:image/png;base64,AAAA"), false);
+  assert.equal(isSafeImage("/etc/passwd"), false);
 });

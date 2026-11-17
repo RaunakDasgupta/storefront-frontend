@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useToast } from "./toast";
 import { useCatalog } from "../shared/catalog";
 import { money, type Product } from "../shared/data";
-import { STEPS, STEP_MESSAGE, itemCount, type Order } from "../shared/orderlogic";
+import { STEPS } from "../shared/orderlogic";
 import { useOrders } from "../shared/orders";
 import { Icon, ProductImage } from "../shared/ui";
 import { useCustomer } from "./auth";
@@ -86,6 +87,7 @@ export function CartPanel() {
   const { user } = useCustomer();
   const { place } = useOrders();
   const navigate = useNavigate();
+  const toast = useToast();
   const { pathname } = useLocation();
   const items = lines.flatMap((l) => { const p = byId(l.id); return p ? [{ p, qty: l.qty }] : []; });
   const mixed = items.some(({ p }) => p.channel === "bulk") && items.some(({ p }) => p.channel === "retail");
@@ -94,12 +96,15 @@ export function CartPanel() {
     if (!user) return navigate("/login", { state: { from: pathname } });
     // retail and bulk items are fulfilled separately, so they become separate orders
     const line = ({ p, qty }: (typeof items)[number]) => ({ id: p.id, name: p.name, size: p.size, qty, price: p.price });
-    place({ name: user.name, email: user.email }, [
+    const made = place({ name: user.name, email: user.email }, [
       { channel: "retail", items: items.filter(({ p }) => p.channel === "retail").map(line) },
       { channel: "bulk", items: items.filter(({ p }) => p.channel === "bulk").map(line) },
     ]);
     clear();
-    navigate("/orders");
+    // stay on the page: confirm with a small popup that links to the order(s)
+    toast.show(made.length > 1
+      ? { message: `Orders placed: ${made.map((o) => o.id).join(" and ")}`, actionLabel: "View orders", to: "/orders" }
+      : { message: `Order ${made[0].id} placed`, actionLabel: "View order", to: "/orders" });
   }
 
   return (
@@ -149,17 +154,5 @@ export function Tracker({ step }: { step: number }) {
         </li>
       ))}
     </ol>
-  );
-}
-
-export function OrderSummary({ o }: { o: Order }) {
-  return (
-    <div className="order">
-      <div>
-        <h3>Order {o.id} <span className="muted">{o.channel === "bulk" ? "Bulk · " : "Retail · "}{itemCount(o)} {itemCount(o) === 1 ? "item" : "items"}</span></h3>
-        <p className="muted">{STEP_MESSAGE[o.step]}</p>
-      </div>
-      <Tracker step={o.step} />
-    </div>
   );
 }

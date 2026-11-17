@@ -75,6 +75,24 @@
   & .badge { white-space: nowrap; }
   & .pc-meta { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
   & .pc-meta .muted { font-size: 12.5px; white-space: nowrap; }
+  & .oc { position: relative; }
+  & .pc-edit { position: absolute; top: 10px; right: 10px; z-index: 1; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--muted); cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+  & .pc-edit:hover { color: var(--green); border-color: var(--green); background: var(--green-tint); }
+  & .pc-edit .icon { width: 16px; height: 16px; }
+  & .pc-text { padding-right: 30px; }
+
+  /* edit product dialog */
+  & .editor { width: min(580px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 0; border-radius: 18px; color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.35); overflow: hidden; }
+  & .editor::backdrop { background: rgba(10, 30, 8, .45); }
+  & .editor form { display: flex; flex-direction: column; max-height: calc(100vh - 32px); }
+  & .editor-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 14px; border-bottom: 1px solid var(--line); }
+  & .editor-head h2 { margin: 0; font-size: 20px; }
+  & .editor-head p { margin: 2px 0 0; font-size: 13px; }
+  & .editor-x { width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; }
+  & .editor-x:hover { background: var(--gray); color: var(--ink); }
+  & .editor-body { padding: 18px 22px 4px; overflow-y: auto; }
+  & .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  & .editor-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px 18px; border-top: 1px solid var(--line); background: #fafafa; }
   & .grid-scroller { position: relative; }
   & .order-grid { display: grid; grid-template-rows: repeat(2, 160px); grid-auto-flow: column; grid-auto-columns: calc((100% - 32px) / 3.15); gap: 16px; margin: 0 -4px; padding: 4px 4px 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
   & .order-grid::-webkit-scrollbar { display: none; }
@@ -124,6 +142,8 @@
   @media (max-width: 640px) {
     & .order-grid { grid-auto-columns: calc((100% - 12px) / 1.5); gap: 12px; }
     & .grid-btn { display: none; }
+    & .row3 { grid-template-columns: 1fr 1fr; }
+    & .editor-foot .btn { flex: 1; }
     & h1 { font-size: 26px; }
     & .pill { display: none; }
       & .kpi-stats strong { font-size: 24px; }

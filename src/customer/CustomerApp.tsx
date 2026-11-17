@@ -7,6 +7,7 @@ import { CartProvider } from "./cart";
 import { CustomerLayout } from "./Layout";
 import { Login } from "./Login";
 import { Signup } from "./Signup";
+import { ToastProvider } from "./toast";
 import { Account } from "./pages/Account";
 import { CartPage } from "./pages/Cart";
 import { Categories } from "./pages/Categories";
@@ -23,6 +24,7 @@ export default function CustomerApp() {
         <CatalogProvider>
           <CartProvider>
             <OrdersProvider>
+              <ToastProvider>
               <Routes>
                 <Route path="login" element={<Login />} />
                 <Route path="signup" element={<Signup />} />
@@ -37,6 +39,7 @@ export default function CustomerApp() {
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
+              </ToastProvider>
             </OrdersProvider>
           </CartProvider>
         </CatalogProvider>

@@ -1,5 +1,5 @@
 import { money, type Product } from "../shared/data";
-import { ProductImage } from "../shared/ui";
+import { Icon, ProductImage } from "../shared/ui";
 import { ScrollGrid } from "./ScrollGrid";
 
 function Stock({ stock }: { stock: number }) {
@@ -8,12 +8,13 @@ function Stock({ stock }: { stock: number }) {
   return <span className="muted">{stock} in stock</span>;
 }
 
-/** Products as cards in the scrolling 3 x 2 grid: photo, name and size, SKU and category, type, stock and price. */
-export function ProductGrid({ products }: { products: Product[] }) {
+/** Products as cards in the scrolling 3 x 2 grid: photo, name and size, SKU and category, type, stock and price. The pencil opens the editor. */
+export function ProductGrid({ products, onEdit }: { products: Product[]; onEdit: (p: Product) => void }) {
   return (
     <ScrollGrid count={products.length}>
       {products.map((p) => (
         <article key={p.id} className="oc pc">
+          <button className="pc-edit" aria-label={`Edit ${p.name} (${p.sku})`} title="Edit" onClick={() => onEdit(p)}><Icon name="edit" /></button>
           <span className="pc-main">
             <ProductImage p={p} small className="pc-img" />
             <span className="pc-text">

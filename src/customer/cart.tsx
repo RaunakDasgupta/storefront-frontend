@@ -5,7 +5,7 @@ type Cart = {
   lines: { id: string; qty: number }[];
   count: number;
   total: number;
-  add: (id: string) => void;
+  add: (id: string, qty?: number) => void;
   setQty: (id: string, qty: number) => void; // qty <= 0 removes the line
   clear: () => void;
 };
@@ -16,8 +16,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { byId } = useCatalog();
   const [lines, setLines] = useState<Cart["lines"]>([]);
 
-  const add: Cart["add"] = (id) =>
-    setLines((ls) => (ls.some((l) => l.id === id) ? ls.map((l) => (l.id === id ? { ...l, qty: l.qty + 1 } : l)) : [...ls, { id, qty: 1 }]));
+  const add: Cart["add"] = (id, qty = 1) =>
+    setLines((ls) => (ls.some((l) => l.id === id) ? ls.map((l) => (l.id === id ? { ...l, qty: l.qty + qty } : l)) : [...ls, { id, qty }]));
   const setQty: Cart["setQty"] = (id, qty) =>
     setLines((ls) => (qty <= 0 ? ls.filter((l) => l.id !== id) : ls.map((l) => (l.id === id ? { ...l, qty } : l))));
 

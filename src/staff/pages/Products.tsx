@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../../shared/catalog";
-import type { Channel } from "../../shared/data";
+import type { Channel, Product } from "../../shared/data";
 import { Icon } from "../../shared/ui";
+import { ProductEditor } from "../ProductEditor";
 import { ProductGrid } from "../ProductGrid";
 
 const CHANNELS: { id: Channel; label: string }[] = [
@@ -9,10 +11,11 @@ const CHANNELS: { id: Channel; label: string }[] = [
   { id: "bulk", label: "Bulk products" },
 ];
 
-/** Products as cards, with Retail and Bulk on separate tabs (`?type=bulk`), a low-stock filter and search. */
+/** Products as editable cards, with Retail and Bulk on separate tabs (`?type=bulk`), a low-stock filter and search. */
 export function StaffProducts() {
   const { products, customized, reset } = useCatalog();
   const [params, setParams] = useSearchParams();
+  const [editing, setEditing] = useState<Product | null>(null);
   const q = params.get("q") ?? "";
   const lowOnly = params.get("stock") === "low";
   const channel: Channel = params.get("type") === "bulk" ? "bulk" : "retail";
@@ -59,7 +62,8 @@ export function StaffProducts() {
           <input type="search" aria-label="Search products" placeholder="Search name or SKU" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
-      {rows.length === 0 ? <p className="muted">No {channel} products match.</p> : <ProductGrid products={rows} />}
+      {rows.length === 0 ? <p className="muted">No {channel} products match.</p> : <ProductGrid products={rows} onEdit={setEditing} />}
+      {editing && <ProductEditor key={editing.id} product={editing} onClose={() => setEditing(null)} />}
     </>
   );
 }

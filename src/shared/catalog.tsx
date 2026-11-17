@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { SkuRow } from "./csv";
+import { isSafeImage, type ProductEdit } from "./productform";
 import { seedProducts, type Product } from "./data";
 
 type Catalog = {
@@ -8,6 +9,8 @@ type Catalog = {
   byId: (id: string) => Product | undefined;
   /** True once a CSV has changed the catalog. */
   customized: boolean;
+  /** Staff edit one product's details (the SKU stays fixed). Shoppers see the change straight away. */
+  update: (id: string, edit: ProductEdit) => void;
   /** Adds new SKUs and updates existing ones (matched by SKU). Never deletes. */
   importRows: (rows: SkuRow[]) => { added: number; updated: number };
   reset: () => void;
@@ -18,13 +21,6 @@ const KEY = "everyday.catalog";
 const Ctx = createContext<Catalog | null>(null);
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "sku";
-
-/** An http(s) link, or a file bundled under /products/. Nothing else (no javascript:, data: or other schemes). */
-function isSafeImage(v: unknown) {
-  if (typeof v !== "string") return false;
-  if (/^\/products\/[\w.-]+$/.test(v)) return true;
-  try { return /^https?:$/.test(new URL(v).protocol); } catch { return false; }
-}
 
 /** Guards what comes back from localStorage, which anything on this origin could have edited. */
 function isProduct(p: unknown): p is Product {
@@ -70,11 +66,14 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     return { added, updated };
   };
 
+  const update: Catalog["update"] = (id, edit) => commit(products.map((p) => (p.id === id ? { ...p, ...edit } : p)));
+
   const value: Catalog = {
     products,
     categories: [...new Set(products.map((p) => p.category))],
     byId: (id) => products.find((p) => p.id === id),
     customized: saved !== null,
+    update,
     importRows,
     reset: () => commit(null),
   };
