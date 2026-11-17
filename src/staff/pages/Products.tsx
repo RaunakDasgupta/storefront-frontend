@@ -25,7 +25,7 @@ export function StaffProducts() {
         <h1>Products</h1>
         <div className="head-actions">
           {customized && (
-            <button className="btn secondary inline" onClick={() => { if (window.confirm("Reset the catalog to the 12 sample products? Imported SKUs will be removed from this browser.")) reset(); }}>
+            <button className="btn secondary inline" onClick={() => { if (window.confirm("Reset the catalog to the 23 sample products? Imported SKUs will be removed from this browser.")) reset(); }}>
               Reset catalog
             </button>
           )}

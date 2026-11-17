@@ -3,8 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../../shared/catalog";
 import type { Channel, Product } from "../../shared/data";
 import { Icon, ProductImage } from "../../shared/ui";
-import { useMyOrders } from "../myOrders";
-import { BulkBanner, CartPanel, OrderSummary, ProductCard } from "../parts";
+import { BulkBanner, CartPanel, CategoryCard, ProductCard } from "../parts";
 
 const COPY: Record<Channel, { title: string; lede: string }> = {
   retail: { title: "Everyday essentials, ready to order", lede: "Shop individual items or choose bulk packs for your business." },
@@ -56,7 +55,6 @@ function Section({ title, items, to }: { title: string; items: Product[]; to: st
 /** Retail (/) and Bulk orders (/bulk): intro, categories, one Featured row (or the full list once a category, search or See more is chosen) and the cart beside it. Search comes from the header (?q=). */
 export function Shop({ channel }: { channel: Channel }) {
   const { products } = useCatalog();
-  const orders = useMyOrders();
   const [params, setParams] = useSearchParams();
   const q = (params.get("q") ?? "").trim().toLowerCase();
   const category = params.get("category") ?? "";
@@ -100,18 +98,32 @@ export function Shop({ channel }: { channel: Channel }) {
           <div className="shop-main">
             <section aria-labelledby="cats-title">
               <h2 id="cats-title" className="block-title">Categories</h2>
-              <div className="cat-strip" role="group" aria-label="Categories">
-                {categories.map((c) => {
-                  const first = inChannel.find((p) => p.category === c)!;
-                  return (
-                    <button key={c} className="cat-chip" aria-pressed={category === c} onClick={() => pick(c)}>
-                      <ProductImage p={first} small />
-                      <span>{c}</span>
-                      <small>{inChannel.filter((p) => p.category === c).length}</small>
-                    </button>
-                  );
-                })}
-              </div>
+              {overview ? (
+                <div className="cat-cards">
+                  {categories.map((c) => (
+                    <CategoryCard
+                      key={c}
+                      name={c}
+                      count={inChannel.filter((p) => p.category === c).length}
+                      cover={inChannel.find((p) => p.category === c)!}
+                      to={`${base}?category=${encodeURIComponent(c)}`}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="cat-strip" role="group" aria-label="Categories">
+                  {categories.map((c) => {
+                    const first = inChannel.find((p) => p.category === c)!;
+                    return (
+                      <button key={c} className="cat-chip" aria-pressed={category === c} onClick={() => pick(c)}>
+                        <ProductImage p={first} small />
+                        <span>{c}</span>
+                        <small>{inChannel.filter((p) => p.category === c).length}</small>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
             {overview ? (
@@ -135,13 +147,6 @@ export function Shop({ channel }: { channel: Channel }) {
           </div>
           <CartPanel />
         </div>
-
-        {channel === "retail" && orders[0] && (
-          <section className="recent" aria-label="Your latest order">
-            <OrderSummary o={orders[0]} />
-            <Link to="/orders" className="link">Track order</Link>
-          </section>
-        )}
       </div>
     </>
   );

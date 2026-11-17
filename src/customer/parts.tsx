@@ -45,6 +45,19 @@ export function ProductCard({ p }: { p: Product }) {
   );
 }
 
+/** A standalone category card: photo, name and product count, linking to that category's full list. */
+export function CategoryCard({ name, count, cover, to }: { name: string; count: number; cover: Product; to: string }) {
+  return (
+    <Link to={to} className="cat-card">
+      <ProductImage p={cover} />
+      <span className="cat-card-label">
+        <strong>{name}</strong>
+        <small>{count} {count === 1 ? "product" : "products"}</small>
+      </span>
+    </Link>
+  );
+}
+
 /** The bulk-orders call to action. Sits near the top of the Retail page so it is hard to miss. */
 export function BulkBanner() {
   const { products } = useCatalog();
