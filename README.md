@@ -32,6 +32,8 @@ Then open http://localhost:5173.
 | `/account`                         | Customers       | Account page with recent orders                   |
 | `/staff`, `/staff/orders`, `/staff/products` | Employees | Overview stats, orders table, product inventory   |
 
+Layouts are responsive from small phones (about 360px) up to wide desktops: the storefront switches to two-column grids and a static header on phones, and the staff portal's sidebar becomes a horizontal tab strip below 900px.
+
 The storefront follows Shopify's Dawn theme (announcement bar, hero with floating badges, scrolling ticker, category tiles, best-seller carousel, sale banner, reviews, newsletter) and the staff portal follows the Polaris admin look (dark top bar, light navigation, cards with a sales chart, top products and low-stock lists). There are no image assets yet, so product photos are emoji on soft backgrounds.
 
 Signed-out visitors who open a protected route are sent to `/login` and returned afterwards. Signing in with the wrong role sends you to your own home (`/` for customers, `/staff` for employees).

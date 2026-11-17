@@ -109,7 +109,7 @@ export function StoreLayout() {
     <>
       <div className="announce">Free shipping on orders over $50</div>
       <header className="topbar">
-        <Link to="/" className="logo"><span className="logo-mark" aria-hidden="true">S</span>Storefront</Link>
+        <Link to="/" className="logo"><span className="logo-mark" aria-hidden="true">S</span><span className="logo-text">Storefront</span></Link>
         <nav className="topnav" aria-label="Main">
           <NavLink to="/" end>Home</NavLink>
           <Link to="/#shop">Shop</Link>
@@ -128,7 +128,7 @@ export function StoreLayout() {
       <footer className="footer">
         <div className="wrap foot-grid">
           <div>
-            <Link to="/" className="logo"><span className="logo-mark" aria-hidden="true">S</span>Storefront</Link>
+            <Link to="/" className="logo"><span className="logo-mark" aria-hidden="true">S</span><span className="logo-text">Storefront</span></Link>
             <p className="muted">Everyday goods for your home, your desk and your day.</p>
           </div>
           <nav aria-label="Shop">
@@ -155,7 +155,7 @@ export function StaffLayout() {
   return (
     <div className="admin">
       <header className="atop">
-        <Link to={homeFor("employee")} className="logo"><span className="logo-mark" aria-hidden="true">S</span>Storefront</Link>
+        <Link to={homeFor("employee")} className="logo"><span className="logo-mark" aria-hidden="true">S</span><span className="logo-text">Storefront</span></Link>
         <div className="atop-r">
           <Link to="/">View store</Link>
           <span className="avatar" aria-hidden="true">{user?.name[0]?.toUpperCase()}</span>

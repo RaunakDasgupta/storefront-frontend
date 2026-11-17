@@ -6,11 +6,11 @@ export function OrdersTable({ rows }: { rows: Order[] }) {
   return (
     <div className="tablewrap">
       <table>
-        <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Status</th><th className="num">Total</th></tr></thead>
+        <thead><tr><th>Order</th><th>Customer</th><th className="hide-sm">Date</th><th>Status</th><th className="num">Total</th></tr></thead>
         <tbody>
           {rows.map((o) => (
             <tr key={o.id}>
-              <td>{o.id}</td><td>{o.customer}</td><td>{o.date}</td>
+              <td>{o.id}</td><td>{o.customer}</td><td className="hide-sm">{o.date}</td>
               <td><span className={`badge ${o.status.toLowerCase()}`}>{o.status}</span></td>
               <td className="num">{money(o.total)}</td>
             </tr>
