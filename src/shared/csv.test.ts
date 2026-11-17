@@ -1,7 +1,7 @@
 // Run with `npm test` (Node's built-in test runner, no extra packages).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { SAMPLE_ORDERS, isOrder, makeOrder, nextOrderId, orderTotal, revenueOf } from "./orderlogic.ts";
+import { SAMPLE_ORDERS, isOrder, makeOrder, nextOrderId, orderTotal, revenueOf, withStep } from "./orderlogic.ts";
 import { parseCsv, parseSkuCsv } from "./csv.ts";
 
 test("parseCsv handles quotes, escaped quotes, newlines in cells, CRLF and a BOM", () => {
@@ -74,4 +74,13 @@ test("sample orders are valid and their totals match their items", () => {
 test("isOrder rejects malformed stored data", () => {
   assert.equal(isOrder({ id: "x" }), false);
   assert.equal(isOrder(null), false);
+});
+
+test("withStep moves one order and ignores unknown ids or invalid steps", () => {
+  const next = withStep(SAMPLE_ORDERS, "ORD_1000", 3);
+  assert.equal(next.find((o) => o.id === "ORD_1000")?.step, 3);
+  assert.equal(next.find((o) => o.id === "ORD_1001")?.step, SAMPLE_ORDERS.find((o) => o.id === "ORD_1001")?.step);
+  assert.equal(SAMPLE_ORDERS.find((o) => o.id === "ORD_1000")?.step, 0, "the original list is not mutated");
+  assert.equal(withStep(SAMPLE_ORDERS, "ORD_1000", 7), SAMPLE_ORDERS);
+  assert.equal(withStep(SAMPLE_ORDERS, "ORD_9999", 2).length, SAMPLE_ORDERS.length);
 });

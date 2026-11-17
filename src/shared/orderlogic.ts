@@ -13,6 +13,10 @@ export type Step = 0 | 1 | 2 | 3;
 export type OrderItem = { id: string; name: string; size?: string; qty: number; price: number };
 export type Order = { id: string; date: string; customer: { name: string; email: string }; items: OrderItem[]; total: number; step: Step };
 
+/** Returns the list with one order moved to a new fulfilment step. Unknown ids and invalid steps leave it unchanged. */
+export const withStep = (list: Order[], id: string, step: number): Order[] =>
+  ([0, 1, 2, 3] as const).includes(step as Step) ? list.map((o) => (o.id === id ? { ...o, step: step as Step } : o)) : list;
+
 export const itemCount = (o: Order) => o.items.reduce((n, i) => n + i.qty, 0);
 export const orderTotal = (items: OrderItem[]) => items.reduce((s, i) => s + i.qty * i.price, 0);
 export const revenueOf = (list: Order[]) => list.reduce((s, o) => s + o.total, 0);

@@ -5,9 +5,9 @@ import { Icon, OrdersTable } from "../../shared/ui";
 
 const FILTERS = ["All", ...STEPS] as const;
 
-/** Every order placed in the storefront. The status filter and search live in the URL, so the overview can link straight to "Confirmed". */
+/** Every order placed in the storefront. Staff change an order's status here and customers see it update. The status filter and search live in the URL, so the overview can link straight to "Confirmed". */
 export function StaffOrders() {
-  const { orders } = useOrders();
+  const { orders, setStep } = useOrders();
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
   const statusParam = params.get("status") ?? "All";
@@ -38,7 +38,7 @@ export function StaffOrders() {
         </div>
       </div>
       <section className="cardbox">
-        {rows.length === 0 ? <p className="muted pad">No orders match.</p> : <OrdersTable rows={rows} />}
+        {rows.length === 0 ? <p className="muted pad">No orders match.</p> : <OrdersTable rows={rows} onStep={setStep} />}
       </section>
     </>
   );

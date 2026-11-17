@@ -54,7 +54,7 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 - **Landing page:** the bulk banner sits right under the intro so it is hard to miss. Product cards turn into a quantity stepper once an item is in the cart. The cart panel sits beside the products and scrolls away with the page (the header's Cart link is always visible).
 - **Categories and Featured:** the landing page shows a Categories strip (a photo chip per category) and a single Featured row of up to 5 products that you can scroll (arrow buttons on desktop, swipe on touch). When there are more than 5, the row ends with a **See more** tile, and the row header has a **See all** link. Both open the full list (`/?view=all`). Picking a category chip opens that category's full list (`/?category=Home%20care`); picking the active chip again, or **Back to featured**, returns to the landing page. A search from the header also shows the full list. There is no separate "All products" tab.
 - **Search** is in the header and filters the page you are on (`/?q=soap`, `/bulk?q=carton`). Category tabs use `?category=`.
-- **Demo checkout:** "Place demo order" needs a log in, then creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. No payment is collected. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the staff portal. Orders do not advance on their own, since fulfilment would come from a warehouse system.
+- **Demo checkout:** "Place demo order" needs a log in, then creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. No payment is collected. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the staff portal. Orders only move forward when staff change their status (see below).
 - The profile avatar is blank when logged out and opens a menu with Log in and Create account. Once you are logged in it shows your initial and the menu lists **My orders**, **My account** and **Log out**. There is no My orders tab in the header.
 
 ## Staff portal
@@ -62,7 +62,7 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 | Route             | What it does                                                                               |
 | ----------------- | ------------------------------------------------------------------------------------------ |
 | `/staff`          | Overview: revenue, order count and recent orders                                           |
-| `/staff/orders`   | Every order placed in the storefront, with status tabs (All, Confirmed, Preparing, Packed, Ready for dispatch) and search |
+| `/staff/orders`   | Every order placed in the storefront, with status tabs (All, Confirmed, Preparing, Packed, Ready for dispatch) and search. **Staff change an order's status from the dropdown in its row**, and the customer's tracker updates (live if the storefront is open in another tab). |
 | `/staff/products` | Products with SKU, size, retail or bulk type, price and inventory, a low-stock filter and search |
 | `/staff/import`   | Import SKUs from CSV                                                                       |
 | `/staff/login`    | Staff log in                                                                               |
