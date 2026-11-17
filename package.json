@@ -6,13 +6,16 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/shared/csv.test.ts"
+    "test": "node --test \"src/**/*.test.ts\"",
+    "check": "tsc --noEmit && npm test && vite build"
   },
   "type": "module",
   "private": true,
   "dependencies": {
+    "@reduxjs/toolkit": "^2.14.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-redux": "^9.3.1",
     "react-router-dom": "^7.18.5"
   },
   "devDependencies": {

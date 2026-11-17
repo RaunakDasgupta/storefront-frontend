@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { useAuthDialog } from "./authDialog";
-import { useToast } from "./toast";
 import { useCatalog } from "../shared/catalog";
 import { money, type Product } from "../shared/data";
 import { STEPS } from "../shared/orderlogic";
-import { useOrders } from "../shared/orders";
 import { Icon, ProductImage } from "../shared/ui";
-import { useCustomer, type User } from "./auth";
+import { useCustomer } from "./auth";
 import { useCart } from "./cart";
+import { checkout } from "./checkout";
+import { useAppDispatch } from "./hooks";
 
 /** Stock line under the size: green when plentiful, amber when low, red when gone. */
 export function StockNote({ stock }: { stock: number }) {
@@ -83,31 +83,14 @@ export function ChannelBanner({ channel }: { channel: "retail" | "bulk" }) {
 
 /** Cart panel: quantities, order total and the demo checkout. */
 export function CartPanel() {
-  const { lines, count, total, setQty, clear } = useCart();
-  const { byId } = useCatalog();
+  const { items, count, total, setQty } = useCart();
   const { user } = useCustomer();
-  const { place } = useOrders();
-  const toast = useToast();
+  const dispatch = useAppDispatch();
   const authDialog = useAuthDialog();
-  const items = lines.flatMap((l) => { const p = byId(l.id); return p ? [{ p, qty: l.qty }] : []; });
   const mixed = items.some(({ p }) => p.channel === "bulk") && items.some(({ p }) => p.channel === "retail");
 
-  /** Places the order(s) for this customer. Retail and bulk items are fulfilled separately, so they become separate orders. */
-  function placeFor(who: User) {
-    const line = ({ p, qty }: (typeof items)[number]) => ({ id: p.id, name: p.name, size: p.size, qty, price: p.price });
-    const made = place({ name: who.name, email: who.email }, [
-      { channel: "retail", items: items.filter(({ p }) => p.channel === "retail").map(line) },
-      { channel: "bulk", items: items.filter(({ p }) => p.channel === "bulk").map(line) },
-    ]);
-    clear();
-    // stay on the page: confirm with a small popup that links to the order(s)
-    toast.show(made.length > 1
-      ? { message: `Orders placed: ${made.map((o) => o.id).join(" and ")}`, actionLabel: "View orders", to: "/orders" }
-      : { message: `Order ${made[0].id} placed`, actionLabel: "View order", to: "/orders" });
-  }
-
-  // logged out: log in or sign up in a popup right here instead of sending them to another page
-  const placeOrder = () => (user ? placeFor(user) : authDialog.open({ mode: "login", reason: "place your order", onSuccess: placeFor }));
+  // logged out: log in or sign up in a popup right here instead of sending them to another page; the order is placed afterwards
+  const placeOrder = () => (user ? dispatch(checkout(user)) : authDialog.open({ mode: "login", reason: "place your order", after: { kind: "checkout" } }));
 
   return (
     <aside className="cartpanel" aria-label="Your cart">

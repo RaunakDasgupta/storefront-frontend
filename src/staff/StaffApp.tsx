@@ -1,14 +1,15 @@
 // The staff portal. Shares only data (catalog) and UI primitives with the customer app.
+import { useEffect, useState } from "react";
+import { Provider } from "react-redux";
 import { Link, Route, Routes } from "react-router-dom";
-import { CatalogProvider } from "../shared/catalog";
-import { OrdersProvider } from "../shared/orders";
-import { RequireStaff, StaffAuthProvider } from "./auth";
+import { RequireStaff } from "./auth";
 import { StaffLayout } from "./Layout";
 import { StaffLogin } from "./Login";
 import { ImportPage } from "./pages/Import";
 import { StaffOrders } from "./pages/Orders";
 import { Overview } from "./pages/Overview";
 import { StaffProducts } from "./pages/Products";
+import { makeStaffStore, persistStaff } from "./store";
 import "./staff.css";
 
 function StaffNotFound() {
@@ -21,24 +22,24 @@ function StaffNotFound() {
 }
 
 export default function StaffApp() {
+  // this app's own store: the customer storefront has another one
+  const [store] = useState(makeStaffStore);
+  useEffect(() => persistStaff(store), [store]);
+
   return (
     <div className="sx">
-      <StaffAuthProvider>
-        <CatalogProvider>
-          <OrdersProvider>
-            <Routes>
-              <Route path="login" element={<StaffLogin />} />
-              <Route element={<RequireStaff><StaffLayout /></RequireStaff>}>
-                <Route index element={<Overview />} />
-                <Route path="orders" element={<StaffOrders />} />
-                <Route path="products" element={<StaffProducts />} />
-                <Route path="import" element={<ImportPage />} />
-                <Route path="*" element={<StaffNotFound />} />
-              </Route>
-            </Routes>
-          </OrdersProvider>
-        </CatalogProvider>
-      </StaffAuthProvider>
+      <Provider store={store}>
+        <Routes>
+          <Route path="login" element={<StaffLogin />} />
+          <Route element={<RequireStaff><StaffLayout /></RequireStaff>}>
+            <Route index element={<Overview />} />
+            <Route path="orders" element={<StaffOrders />} />
+            <Route path="products" element={<StaffProducts />} />
+            <Route path="import" element={<ImportPage />} />
+            <Route path="*" element={<StaffNotFound />} />
+          </Route>
+        </Routes>
+      </Provider>
     </div>
   );
 }

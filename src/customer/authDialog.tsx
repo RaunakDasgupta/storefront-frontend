@@ -1,34 +1,21 @@
-import { createContext, useContext, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Field } from "../shared/ui";
 import { DEMO_CUSTOMER, useCustomer, type User } from "./auth";
+import { dialogClosed, dialogModeChanged, dialogOpened, type DialogRequest } from "./authDialogSlice";
+import { checkout } from "./checkout";
+import { useAppDispatch, useAppSelector } from "./hooks";
 
-type Mode = "login" | "signup";
-type Opts = { mode: Mode; /** What the person is trying to do, for example "place your order". */ reason?: string; onSuccess?: (user: User) => void };
-type Ctx = { open: (o: Opts) => void };
-const AuthDialogCtx = createContext<Ctx | null>(null);
-
+/** Opens the log in / create account popup from anywhere (checkout, the account menu, protected pages). */
 export function useAuthDialog() {
-  const ctx = useContext(AuthDialogCtx);
-  if (!ctx) throw new Error("useAuthDialog must be used inside <AuthDialogProvider>");
-  return ctx;
+  const dispatch = useAppDispatch();
+  return useMemo(() => ({ open: (request: DialogRequest) => { dispatch(dialogOpened(request)); } }), [dispatch]);
 }
 
-/** One popup for logging in and creating an account, openable from anywhere (checkout, the account menu, protected pages). */
-export function AuthDialogProvider({ children }: { children: ReactNode }) {
-  const [opts, setOpts] = useState<Opts | null>(null);
-  return (
-    <AuthDialogCtx.Provider value={{ open: setOpts }}>
-      {children}
-      {opts && (
-        <AuthDialog
-          opts={opts}
-          onMode={(mode) => setOpts({ ...opts, mode })}
-          onClose={() => setOpts(null)}
-        />
-      )}
-    </AuthDialogCtx.Provider>
-  );
+/** Renders the popup while the store has a request for it. */
+export function AuthDialogHost() {
+  const request = useAppSelector((s) => s.authDialog.request);
+  return request && <AuthDialog request={request} />;
 }
 
 type SignupValues = { first: string; last: string; email: string; password: string };
@@ -92,15 +79,11 @@ function LoginForm({ reason, onDone }: { reason?: string; onDone: (u: User) => v
 }
 
 function SignupForm({ reason, onDone }: { reason?: string; onDone: (u: User) => void }) {
-  const { signUp, user } = useCustomer();
+  const { signUp } = useCustomer();
   const [v, setV] = useState<SignupValues>({ first: "", last: "", email: "", password: "" });
   const [errors, setErrors] = useState<SignupErrors>({});
   const [formError, setFormError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState<{ name: string; email: string } | null>(null);
-
-  // signUp signs the new customer in; hand the user over once the context has it
-  useEffect(() => { if (pending && user && user.email === pending.email) onDone(user); }, [pending, user, onDone]);
 
   const bind = (k: keyof SignupValues) => ({ id: `ad-${k}`, value: v[k], error: errors[k], onChange: (e: { target: { value: string } }) => setV({ ...v, [k]: e.target.value }) });
 
@@ -115,8 +98,7 @@ function SignupForm({ reason, onDone }: { reason?: string; onDone: (u: User) => 
     setBusy(true);
     try {
       const name = `${v.first.trim()} ${v.last.trim()}`, email = v.email.trim().toLowerCase();
-      await signUp(name, email, v.password);
-      setPending({ name, email });
+      onDone(await signUp(name, email, v.password));
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Something went wrong.");
       setBusy(false);
@@ -139,14 +121,22 @@ function SignupForm({ reason, onDone }: { reason?: string; onDone: (u: User) => 
   );
 }
 
-function AuthDialog({ opts, onMode, onClose }: { opts: Opts; onMode: (m: Mode) => void; onClose: () => void }) {
+function AuthDialog({ request }: { request: DialogRequest }) {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { ref.current?.showModal(); }, []);
 
   // close through our own state instead of waiting for the dialog's "close" event, so it can always be reopened
+  const onClose = () => { dispatch(dialogClosed()); };
   const close = () => { ref.current?.close(); onClose(); };
-  const done = (u: User) => { close(); opts.onSuccess?.(u); };
-  const login = opts.mode === "login";
+  const done = (u: User) => {
+    close();
+    if (request.after?.kind === "checkout") dispatch(checkout(u));
+    else if (request.after?.kind === "navigate") navigate(request.after.to, { replace: true });
+  };
+  const onMode = (mode: DialogRequest["mode"]) => { dispatch(dialogModeChanged(mode)); };
+  const login = request.mode === "login";
 
   return (
     <dialog
@@ -159,17 +149,17 @@ function AuthDialog({ opts, onMode, onClose }: { opts: Opts; onMode: (m: Mode) =
     >
       <header className="dlg-head">
         <div>
-          <h2 id="ad-title">{login ? (opts.reason ? `Log in to ${opts.reason}` : "Log in") : "Create your account"}</h2>
+          <h2 id="ad-title">{login ? (request.reason ? `Log in to ${request.reason}` : "Log in") : "Create your account"}</h2>
           <p className="muted">
             {login
-              ? (opts.reason ? "Your cart is saved. Log in and we'll place the order for you." : "Log in to place and track your orders.")
-              : (opts.reason ? "Your cart is saved. Create an account and we'll place the order for you." : "Save your details to order faster.")}
+              ? (request.reason ? "Your cart is saved. Log in and we'll place the order for you." : "Log in to place and track your orders.")
+              : (request.reason ? "Your cart is saved. Create an account and we'll place the order for you." : "Save your details to order faster.")}
           </p>
         </div>
         <button type="button" className="dlg-x" aria-label="Close" onClick={close}>×</button>
       </header>
 
-      {login ? <LoginForm reason={opts.reason} onDone={done} /> : <SignupForm reason={opts.reason} onDone={done} />}
+      {login ? <LoginForm reason={request.reason} onDone={done} /> : <SignupForm reason={request.reason} onDone={done} />}
 
       <footer className="dlg-foot">
         {login
@@ -184,15 +174,14 @@ function AuthDialog({ opts, onMode, onClose }: { opts: Opts; onMode: (m: Mode) =
 export function RequireCustomer({ children }: { children: ReactNode }) {
   const { user } = useCustomer();
   const { open } = useAuthDialog();
-  const navigate = useNavigate();
   const path = useLocation().pathname;
   // only on arrival: logging out from a protected page must not pop the dialog open again
-  useEffect(() => { if (!user) open({ mode: "login", onSuccess: () => navigate(path, { replace: true }) }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!user) open({ mode: "login", after: { kind: "navigate", to: path } }); }, []);
   return user ? children : <Navigate to="/" replace />;
 }
 
 /** The old /login and /signup pages are popups now: open one over the landing page so old links keep working. */
-export function AuthRoute({ mode }: { mode: Mode }) {
+export function AuthRoute({ mode }: { mode: DialogRequest["mode"] }) {
   const { open } = useAuthDialog();
   useEffect(() => { open({ mode }); }, [open, mode]);
   return <Navigate to="/" replace />;
