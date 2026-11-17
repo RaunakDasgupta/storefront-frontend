@@ -265,17 +265,6 @@
   & .footer { margin-top: 24px; border-top: 1px solid var(--line); padding-block: 20px; font-size: 13px; }
   & .foot-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; }
 
-  /* log in / create account */
-  & .auth { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 32px 16px; }
-  & .card { width: 100%; max-width: 380px; }
-  & .card h1 { margin: 0 0 4px; font-size: 26px; }
-  & .sub { margin: 0 0 24px; color: var(--muted); }
-  & .foot { margin: 0; color: var(--muted); }
-  & .demo { margin-top: 20px; padding: 14px 16px; border: 1px dashed #b5b5b5; border-radius: 10px; background: #fafafa; font-size: 13px; }
-  & .demo dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 8px 0; }
-  & .demo dt { color: var(--muted); }
-  & .demo dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
-
   /* tablet */
   @media (max-width: 1000px) {
     & .topbar { position: relative; flex-wrap: wrap; gap: 12px 20px; }

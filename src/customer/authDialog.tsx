@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Field } from "../shared/ui";
 import { DEMO_CUSTOMER, useCustomer, type User } from "./auth";
 
@@ -13,7 +14,7 @@ export function useAuthDialog() {
   return ctx;
 }
 
-/** One popup for logging in and creating an account, openable from anywhere (checkout, the account menu, the login page). */
+/** One popup for logging in and creating an account, openable from anywhere (checkout, the account menu, protected pages). */
 export function AuthDialogProvider({ children }: { children: ReactNode }) {
   const [opts, setOpts] = useState<Opts | null>(null);
   return (
@@ -177,4 +178,22 @@ function AuthDialog({ opts, onMode, onClose }: { opts: Opts; onMode: (m: Mode) =
       </footer>
     </dialog>
   );
+}
+
+/** Protected pages: signed-out visitors land on the landing page with the log in popup open, then come back here once logged in. */
+export function RequireCustomer({ children }: { children: ReactNode }) {
+  const { user } = useCustomer();
+  const { open } = useAuthDialog();
+  const navigate = useNavigate();
+  const path = useLocation().pathname;
+  // only on arrival: logging out from a protected page must not pop the dialog open again
+  useEffect(() => { if (!user) open({ mode: "login", onSuccess: () => navigate(path, { replace: true }) }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return user ? children : <Navigate to="/" replace />;
+}
+
+/** The old /login and /signup pages are popups now: open one over the landing page so old links keep working. */
+export function AuthRoute({ mode }: { mode: Mode }) {
+  const { open } = useAuthDialog();
+  useEffect(() => { open({ mode }); }, [open, mode]);
+  return <Navigate to="/" replace />;
 }

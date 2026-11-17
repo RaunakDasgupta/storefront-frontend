@@ -28,11 +28,11 @@ Then open http://localhost:5173 (customer) or http://localhost:5173/staff (staff
 
 ## Demo logins
 
-Each app has its own login page. The page shows these (with a "Fill in these details" button) in `npm run dev`; production builds hide them.
+Each app has its own login. The customer login is a popup and the staff login is a page. Both show these (with a Fill in button) in `npm run dev`; production builds hide them.
 
 | App      | Log in at      | Email / ID                                         | Password      |
 | -------- | -------------- | -------------------------------------------------- | ------------- |
-| Customer | `/login`       | `customer@storefront.test`                         | `customer123` |
+| Customer | popup (or `/login`) | `customer@storefront.test`                         | `customer123` |
 | Staff    | `/staff/login` | `staff@storefront.test` or employee ID `EMP-1001`  | `staff1234`   |
 
 Customer credentials do not work on the staff login, and the other way round. New customer accounts from `/signup` are kept in the browser's `localStorage`. Staff accounts are provisioned, so there is no staff sign-up.
@@ -49,14 +49,14 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 | `/orders`            | My orders: a card per order with its type, date, item photos, total, status, a progress tracker, an expandable item list and **Order again**; filter by All, Retail or Bulk (log in required) |
 | `/cart`              | The cart as its own page (used on phones)                                          |
 | `/products/:id`      | Product page                                                                       |
-| `/login`             | Customer log in page (used when a protected page such as My orders needs a login)  |
+| `/login`             | Opens the log in popup over the landing page (old link; protected pages do the same) |
 | `/account`           | Profile (log in required)                                                          |
 
 - **Categories dropdown:** next to Retail and Bulk orders in the header, **Categories** opens a card-based dropdown (for the channel you are on) with a photo card per category (7 so far: Home care, Personal care, Paper essentials, Kitchen essentials, Baby care, Pet care, Snacks & drinks) and a **See all categories** link. A card opens that category's full list (`/?category=Home%20care`).
 - **Landing page (Retail and Bulk orders share it):** a banner to the other channel, a Featured row of up to 5 scrollable products (arrow buttons on desktop, swipe on touch) with a **See more** tile, then **Browse by category**: a row of category tabs above one product grid. Choosing a tab swaps the products in that same grid in place (no page change, arrow keys move between tabs), with a link to that category's full list. A **See all categories** button opens `/categories`. Featured's **See all** opens the full list (`/?view=all`), and **Back to featured** returns. A search from the header also shows the full list.
 - **Search** is in the header and filters the page you are on (`/?q=soap`, `/bulk?q=carton`). A category uses `?category=`.
 - **Demo checkout:** "Place demo order" needs a log in. If you are logged out, a **login popup** opens right over the cart (no page change): log in and the order is placed straight away, or switch to **Create an account** in the same popup, which signs you up and then places the order. Placing an order creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. You stay on the page: a small popup at the bottom centre says the order was placed and has a **View order** button (it fades out after a few seconds). A cart with both retail and bulk items becomes **two orders** (one per channel), because they are fulfilled separately. No payment is collected. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the staff portal. Orders only move forward when staff change their status (see below).
-- **Sign up is a popup, not a page.** The profile avatar is blank when logged out and its menu opens the same popup in Log in or Create account mode (with a link to switch between them), as do checkout and the login page's Create account link. The old `/signup` address still works: it opens the popup over the landing page. Once you are logged in it shows your initial and the menu lists **My orders**, **My account** and **Log out**. There is no My orders tab in the header.
+- **Log in and sign up are popups, not pages.** The profile avatar is blank when logged out and its menu opens the same popup in Log in or Create account mode (with a link to switch between them), as do checkout and protected pages such as My orders (a logged-out visitor lands on the landing page with the popup open and returns to the page after logging in). The old `/login` and `/signup` addresses still work: they open the popup over the landing page. Once you are logged in it shows your initial and the menu lists **My orders**, **My account** and **Log out**. There is no My orders tab in the header.
 
 ## Staff portal
 

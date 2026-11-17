@@ -1,6 +1,5 @@
 // Customer sign-in. Completely separate from the staff session: different storage keys, accounts and guard.
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
 
 export type User = { name: string; email: string };
 type Account = User & { password: string };
@@ -60,11 +59,4 @@ export function useCustomer() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("useCustomer must be used inside <CustomerAuthProvider>");
   return ctx;
-}
-
-/** Sends signed-out visitors to the customer log in page and back afterwards. */
-export function RequireCustomer({ children }: { children: ReactNode }) {
-  const { user } = useCustomer();
-  const location = useLocation();
-  return user ? children : <Navigate to="/login" state={{ from: location.pathname }} replace />;
 }

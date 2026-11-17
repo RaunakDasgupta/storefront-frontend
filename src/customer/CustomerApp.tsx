@@ -1,13 +1,11 @@
 // The customer storefront ("Everyday Market"). Shares only data (catalog) and UI primitives with the staff app.
-import { useEffect } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { CatalogProvider } from "../shared/catalog";
 import { OrdersProvider } from "../shared/orders";
-import { RequireCustomer, CustomerAuthProvider } from "./auth";
-import { AuthDialogProvider, useAuthDialog } from "./authDialog";
+import { CustomerAuthProvider } from "./auth";
+import { AuthDialogProvider, AuthRoute, RequireCustomer } from "./authDialog";
 import { CartProvider } from "./cart";
 import { CustomerLayout } from "./Layout";
-import { Login } from "./Login";
 import { ToastProvider } from "./toast";
 import { Account } from "./pages/Account";
 import { CartPage } from "./pages/Cart";
@@ -17,14 +15,6 @@ import { Orders } from "./pages/Orders";
 import { ProductPage } from "./pages/Product";
 import { Shop } from "./pages/Shop";
 import "./customer.css";
-
-/** The old /signup page is now a popup: open it over the page the visitor came from (or the landing page). */
-function SignupPopup() {
-  const { open } = useAuthDialog();
-  const from = (useLocation().state as { from?: string } | null)?.from ?? "/";
-  useEffect(() => { open({ mode: "signup" }); }, [open]);
-  return <Navigate to={from} replace />;
-}
 
 export default function CustomerApp() {
   return (
@@ -36,8 +26,8 @@ export default function CustomerApp() {
               <ToastProvider>
               <AuthDialogProvider>
               <Routes>
-                <Route path="login" element={<Login />} />
-                <Route path="signup" element={<SignupPopup />} />
+                <Route path="login" element={<AuthRoute mode="login" />} />
+                <Route path="signup" element={<AuthRoute mode="signup" />} />
                 <Route element={<CustomerLayout />}>
                   <Route index element={<Shop channel="retail" />} />
                   <Route path="bulk" element={<Shop channel="bulk" />} />
