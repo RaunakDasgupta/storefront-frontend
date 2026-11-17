@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { homeFor, useAuth } from "./auth";
 import { useCart } from "./cart";
@@ -10,10 +10,16 @@ const ICONS = {
   orders: <><path d="M4 13l3-8h10l3 8v6H4z" /><path d="M4 13h5l1 2h4l1-2h5" /></>,
   products: <><path d="M3 12V4h8l10 10-8 8z" /><circle cx="7.5" cy="8.5" r="1" /></>,
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
+  chevL: <path d="M15 5l-7 7 7 7" />,
+  chevR: <path d="M9 5l7 7-7 7" />,
+  truck: <><path d="M2 6h11v10H2z" /><path d="M13 9h5l3 3v4h-8" /><circle cx="7" cy="18" r="2" /><circle cx="17" cy="18" r="2" /></>,
+  undo: <><path d="M9 14L4 9l5-5" /><path d="M4 9h11a5 5 0 010 10h-3" /></>,
+  lock: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>,
+  star: <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />,
 };
 
-export function Icon({ name }: { name: keyof typeof ICONS }) {
-  return <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>;
+export function Icon({ name, filled }: { name: keyof typeof ICONS; filled?: boolean }) {
+  return <svg className={filled ? "icon fill" : "icon"} viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>;
 }
 
 /** Soft studio-style placeholder until real product photos exist. */
@@ -50,8 +56,54 @@ export function Price({ p }: { p: Product }) {
   );
 }
 
-export function StoreLayout() {
+/** Profile avatar: blank when logged out, with a dropdown for log in / create account. */
+function AccountMenu() {
   const { user, signOut } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      ref.current?.querySelector("button")?.focus();
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  const close = () => setOpen(false);
+
+  return (
+    <div className="menu" ref={ref}>
+      <button className="iconbtn" aria-label="Account menu" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <span className={user ? "avatar" : "avatar blank"}>{user?.name[0]?.toUpperCase()}</span>
+      </button>
+      {open && (
+        <div className="dropdown" role="menu">
+          {user ? (
+            <>
+              <div className="dd-head"><strong>{user.name}</strong><span className="muted">{user.email ?? user.role}</span></div>
+              <Link role="menuitem" to={user.role === "employee" ? "/staff" : "/account"} onClick={close}>{user.role === "employee" ? "Staff portal" : "My account"}</Link>
+              <button role="menuitem" onClick={() => { close(); signOut(); }}>Log out</button>
+            </>
+          ) : (
+            <>
+              <div className="dd-head"><strong>Welcome</strong><span className="muted">Log in to see your orders.</span></div>
+              <Link role="menuitem" className="dd-primary" to="/login" onClick={close}>Log in</Link>
+              <Link role="menuitem" to="/signup" onClick={close}>Create account</Link>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function StoreLayout() {
   const { count } = useCart();
   return (
     <>
@@ -59,15 +111,17 @@ export function StoreLayout() {
       <header className="topbar">
         <Link to="/" className="logo"><span className="logo-mark" aria-hidden="true">S</span>Storefront</Link>
         <nav className="topnav" aria-label="Main">
-          <NavLink to="/" end>Shop</NavLink>
-          {user ? <NavLink to={user.role === "employee" ? "/staff" : "/account"}>{user.role === "employee" ? "Staff portal" : "Account"}</NavLink> : <NavLink to="/login">Log in</NavLink>}
-          {user && <button className="linkbtn" onClick={signOut}>Log out</button>}
+          <NavLink to="/" end>Home</NavLink>
+          <Link to="/#shop">Shop</Link>
+          <Link to="/#categories">Categories</Link>
+          <Link to="/#reviews">Reviews</Link>
         </nav>
         <div className="tools">
-          <Link to="/cart" className="bagbtn" aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}>
+          <Link to="/cart" className="iconbtn" aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}>
             <Icon name="bag" />
             {count > 0 && <span className="count">{count}</span>}
           </Link>
+          <AccountMenu />
         </div>
       </header>
       <main><Outlet /></main>
@@ -79,7 +133,8 @@ export function StoreLayout() {
           </div>
           <nav aria-label="Shop">
             <h3>Shop</h3>
-            <Link to="/">All products</Link>
+            <Link to="/#shop">All products</Link>
+            <Link to="/#categories">Categories</Link>
             <Link to="/cart">Cart</Link>
           </nav>
           <nav aria-label="Account">

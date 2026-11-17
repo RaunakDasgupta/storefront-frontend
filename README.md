@@ -32,9 +32,22 @@ Then open http://localhost:5173.
 | `/account`                         | Customers       | Account page with recent orders                   |
 | `/staff`, `/staff/orders`, `/staff/products` | Employees | Overview stats, orders table, product inventory   |
 
-The storefront follows Shopify's Dawn theme (announcement bar, editorial hero, category tiles, quick add, sale badges, newsletter) and the staff portal follows the Polaris admin look (dark top bar, light navigation, card layout). There are no image assets yet, so product photos are emoji on soft backgrounds.
+The storefront follows Shopify's Dawn theme (announcement bar, hero with floating badges, scrolling ticker, category tiles, best-seller carousel, sale banner, reviews, newsletter) and the staff portal follows the Polaris admin look (dark top bar, light navigation, cards with a sales chart, top products and low-stock lists). There are no image assets yet, so product photos are emoji on soft backgrounds.
 
 Signed-out visitors who open a protected route are sent to `/login` and returned afterwards. Signing in with the wrong role sends you to your own home (`/` for customers, `/staff` for employees).
+
+## Demo logins
+
+Pick the matching tab on `/login`. The page also shows these (with a "Fill in these details" button) in `npm run dev`; production builds hide them.
+
+| Account  | Email / ID                                         | Password      |
+| -------- | -------------------------------------------------- | ------------- |
+| Customer | `customer@storefront.test`                         | `customer123` |
+| Employee | `staff@storefront.test` or employee ID `EMP-1001`  | `staff1234`   |
+
+Accounts are role-specific: the customer login does not work on the Employee tab. New accounts from `/signup` are kept in the browser's `localStorage` and can log in on the Customer tab.
+
+The profile avatar in the storefront header is blank when logged out and opens a menu with Log in and Create account. When logged in it shows your initial with My account (or Staff portal) and Log out.
 
 ## Project layout
 
@@ -57,7 +70,8 @@ src/store.css        Storefront and staff portal styles
 
 There is no backend yet, so this is a working prototype:
 
-- **Log in accepts any non-empty email and password** and keeps the user in `sessionStorage`. **Create account** validates the form but creates nothing. Do not deploy as is: replace `signIn()` and `signUp()` in `src/auth.tsx` with calls to your auth API.
+- **Accounts are mocked in the browser.** The demo accounts and any sign-ups (plaintext passwords in `localStorage`) are checked in `src/auth.tsx`, and the signed-in user lives in `sessionStorage`. Do not deploy as is: replace `signIn()` and `signUp()` with calls to your auth API.
+- **Dashboard figures, reviews and the "4.9 from 2,300 reviews" badge are sample data.**
 - **Products and orders are hard-coded** in `src/data.ts`.
 - **Checkout is disabled**; there is no payment provider. The cart lives in memory and resets on reload.
 - "Forgot password", company SSO and the newsletter form are placeholders.

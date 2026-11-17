@@ -2,7 +2,8 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 export type Role = "customer" | "employee";
-type User = { role: Role; name: string };
+type User = { role: Role; name: string; email?: string };
+type Account = { role: Role; name: string; email: string; password: string; employeeId?: string };
 type Auth = {
   user: User | null;
   signIn: (role: Role, identity: string, password: string) => Promise<void>;
@@ -10,32 +11,50 @@ type Auth = {
   signOut: () => void;
 };
 
-const KEY = "storefront.user";
+// shortcut: mock accounts with plaintext passwords (demo ones below plus sign-ups kept in localStorage).
+// Replace the whole store with your auth API (POST /api/auth/<role>/login and /register) before going live.
+export const DEMO: Record<Role, Account> = {
+  customer: { role: "customer", name: "Alex Morgan", email: "customer@storefront.test", password: "customer123" },
+  employee: { role: "employee", name: "Sam Rivera", email: "staff@storefront.test", employeeId: "EMP-1001", password: "staff1234" },
+};
+
+const USER_KEY = "storefront.user";
+const ACCOUNTS_KEY = "storefront.accounts";
 const Ctx = createContext<Auth | null>(null);
 
 export const homeFor = (role: Role) => (role === "employee" ? "/staff" : "/");
 
+function storedAccounts(): Account[] {
+  try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) ?? "[]"); } catch { return []; }
+}
+const allAccounts = () => [...Object.values(DEMO), ...storedAccounts()];
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    try { return JSON.parse(sessionStorage.getItem(KEY) ?? "null"); } catch { return null; }
+    try { return JSON.parse(sessionStorage.getItem(USER_KEY) ?? "null"); } catch { return null; }
   });
 
   const save = (u: User | null) => {
     setUser(u);
-    try { u ? sessionStorage.setItem(KEY, JSON.stringify(u)) : sessionStorage.removeItem(KEY); } catch { /* private mode */ }
+    try { u ? sessionStorage.setItem(USER_KEY, JSON.stringify(u)) : sessionStorage.removeItem(USER_KEY); } catch { /* private mode */ }
   };
 
   const signIn: Auth["signIn"] = async (role, identity, password) => {
-    // shortcut: mock auth that accepts any non-empty credentials and keeps the user in sessionStorage;
-    // replace with a fetch to the auth API (e.g. POST /api/auth/<role>/login) before going live.
-    if (!identity || !password) throw new Error("Enter your credentials.");
-    save({ role, name: identity.split("@")[0] });
+    const id = identity.trim().toLowerCase();
+    const match = allAccounts().find(
+      (a) => a.role === role && (a.email.toLowerCase() === id || a.employeeId?.toLowerCase() === id) && a.password === password,
+    );
+    if (!match) throw new Error("The email or password is incorrect.");
+    save({ role, name: match.name, email: match.email });
   };
 
   const signUp: Auth["signUp"] = async (name, email, password) => {
-    // shortcut: mock registration that creates no account; replace with POST /api/auth/customer/register.
-    if (!name || !email || !password) throw new Error("Fill in every field.");
-    save({ role: "customer", name });
+    const e = email.trim().toLowerCase();
+    if (allAccounts().some((a) => a.email.toLowerCase() === e)) throw new Error("An account with this email already exists.");
+    try {
+      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify([...storedAccounts(), { role: "customer", name, email: e, password }]));
+    } catch { /* private mode: the account only lasts this session */ }
+    save({ role: "customer", name, email: e });
   };
 
   return <Ctx.Provider value={{ user, signIn, signUp, signOut: () => save(null) }}>{children}</Ctx.Provider>;

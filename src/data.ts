@@ -26,3 +26,13 @@ export const orders: Order[] = [
   { id: "#1038", customer: "Mia Johnson", total: 74, status: "Paid", date: "Nov 14" },
   { id: "#1037", customer: "Ethan Brown", total: 32, status: "Fulfilled", date: "Nov 12" },
 ];
+
+export const salesByDay = [
+  { day: "Mon", total: 420 }, { day: "Tue", total: 310 }, { day: "Wed", total: 560 }, { day: "Thu", total: 480 },
+  { day: "Fri", total: 690 }, { day: "Sat", total: 820 }, { day: "Sun", total: 540 },
+];
+
+export const unitsSold: Record<string, number> = {
+  "everyday-tote": 212, "ceramic-mug": 148, "canvas-cap": 131, "linen-shirt": 96,
+  "desk-lamp": 74, "notebook-set": 188, "water-bottle": 120, "wool-beanie": 83,
+};

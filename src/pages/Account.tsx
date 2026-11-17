@@ -6,7 +6,7 @@ export function Account() {
   const { user } = useAuth();
   return (
     <div className="wrap page">
-      <h1>Hi, <span className="cap">{user?.name}</span></h1>
+      <h1>Hi, {user?.name.split(" ")[0]}</h1>
       <h2>Recent orders</h2>
       {/* shortcut: shows the shared mock orders; fetch this customer's own orders once there is an API. */}
       <div className="cardbox"><OrdersTable rows={orders.slice(0, 3)} /></div>

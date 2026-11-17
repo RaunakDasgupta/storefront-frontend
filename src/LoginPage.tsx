@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { homeFor, useAuth, type Role } from "./auth";
+import { DEMO, homeFor, useAuth, type Role } from "./auth";
 import { AuthShell } from "./AuthShell";
 
 const ROLES: Role[] = ["customer", "employee"];
@@ -76,6 +76,7 @@ export function LoginPage() {
     <AuthShell
       title="Log in"
       subtitle={c.subtitle}
+      staff={role === "employee"}
       // staff accounts are provisioned, not self-served
       foot={role === "customer" ? <>New to Storefront? <Link to="/signup" className="link">Create account</Link></> : undefined}
     >
@@ -141,6 +142,22 @@ export function LoginPage() {
           </>
         )}
       </form>
+
+      {/* sample credentials only show in `npm run dev`, never in a production build */}
+      {import.meta.env.DEV && (
+        <aside className="demo" aria-label="Demo account">
+          <strong>Demo {role} account</strong>
+          <dl>
+            <dt>{role === "employee" ? "Email or ID" : "Email"}</dt>
+            <dd>{DEMO[role].email}{DEMO[role].employeeId && ` or ${DEMO[role].employeeId}`}</dd>
+            <dt>Password</dt>
+            <dd>{DEMO[role].password}</dd>
+          </dl>
+          <button type="button" className="linkbtn" onClick={() => { setIdentity(DEMO[role].email); setPassword(DEMO[role].password); setError(null); }}>
+            Fill in these details
+          </button>
+        </aside>
+      )}
     </AuthShell>
   );
 }
