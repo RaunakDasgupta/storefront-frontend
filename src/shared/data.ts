@@ -42,6 +42,11 @@ export const seedProducts: Product[] = [
   { id: "shampoo-carton", sku: "BLK-SHM-24", name: "Shampoo", size: "Carton of 24 x 500 ml", price: 4299, category: "Personal care", blurb: "Twenty-four 500 ml bottles per carton.", stock: 18, channel: "bulk", image: "/products/shampoo.jpg" },
   { id: "tissue-carton", sku: "BLK-TIS-36", name: "Tissue box", size: "Carton of 36 boxes", price: 4899, category: "Paper essentials", blurb: "Thirty-six boxes of 200 sheets.", stock: 22, channel: "bulk", image: "/products/tissue-box.jpg" },
   { id: "toilet-paper-carton", sku: "BLK-TPR-48", name: "Toilet paper", size: "Carton of 48 rolls", price: 5999, category: "Paper essentials", blurb: "Forty-eight rolls per carton.", stock: 14, channel: "bulk", image: "/products/toilet-paper.jpg" },
+  { id: "sponge-carton", sku: "BLK-SPG-24", name: "Sponge scrubbers", size: "Carton of 24 x 6 pack", price: 1799, category: "Kitchen essentials", blurb: "Twenty-four 6-packs of dish sponges.", stock: 26, channel: "bulk", image: "/products/sponge-scrubbers.jpg" },
+  { id: "wipes-carton", sku: "BLK-WIP-24", name: "Baby wipes", size: "Carton of 24 x 72 wipes", price: 2799, category: "Baby care", blurb: "Twenty-four packs of 72 gentle wipes.", stock: 16, channel: "bulk", image: "/products/baby-wipes.jpg" },
+  { id: "dog-treats-carton", sku: "BLK-DTR-20", name: "Dog treats", size: "Carton of 20 x 200 g", price: 3499, category: "Pet care", blurb: "Twenty bags of crunchy bone treats.", stock: 12, channel: "bulk", image: "/products/dog-treats.jpg" },
+  { id: "cookies-carton", sku: "BLK-CKS-36", name: "Choco chip cookies", size: "Carton of 36 x 200 g", price: 3999, category: "Snacks & drinks", blurb: "Thirty-six packs of choco chip cookies.", stock: 20, channel: "bulk", image: "/products/choco-cookies.jpg" },
+  { id: "coffee-carton", sku: "BLK-COF-12", name: "Coffee beans", size: "Carton of 12 x 250 g", price: 4299, category: "Snacks & drinks", blurb: "Twelve 250 g bags of medium-roast beans.", stock: 8, channel: "bulk", image: "/products/coffee-beans.jpg" },
 ];
 
 export const money = (n: number) => n.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });

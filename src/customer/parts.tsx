@@ -58,19 +58,23 @@ export function CategoryCard({ name, count, cover, to, onClick }: { name: string
   );
 }
 
-/** The bulk-orders call to action. Sits near the top of the Retail page so it is hard to miss. */
-export function BulkBanner() {
+/** A loud call to action that switches between Retail and Bulk orders. Sits right under the intro so it is hard to miss. */
+export function ChannelBanner({ channel }: { channel: "retail" | "bulk" }) {
   const { products } = useCatalog();
-  const packs = products.filter((p) => p.channel === "bulk").length;
+  const bulk = channel === "retail"; // the Retail page promotes Bulk, and the other way round
+  const count = products.filter((p) => p.channel === (bulk ? "bulk" : "retail")).length;
+  const c = bulk
+    ? { to: "/bulk", tag: "Bulk orders", icon: "truck", title: "Buying in bulk?", text: "Order complete cartons or pallets for your business.", cta: `Browse ${count} bulk packs`, image: "/products/bulk-cartons.jpg" }
+    : { to: "/", tag: "Retail", icon: "bag", title: "Need single packs?", text: "Shop individual items for your home.", cta: `Browse ${count} retail products`, image: "/products/tissue-box.jpg" } as const;
   return (
-    <section className="bulk-banner" aria-labelledby="bulk-title">
-      <img className="pimg" src="/products/bulk-cartons.jpg" alt="" width={1000} height={420} loading="eager" />
+    <section className="bulk-banner" aria-labelledby="banner-title">
+      <img className="pimg" src={c.image} alt="" width={1000} height={420} loading="eager" />
       <div className="bulk-copy">
-        <span className="bulk-tag"><Icon name="truck" /> Bulk orders</span>
-        <h2 id="bulk-title">Buying in bulk?</h2>
-        <p>Order complete cartons or pallets for your business.</p>
+        <span className="bulk-tag"><Icon name={c.icon as "truck" | "bag"} /> {c.tag}</span>
+        <h2 id="banner-title">{c.title}</h2>
+        <p>{c.text}</p>
       </div>
-      <Link to="/bulk" className="btn light inline">Browse {packs} bulk packs</Link>
+      <Link to={c.to} className="btn light inline">{c.cta}</Link>
     </section>
   );
 }

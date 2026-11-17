@@ -126,6 +126,17 @@
   & .cat-card-label strong { font-size: 17px; letter-spacing: -.01em; }
   & .cat-card-label small { font-size: 12.5px; color: rgba(255,255,255,.85); }
 
+
+  /* browse by category: tabs above one grid whose contents swap in place */
+  & .browse { margin-bottom: 8px; }
+  & .browse-tabs { display: flex; gap: 8px; margin: 0 -4px 18px; padding: 2px 4px 6px; overflow-x: auto; scrollbar-width: none; }
+  & .browse-tabs button { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; transition: border-color .2s, background .2s, color .2s; }
+  & .browse-tabs button span { font-size: 12px; font-weight: 500; color: var(--muted); }
+  & .browse-tabs button:hover { border-color: var(--green); }
+  & .browse-tabs button[aria-selected="true"] { background: var(--green); border-color: var(--green); color: #fff; }
+  & .browse-tabs button[aria-selected="true"] span { color: rgba(255,255,255,.85); }
+  & .browse-grid { min-height: 340px; align-content: start; animation: browse-in .28s ease-out; }
+
   /* overview rows: one scrollable row per category, then a See more tile */
   & .row-section { margin-bottom: 24px; }
   & .row-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }

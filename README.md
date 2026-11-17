@@ -43,18 +43,16 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 
 | Route                | What it does                                                                       |
 | -------------------- | ---------------------------------------------------------------------------------- |
-| `/`                  | Retail: intro, a bulk-orders banner, a Featured row, two category rows, a See all categories button and the cart panel |
-| `/categories`        | All categories as cards                                                            |
-| `/bulk`              | Bulk orders: cartons and pallets, with the same cart panel                         |
+| `/`                  | Retail: intro, a banner to Bulk orders, a Featured row, a Browse by category grid, a See all categories button and the cart panel |
+| `/categories`        | All categories as cards (`/categories?channel=bulk` for Bulk orders)               |
+| `/bulk`              | Bulk orders: the same layout as Retail (banner to Retail, Featured, Browse by category) for cartons and pallets |
 | `/orders`            | My orders: every order with its items and a 4-step progress tracker (log in required) |
 | `/cart`              | The cart as its own page (used on phones)                                          |
 | `/products/:id`      | Product page                                                                       |
 | `/login`, `/signup`  | Customer log in and create account                                                 |
 | `/account`           | Profile (log in required)                                                          |
 
-- **Landing page:** the bulk banner sits right under the intro so it is hard to miss. Product cards turn into a quantity stepper once an item is in the cart. The cart panel sits beside the products and scrolls away with the page (the header's Cart link is always visible).
-- **Categories dropdown:** next to Retail and Bulk orders in the header, **Categories** opens a card-based dropdown with a photo card per category (7 so far: Home care, Personal care, Paper essentials, Kitchen essentials, Baby care, Pet care, Snacks & drinks) and a **See all categories** link. A card opens that category's full list (`/?category=Home%20care`).
-- **Landing page:** a Featured row of up to 5 scrollable products (arrow buttons on desktop, swipe on touch), then the first two categories as their own rows, then a **See all categories** button that opens `/categories`. A row with more than 5 products ends with a **See more** tile, and each row header has a **See all** link. Featured's opens the full list (`/?view=all`); **Back to featured** returns to the landing page. A search from the header also shows the full list.
+- **Landing page (Retail and Bulk orders share it):** a banner to the other channel, a Featured row of up to 5 scrollable products (arrow buttons on desktop, swipe on touch) with a **See more** tile, then **Browse by category**: a row of category tabs above one product grid. Choosing a tab swaps the products in that same grid in place (no page change, arrow keys move between tabs), with a link to that category's full list. A **See all categories** button opens `/categories`. Featured's **See all** opens the full list (`/?view=all`), and **Back to featured** returns. A search from the header also shows the full list.
 - **Search** is in the header and filters the page you are on (`/?q=soap`, `/bulk?q=carton`). Category tabs use `?category=`.
 - **Demo checkout:** "Place demo order" needs a log in, then creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. No payment is collected. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the staff portal. Orders only move forward when staff change their status (see below).
 - The profile avatar is blank when logged out and opens a menu with Log in and Create account. Once you are logged in it shows your initial and the menu lists **My orders**, **My account** and **Log out**. There is no My orders tab in the header.
@@ -88,7 +86,7 @@ On `/staff/import`, drop in a `.csv` file with one SKU per row. You see a previe
 | `description`      | no       | Up to 500 characters. Blank keeps the current description.    |
 | `logo_url`         | no       | Full `http(s)` link to the product logo or photo. Blank keeps the current image. |
 
-Header names are case-insensitive, and `logo`, `image` and `image_url` also work for `logo_url`. Files are limited to 1 MB and 1,000 rows. Rows with problems are skipped and nothing is ever deleted. Imported SKUs appear in the storefront and the Products table straight away. They are stored in this browser's `localStorage`, and **Reset catalog** on the Products page restores the 23 sample products. Logo links load straight from the URL you give, so the image host must allow hotlinking; a broken link shows a placeholder icon.
+Header names are case-insensitive, and `logo`, `image` and `image_url` also work for `logo_url`. Files are limited to 1 MB and 1,000 rows. Rows with problems are skipped and nothing is ever deleted. Imported SKUs appear in the storefront and the Products table straight away. They are stored in this browser's `localStorage`, and **Reset catalog** on the Products page restores the 28 sample products. Logo links load straight from the URL you give, so the image host must allow hotlinking; a broken link shows a placeholder icon.
 
 ## Prices and photos
 

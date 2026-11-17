@@ -1,26 +1,33 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../../shared/catalog";
 import type { Channel, Product } from "../../shared/data";
 import { Icon } from "../../shared/ui";
-import { useCategories } from "../categories";
-import { BulkBanner, CartPanel, ProductCard } from "../parts";
+import { useCategories, type CategoryInfo } from "../categories";
+import { CartPanel, ChannelBanner, ProductCard } from "../parts";
 
 const COPY: Record<Channel, { title: string; lede: string }> = {
   retail: { title: "Everyday essentials, ready to order", lede: "Shop individual items or choose bulk packs for your business." },
   bulk: { title: "Bulk orders", lede: "Order complete cartons or pallets for your business." },
 };
 
-const ROW_LIMIT = 5; // products shown in a section row before "See more"
-const CATEGORY_ROWS = 2; // category sections shown on the landing page after Featured
+const FEATURES: Record<Channel, { icon: "bag" | "truck" | "orders"; text: string }[]> = {
+  retail: [
+    { icon: "bag", text: "Retail packs for the home" },
+    { icon: "truck", text: "Bulk cartons for business" },
+    { icon: "orders", text: "Track every order" },
+  ],
+  bulk: [
+    { icon: "truck", text: "Cartons for shops and offices" },
+    { icon: "bag", text: "Single packs in Retail" },
+    { icon: "orders", text: "Track every order" },
+  ],
+};
 
-const FEATURES = [
-  { icon: "bag", text: "Retail packs for the home" },
-  { icon: "truck", text: "Bulk cartons for business" },
-  { icon: "orders", text: "Track every order" },
-] as const;
+const ROW_LIMIT = 5; // products shown in the Featured row before "See more"
+const BROWSE_LIMIT = 8; // products shown in the category grid before "See all"
 
-/** One section of the overview: a single scrollable row of up to 5 products, then a See more tile that opens the full list. */
+/** One scrollable row of up to 5 products, then a See more tile that opens the full list. */
 function Section({ title, items, to }: { title: string; items: Product[]; to: string }) {
   const track = useRef<HTMLDivElement>(null);
   const shown = items.slice(0, ROW_LIMIT);
@@ -54,14 +61,56 @@ function Section({ title, items, to }: { title: string; items: Product[]; to: st
   );
 }
 
+/** Category tabs above one product grid. Choosing a tab swaps the products in that same grid, with no page change. */
+function CategoryBrowser({ categories }: { categories: CategoryInfo[] }) {
+  const [active, setActive] = useState(categories[0]?.name);
+  const current = categories.find((c) => c.name === active) ?? categories[0];
+  if (!current) return null;
+  const items = current.products.slice(0, BROWSE_LIMIT);
+
+  return (
+    <section className="browse" aria-labelledby="browse-title">
+      <div className="row-head">
+        <h2 id="browse-title">Browse by category</h2>
+        <Link to={current.to} className="link">See all {current.count} in {current.name}</Link>
+      </div>
+      <div className="browse-tabs" role="tablist" aria-label="Categories">
+        {categories.map((c) => (
+          <button
+            key={c.name}
+            id={`browse-tab-${c.name}`}
+            role="tab"
+            aria-selected={c.name === current.name}
+            aria-controls="browse-panel"
+            tabIndex={c.name === current.name ? 0 : -1}
+            onClick={() => setActive(c.name)}
+            onKeyDown={(e) => {
+              if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+              const i = categories.indexOf(c) + (e.key === "ArrowRight" ? 1 : -1);
+              const next = categories[(i + categories.length) % categories.length];
+              setActive(next.name);
+              document.getElementById(`browse-tab-${next.name}`)?.focus();
+            }}
+          >
+            {c.name}<span>{c.count}</span>
+          </button>
+        ))}
+      </div>
+      <div className="grid browse-grid" id="browse-panel" role="tabpanel" aria-labelledby={`browse-tab-${current.name}`} key={current.name}>
+        {items.map((p) => <ProductCard key={p.id} p={p} />)}
+      </div>
+    </section>
+  );
+}
+
 /**
- * Retail (/) and Bulk orders (/bulk).
- * Landing: a Featured row, then (Retail only) two category rows and a See all categories button.
- * A category, a search (?q=) or See more (?view=all) shows the full list instead. Categories themselves live in the header dropdown.
+ * Retail (/) and Bulk orders (/bulk) share one layout:
+ * intro, a banner to the other channel, Featured, a category grid you can toggle, and a See all categories button.
+ * A category, a search (?q=) or See more (?view=all) shows the full list instead. Categories also live in the header dropdown.
  */
 export function Shop({ channel }: { channel: Channel }) {
   const { products } = useCatalog();
-  const categories = useCategories();
+  const categories = useCategories(channel);
   const [params] = useSearchParams();
   const q = (params.get("q") ?? "").trim().toLowerCase();
   const category = params.get("category") ?? "";
@@ -80,30 +129,24 @@ export function Shop({ channel }: { channel: Channel }) {
         <div className="wrap">
           <h1>{COPY[channel].title}</h1>
           <p className="lede">{COPY[channel].lede}</p>
-          {channel === "retail" && (
-            <ul className="features">
-              {FEATURES.map((f) => <li key={f.text}><Icon name={f.icon} />{f.text}</li>)}
-            </ul>
-          )}
+          <ul className="features">
+            {FEATURES[channel].map((f) => <li key={f.text}><Icon name={f.icon} />{f.text}</li>)}
+          </ul>
         </div>
       </section>
 
       <div className="wrap page">
-        {channel === "retail" && <BulkBanner />}
+        <ChannelBanner channel={channel} />
 
         <div className="shop">
           <div className="shop-main">
             {overview ? (
               <>
                 <Section title="Featured" items={inChannel} to={`${base}?view=all`} />
-                {channel === "retail" && (
-                  <>
-                    {categories.slice(0, CATEGORY_ROWS).map((c) => <Section key={c.name} title={c.name} items={c.products} to={c.to} />)}
-                    <div className="all-cats">
-                      <Link to="/categories" className="btn secondary inline">See all {categories.length} categories</Link>
-                    </div>
-                  </>
-                )}
+                <CategoryBrowser categories={categories} />
+                <div className="all-cats">
+                  <Link to={channel === "bulk" ? "/categories?channel=bulk" : "/categories"} className="btn secondary inline">See all {categories.length} categories</Link>
+                </div>
               </>
             ) : (
               <>

@@ -31,14 +31,16 @@ function AccountMenu() {
 
 /** Card-based Categories dropdown next to Retail and Bulk orders. */
 function CategoriesMenu() {
-  const categories = useCategories();
+  const { pathname } = useLocation();
+  const channel = pathname.startsWith("/bulk") ? "bulk" : "retail";
+  const categories = useCategories(channel);
   return (
     <Menu label="Categories" kind="panel" buttonClass="navbtn" panelClass="mega" trigger={<>Categories <Icon name="chevD" /></>}>
       {(close) => (
         <>
           <div className="mega-head">
-            <strong>Shop by category</strong>
-            <Link to="/categories" className="link" onClick={close}>See all categories</Link>
+            <strong>{channel === "bulk" ? "Bulk packs by category" : "Shop by category"}</strong>
+            <Link to={channel === "bulk" ? "/categories?channel=bulk" : "/categories"} className="link" onClick={close}>See all categories</Link>
           </div>
           <div className="mega-grid">
             {categories.map((c) => <CategoryCard key={c.name} name={c.name} count={c.count} cover={c.cover} to={c.to} onClick={close} />)}
