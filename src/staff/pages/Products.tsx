@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../../shared/catalog";
-import { money } from "../../shared/data";
-import { Icon, ProductImage } from "../../shared/ui";
+import { Icon } from "../../shared/ui";
+import { ProductGrid } from "../ProductGrid";
 
 export function StaffProducts() {
   const { products, customized, reset } = useCatalog();
@@ -42,27 +42,7 @@ export function StaffProducts() {
           <input type="search" aria-label="Search products" placeholder="Search name or SKU" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
-      <section className="cardbox">
-        {rows.length === 0 ? <p className="muted pad">No products match.</p> : (
-          <div className="tablewrap">
-            <table>
-              <thead><tr><th>Product</th><th>SKU</th><th className="hide-sm">Category</th><th className="hide-sm">Type</th><th className="num">Price</th><th className="num">Inventory</th></tr></thead>
-              <tbody>
-                {rows.map((p) => (
-                  <tr key={p.id}>
-                    <td><span className="rank-name"><ProductImage p={p} className="thumb" small eager /><span>{p.name}{p.size && <span className="muted"> · {p.size}</span>}</span></span></td>
-                    <td>{p.sku}</td>
-                    <td className="hide-sm">{p.category}</td>
-                    <td className="hide-sm"><span className={p.channel === "bulk" ? "badge paid" : "badge"}>{p.channel === "bulk" ? "Bulk" : "Retail"}</span></td>
-                    <td className="num">{money(p.price)}</td>
-                    <td className="num">{p.stock === 0 ? <span className="badge pending">Out of stock</span> : p.stock < 10 ? <span className="badge pending">{p.stock} left</span> : p.stock}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      {rows.length === 0 ? <p className="muted">No products match.</p> : <ProductGrid products={rows} />}
     </>
   );
 }
