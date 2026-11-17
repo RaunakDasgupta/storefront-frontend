@@ -13,7 +13,7 @@ export function ProductPage() {
     <div className="wrap page">
       <p className="crumbs"><Link to="/">Home</Link> / {p.name}</p>
       <div className="detail">
-        <ProductImage p={p} />
+        <ProductImage p={p} alt={p.name} eager />
         <div>
           <h1>{p.name}</h1>
           <Price p={p} />
@@ -25,7 +25,7 @@ export function ProductPage() {
           </button>
           <details>
             <summary>Shipping and returns</summary>
-            <p className="muted">Orders over $50 ship free. Return unused items within 30 days for a full refund.</p>
+            <p className="muted">Orders over ₹999 ship free. Return unused items within 30 days for a full refund.</p>
           </details>
           <details>
             <summary>Care</summary>

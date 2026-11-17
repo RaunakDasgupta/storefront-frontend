@@ -27,7 +27,7 @@ export function CartPage() {
           if (!p) return null;
           return (
             <li key={id}>
-              <ProductImage p={p} />
+              <ProductImage p={p} small />
               <div>
                 <Link to={`/products/${id}`} className="pname">{p.name}</Link>
                 <p className="muted">{money(p.price)}</p>

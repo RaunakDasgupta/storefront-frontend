@@ -34,9 +34,15 @@ Then open http://localhost:5173.
 
 Layouts are responsive from small phones (about 360px) up to wide desktops: the storefront switches to two-column grids and a static header on phones, and the staff portal's sidebar becomes a horizontal tab strip below 900px.
 
-The storefront follows Shopify's Dawn theme (announcement bar, hero with floating badges, scrolling ticker, category tiles, best-seller carousel, sale banner, reviews, newsletter) and the staff portal follows the Polaris admin look (dark top bar, light navigation, cards with a sales chart, top products and low-stock lists). There are no image assets yet, so product photos are emoji on soft backgrounds.
+The storefront follows Shopify's Dawn theme (announcement bar, hero with floating badges, scrolling ticker, category tiles, best-seller carousel, sale banner, reviews, newsletter) and the staff portal follows the Polaris admin look (dark top bar, light navigation, cards with a sales chart, top products and low-stock lists).
 
 Signed-out visitors who open a protected route are sent to `/login` and returned afterwards. Signing in with the wrong role sends you to your own home (`/` for customers, `/staff` for employees).
+
+## Prices and photos
+
+Prices are in Indian rupees (₹), formatted with the `en-IN` locale (for example ₹1,23,456), and free shipping starts at ₹999. Product photos are in `public/products/<product-id>.jpg` (900x900) with 200px versions in `public/products/thumbs/` for tables and the cart. To change a photo, replace the file with the same name.
+
+The photos are free stock images from [Unsplash](https://unsplash.com), used under the [Unsplash License](https://unsplash.com/license). They are placeholders: swap in your own product photography before launch.
 
 ## Demo logins
 

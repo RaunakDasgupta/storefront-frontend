@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { categories, products, type Product } from "../data";
 import { Icon, ProductCard, ProductImage } from "../components";
 
 const PERKS = [
-  { icon: "truck", title: "Free shipping", text: "On every order over $50." },
+  { icon: "truck", title: "Free shipping", text: "On every order over ₹999." },
   { icon: "undo", title: "30-day returns", text: "Changed your mind? Send it back." },
   { icon: "lock", title: "Secure checkout", text: "Your payment details stay private." },
 ] as const;
 
-const TICKER = ["Free shipping over $50", "30-day returns", "New arrivals every week", "Secure checkout", "Made to last"];
+const TICKER = ["Free shipping over ₹999", "30-day returns", "New arrivals every week", "Secure checkout", "Made to last"];
 
 // shortcut: sample reviews; load real ones from your reviews provider.
 const REVIEWS = [
@@ -99,10 +99,10 @@ export function Home() {
           </div>
           <div className="collage-wrap">
             <div className="collage" aria-hidden="true">
-              {[products[0], products[2], products[4]].map((p) => <ProductImage key={p.id} p={p} />)}
+              {[products[0], products[2], products[4]].map((p) => <ProductImage key={p.id} p={p} eager />)}
             </div>
             <span className="float top"><Icon name="star" filled /> 4.9 from 2,300 reviews</span>
-            <span className="float bottom"><Icon name="truck" /> Free shipping over $50</span>
+            <span className="float bottom"><Icon name="truck" /> Free shipping over ₹999</span>
           </div>
         </div>
       </section>
@@ -120,10 +120,12 @@ export function Home() {
             const first = products.find((p) => p.category === c)!;
             const n = products.filter((p) => p.category === c).length;
             return (
-              <button key={c} className="coltile" style={{ "--h": first.hue } as CSSProperties} aria-pressed={filter === c} onClick={() => pick(c)}>
-                <span className="em" aria-hidden="true">{first.emoji}</span>
-                <strong>{c}</strong>
-                <small>{n} {n === 1 ? "product" : "products"}</small>
+              <button key={c} className="coltile" aria-pressed={filter === c} onClick={() => pick(c)}>
+                <ProductImage p={first} />
+                <span className="coltile-label">
+                  <strong>{c}</strong>
+                  <small>{n} {n === 1 ? "product" : "products"}</small>
+                </span>
               </button>
             );
           })}
@@ -138,8 +140,8 @@ export function Home() {
       <section className="wrap block">
         <div className="promo">
           <div className="promo-art" aria-hidden="true">
-            <span style={{ "--h": 50 } as CSSProperties}>{products[3].emoji}</span>
-            <span style={{ "--h": 340 } as CSSProperties}>{products[4].emoji}</span>
+            <ProductImage p={products[3]} />
+            <ProductImage p={products[4]} />
           </div>
           <div className="promo-copy">
             <h2>Up to 25% off select pieces</h2>

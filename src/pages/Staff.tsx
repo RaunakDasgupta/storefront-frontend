@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth";
+import { ProductImage } from "../components";
 import { money, orders, products, salesByDay, unitsSold, type Order } from "../data";
 
 export function OrdersTable({ rows }: { rows: Order[] }) {
@@ -49,7 +50,7 @@ function TopProducts() {
       <ul className="ranklist">
         {ranked.map((p) => (
           <li key={p.id}>
-            <span className="rank-name">{p.emoji} {p.name}</span>
+            <span className="rank-name"><ProductImage p={p} className="thumb" small eager />{p.name}</span>
             <span className="muted">{unitsSold[p.id]} sold</span>
             <span className="meter" aria-hidden="true"><i style={{ width: `${(unitsSold[p.id] / max) * 100}%` }} /></span>
           </li>
@@ -67,7 +68,7 @@ function LowStock() {
       <ul className="ranklist">
         {low.map((p) => (
           <li key={p.id} className="stockrow">
-            <span className="rank-name">{p.emoji} {p.name}</span>
+            <span className="rank-name"><ProductImage p={p} className="thumb" small eager />{p.name}</span>
             <span className="badge pending">{p.stock === 0 ? "Out of stock" : `${p.stock} left`}</span>
           </li>
         ))}
@@ -127,7 +128,7 @@ export function StaffProducts() {
             <tbody>
               {products.map((p) => (
                 <tr key={p.id}>
-                  <td>{p.emoji} {p.name}</td><td>{p.category}</td><td className="num">{money(p.price)}</td>
+                  <td><span className="rank-name"><ProductImage p={p} className="thumb" small eager />{p.name}</span></td><td>{p.category}</td><td className="num">{money(p.price)}</td>
                   <td className="num">{p.stock === 0 ? <span className="badge pending">Out of stock</span> : p.stock < 10 ? <span className="badge pending">{p.stock} left</span> : p.stock}</td>
                 </tr>
               ))}

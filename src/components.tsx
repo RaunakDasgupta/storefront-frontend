@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { homeFor, useAuth } from "./auth";
 import { useCart } from "./cart";
@@ -22,12 +22,18 @@ export function Icon({ name, filled }: { name: keyof typeof ICONS; filled?: bool
   return <svg className={filled ? "icon fill" : "icon"} viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>;
 }
 
-/** Soft studio-style placeholder until real product photos exist. */
-export function ProductImage({ p }: { p: Product }) {
+/** Product photo from public/products. Decorative (alt="") unless the caller passes alt, e.g. beside a name link. */
+export function ProductImage({ p, alt = "", className = "", eager, small }: { p: Product; alt?: string; className?: string; eager?: boolean; small?: boolean }) {
   return (
-    <div className="pimg" style={{ "--h": p.hue } as CSSProperties} aria-hidden="true">
-      <span className="em">{p.emoji}</span>
-    </div>
+    <img
+      className={`pimg ${className}`.trim()}
+      src={small ? `/products/thumbs/${p.id}.jpg` : `/products/${p.id}.jpg`}
+      alt={alt}
+      width={small ? 200 : 900}
+      height={small ? 200 : 900}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+    />
   );
 }
 
@@ -107,7 +113,7 @@ export function StoreLayout() {
   const { count } = useCart();
   return (
     <>
-      <div className="announce">Free shipping on orders over $50</div>
+      <div className="announce">Free shipping on orders over ₹999</div>
       <header className="topbar">
         <Link to="/" className="logo"><span className="logo-mark" aria-hidden="true">S</span><span className="logo-text">Storefront</span></Link>
         <nav className="topnav" aria-label="Main">
