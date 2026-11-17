@@ -90,6 +90,27 @@
   & .in-cart .qty button { width: 44px; height: 38px; font-size: 18px; color: var(--forest); }
   & .in-cart .qty span { font-weight: 700; color: var(--forest); }
 
+
+  /* overview rows: one scrollable row per category, then a See more tile */
+  & .row-section { margin-bottom: 28px; }
+  & .row-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  & .row-head h2 { font-size: 20px; font-weight: 750; }
+  & .row-wrap { position: relative; }
+  & .row-track { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 4px 4px 14px; margin-inline: -4px; }
+  & .row-track::-webkit-scrollbar { display: none; }
+  & .row-item { flex: 0 0 188px; scroll-snap-align: start; }
+  & .see-more { flex: 0 0 150px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 16px; border: 1.5px dashed var(--green-line); border-radius: 16px; background: var(--green-tint); color: var(--forest); text-align: center; text-decoration: none; transition: background .2s, border-color .2s, transform .2s; }
+  & .see-more:hover { border-color: var(--green); background: #e2f2de; transform: translateY(-2px); }
+  & .see-more strong { font-size: 16px; }
+  & .see-more > span:last-child { font-size: 12.5px; color: var(--muted); }
+  & .see-more-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--green); color: #fff; }
+  & .row-btn { position: absolute; top: 96px; z-index: 2; width: 38px; height: 38px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: #fff; color: var(--ink); box-shadow: 0 2px 10px rgba(0,0,0,.22); cursor: pointer; transition: transform .15s; }
+  & .row-btn:hover { transform: scale(1.08); }
+  & .row-btn .icon { width: 20px; height: 20px; }
+  & .row-btn.prev { left: -14px; }
+  & .row-btn.next { right: -14px; }
+  @media (hover: none) { & .row-btn { display: none; } }
+
   /* cart: a calm card beside the products. It scrolls away with the page. */
   & .cartpanel { padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 6px 22px rgba(0,0,0,.05); }
   & .cart-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
@@ -172,6 +193,9 @@
     & .cats button { flex: none; white-space: nowrap; }
     & .grid { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
     & .pcard { padding: 8px 8px 10px; }
+    & .row-item { flex-basis: calc(50% - 8px); min-width: 150px; }
+    & .see-more { flex-basis: 130px; }
+    & .row-btn { display: none; }
     & .intro { padding-block: 28px 24px; }
     & .features li { font-size: 12.5px; padding: 6px 12px 6px 8px; }
     & .bulk-banner { flex-direction: column; align-items: flex-start; padding: 22px 20px; gap: 16px; }
