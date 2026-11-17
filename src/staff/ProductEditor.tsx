@@ -13,6 +13,9 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
 
   useEffect(() => { ref.current?.showModal(); }, []);
 
+  // close through our own state instead of waiting for the dialog's "close" event
+  const close = () => { ref.current?.close(); onClose(); };
+
   const bind = (k: keyof ProductForm) => ({ id: `pe-${k}`, value: f[k], error: errors[k], onChange: (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value }) });
 
   function onSubmit(e: FormEvent) {
@@ -22,7 +25,7 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
     const firstBad = Object.keys(found)[0];
     if (!value) return document.getElementById(`pe-${firstBad}`)?.focus();
     update(product.id, value);
-    ref.current?.close();
+    close();
   }
 
   return (
@@ -30,8 +33,9 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
       ref={ref}
       className="editor"
       aria-labelledby="pe-title"
+      onCancel={(e) => { e.preventDefault(); close(); }}
       onClose={onClose}
-      onClick={(e) => { if (e.target === ref.current) ref.current?.close(); }}
+      onClick={(e) => { if (e.target === ref.current) close(); }}
     >
       <form onSubmit={onSubmit} noValidate>
         <header className="editor-head">
@@ -39,7 +43,7 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
             <h2 id="pe-title">Edit product</h2>
             <p className="muted">{product.sku}, the SKU, can't be changed.</p>
           </div>
-          <button type="button" className="editor-x" aria-label="Close" onClick={() => ref.current?.close()}>×</button>
+          <button type="button" className="editor-x" aria-label="Close" onClick={close}>×</button>
         </header>
 
         <div className="editor-body">
@@ -69,7 +73,7 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
         </div>
 
         <footer className="editor-foot">
-          <button type="button" className="btn secondary inline" onClick={() => ref.current?.close()}>Cancel</button>
+          <button type="button" className="btn secondary inline" onClick={close}>Cancel</button>
           <button type="submit" className="btn primary inline">Save changes</button>
         </footer>
       </form>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Field } from "../shared/ui";
 import { AuthLayout } from "./AuthLayout";
 import { useCustomer } from "./auth";
@@ -19,6 +19,7 @@ function validate(v: Values): Errors {
 export function Signup() {
   const { signUp } = useCustomer();
   const navigate = useNavigate();
+  const from = (useLocation().state as { from?: string } | null)?.from;
   const [v, setV] = useState<Values>({ first: "", last: "", email: "", password: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState("");
@@ -37,7 +38,7 @@ export function Signup() {
     setBusy(true);
     try {
       await signUp(`${v.first.trim()} ${v.last.trim()}`, v.email.trim(), v.password);
-      navigate("/", { replace: true });
+      navigate(from ?? "/", { replace: true });
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {

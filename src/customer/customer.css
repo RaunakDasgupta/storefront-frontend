@@ -238,6 +238,19 @@
   & .toast-x { flex: none; width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: #cfcfcf; font-size: 20px; line-height: 1; cursor: pointer; }
   & .toast-x:hover { background: rgba(255,255,255,.12); color: #fff; }
 
+  /* login popup at checkout */
+  & .dlg { width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 0; border-radius: 18px; color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.35); overflow: auto; }
+  & .dlg::backdrop { background: rgba(10, 30, 8, .45); }
+  & .dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 22px 22px 0; }
+  & .dlg-head h2 { margin: 0; font-size: 21px; font-weight: 750; letter-spacing: -.01em; }
+  & .dlg-head p { margin: 4px 0 0; font-size: 13.5px; }
+  & .dlg-x { flex: none; width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; }
+  & .dlg-x:hover { background: var(--gray); color: var(--ink); }
+  & .dlg-body { padding: 18px 22px 8px; }
+  & .dlg-demo { margin: 14px 0 0; font-size: 12.5px; color: var(--muted); }
+  & .dlg-demo code { padding: 1px 5px; border-radius: 4px; background: var(--gray); font-size: 12px; }
+  & .dlg-foot { padding: 14px 22px 20px; text-align: center; color: var(--muted); font-size: 13.5px; }
+
   /* product page */
   & .crumbs { margin: 0 0 20px; color: var(--muted); }
   & .crumbs a { text-decoration: none; }

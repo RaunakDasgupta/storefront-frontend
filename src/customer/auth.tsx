@@ -2,11 +2,12 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
-type User = { name: string; email: string };
+export type User = { name: string; email: string };
 type Account = User & { password: string };
 type Auth = {
   user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  /** Resolves with the signed-in user, or rejects with a message to show. */
+  signIn: (email: string, password: string) => Promise<User>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signOut: () => void;
 };
@@ -38,7 +39,9 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     const e = email.trim().toLowerCase();
     const match = all().find((a) => a.email.toLowerCase() === e && a.password === password);
     if (!match) throw new Error("The email or password is incorrect.");
-    save({ name: match.name, email: match.email });
+    const u = { name: match.name, email: match.email };
+    save(u);
+    return u;
   };
 
   const signUp: Auth["signUp"] = async (name, email, password) => {

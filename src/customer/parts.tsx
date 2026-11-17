@@ -1,11 +1,13 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { LoginDialog } from "./LoginDialog";
 import { useToast } from "./toast";
 import { useCatalog } from "../shared/catalog";
 import { money, type Product } from "../shared/data";
 import { STEPS } from "../shared/orderlogic";
 import { useOrders } from "../shared/orders";
 import { Icon, ProductImage } from "../shared/ui";
-import { useCustomer } from "./auth";
+import { useCustomer, type User } from "./auth";
 import { useCart } from "./cart";
 
 /** Stock line under the size: green when plentiful, amber when low, red when gone. */
@@ -86,17 +88,16 @@ export function CartPanel() {
   const { byId } = useCatalog();
   const { user } = useCustomer();
   const { place } = useOrders();
-  const navigate = useNavigate();
   const toast = useToast();
+  const [asking, setAsking] = useState(false);
   const { pathname } = useLocation();
   const items = lines.flatMap((l) => { const p = byId(l.id); return p ? [{ p, qty: l.qty }] : []; });
   const mixed = items.some(({ p }) => p.channel === "bulk") && items.some(({ p }) => p.channel === "retail");
 
-  function placeOrder() {
-    if (!user) return navigate("/login", { state: { from: pathname } });
-    // retail and bulk items are fulfilled separately, so they become separate orders
+  /** Places the order(s) for this customer. Retail and bulk items are fulfilled separately, so they become separate orders. */
+  function placeFor(who: User) {
     const line = ({ p, qty }: (typeof items)[number]) => ({ id: p.id, name: p.name, size: p.size, qty, price: p.price });
-    const made = place({ name: user.name, email: user.email }, [
+    const made = place({ name: who.name, email: who.email }, [
       { channel: "retail", items: items.filter(({ p }) => p.channel === "retail").map(line) },
       { channel: "bulk", items: items.filter(({ p }) => p.channel === "bulk").map(line) },
     ]);
@@ -106,6 +107,9 @@ export function CartPanel() {
       ? { message: `Orders placed: ${made.map((o) => o.id).join(" and ")}`, actionLabel: "View orders", to: "/orders" }
       : { message: `Order ${made[0].id} placed`, actionLabel: "View order", to: "/orders" });
   }
+
+  // logged out: ask them to log in right here instead of sending them to another page
+  const placeOrder = () => (user ? placeFor(user) : setAsking(true));
 
   return (
     <aside className="cartpanel" aria-label="Your cart">
@@ -140,6 +144,7 @@ export function CartPanel() {
       <button className="btn primary" disabled={items.length === 0} onClick={placeOrder}>Place demo order</button>
       {mixed && <p className="demo-note"><Icon name="truck" /> Retail and bulk items are placed as two separate orders.</p>}
       <p className="demo-note"><Icon name="info" /> Demo checkout. No payment collected.</p>
+      {asking && <LoginDialog from={pathname} onClose={() => setAsking(false)} onLoggedIn={(u) => { setAsking(false); placeFor(u); }} />}
     </aside>
   );
 }
