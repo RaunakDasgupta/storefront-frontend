@@ -41,40 +41,4 @@ export const imageSrc = (p: Product, small = false) => {
   return small && p.image.startsWith("/products/") ? p.image.replace("/products/", "/products/thumbs/") : p.image;
 };
 
-export type Order = { id: string; customer: string; total: number; status: "Paid" | "Fulfilled" | "Pending"; date: string };
-
-/** "Today" for the sample data; the dashboard shows the 7 days ending here. */
-export const TODAY = "2026-11-17";
-
-export const orders: Order[] = [
-  { id: "#1052", customer: "Ava Patel", total: 9499, status: "Pending", date: "2026-11-17" },
-  { id: "#1051", customer: "Liam Chen", total: 3499, status: "Paid", date: "2026-11-17" },
-  { id: "#1050", customer: "Sofia Rossi", total: 12999, status: "Fulfilled", date: "2026-11-16" },
-  { id: "#1049", customer: "Noah Williams", total: 1299, status: "Fulfilled", date: "2026-11-16" },
-  { id: "#1048", customer: "Mia Johnson", total: 5999, status: "Paid", date: "2026-11-15" },
-  { id: "#1047", customer: "Ethan Brown", total: 1999, status: "Fulfilled", date: "2026-11-15" },
-  { id: "#1046", customer: "Isha Rao", total: 4499, status: "Fulfilled", date: "2026-11-14" },
-  { id: "#1045", customer: "Arjun Mehta", total: 7998, status: "Paid", date: "2026-11-14" },
-  { id: "#1044", customer: "Kavya Nair", total: 2798, status: "Fulfilled", date: "2026-11-13" },
-  { id: "#1043", customer: "Rohan Das", total: 4999, status: "Fulfilled", date: "2026-11-13" },
-  { id: "#1042", customer: "Neha Gupta", total: 3499, status: "Paid", date: "2026-11-12" },
-  { id: "#1041", customer: "Vikram Singh", total: 1598, status: "Fulfilled", date: "2026-11-12" },
-  { id: "#1040", customer: "Ananya Iyer", total: 5498, status: "Fulfilled", date: "2026-11-11" },
-  { id: "#1039", customer: "Dev Patel", total: 799, status: "Fulfilled", date: "2026-11-11" },
-];
-
 export const fmtDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-
-/** Revenue counts paid and fulfilled orders; pending ones are not revenue yet. */
-export const revenueOf = (list: Order[]) => list.filter((o) => o.status !== "Pending").reduce((s, o) => s + o.total, 0);
-
-/** Revenue per day for the 7 days ending TODAY. Its total equals revenueOf(orders) while every order falls in that window. */
-export function salesByDay(list: Order[] = orders) {
-  const end = new Date(`${TODAY}T00:00:00`);
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(end);
-    d.setDate(end.getDate() - (6 - i));
-    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    return { iso, day: d.toLocaleDateString("en-IN", { weekday: "short" }), total: revenueOf(list.filter((o) => o.date === iso)) };
-  });
-}

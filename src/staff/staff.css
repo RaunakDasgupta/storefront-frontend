@@ -38,8 +38,8 @@
   & th { background: #f7faf6; }
   & tbody tr:hover { background: #fafcf9; }
   & .toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
-  & .tabs { display: flex; gap: 24px; }
-  & .tabs button { padding: 10px 0; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; background: none; font: inherit; font-weight: 550; color: var(--muted); cursor: pointer; }
+  & .tabs { display: flex; gap: 24px; max-width: 100%; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+  & .tabs button { flex: none; padding: 10px 0; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; background: none; font: inherit; font-weight: 550; color: var(--muted); cursor: pointer; }
   & .tabs button:hover { color: var(--ink); }
   & .tabs button span { margin-left: 4px; font-weight: 500; opacity: .7; }
   & .tabs button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--green); }
@@ -48,17 +48,10 @@
   & .search input { padding-left: 38px; border-color: #cfcfcf; border-radius: 999px; }
 
   /* overview */
-  & .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+  & .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
   & .kpi { margin: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px; }
   & .kpi p { margin: 0; }
   & .kpi strong { font-size: 28px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; }
-  & .dash-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-  & .chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; height: 220px; padding: 8px 20px 16px; }
-  & .bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; }
-  & .bar { width: 100%; max-width: 44px; min-height: 4px; border-radius: 6px 6px 2px 2px; background: var(--green); transition: background .15s; }
-  & .bar-col:hover .bar { background: var(--green-dark); }
-  & .bar-val { font-size: 11px; color: var(--muted); white-space: nowrap; }
-  & .bar-day { font-size: 12px; color: var(--muted); }
   & .todo { list-style: none; margin: 0; padding: 0 8px 12px; }
   & .todo a { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; text-decoration: none; }
   & .todo a:hover { background: var(--green-tint); }
@@ -84,23 +77,17 @@
   & .empty { text-align: center; padding-top: 48px; }
   & .empty .btn { margin-top: 16px; }
 
-  /* tablet: the tabs become a bottom bar, easy to reach with a thumb */
+  /* tablet and phone: the tabs drop to a second row, still at the top */
   @media (max-width: 900px) {
-    & .atop { padding: 10px 16px; gap: 12px; }
+    & .atop { position: static; flex-wrap: wrap; gap: 10px 12px; padding: 10px 16px 0; }
     & .atop-r { margin-left: auto; }
-    & .side { position: fixed; inset: auto 0 0 0; z-index: 15; gap: 0; margin: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); }
-    & .side a { flex: 1; flex-direction: column; justify-content: center; gap: 2px; height: auto; min-height: 52px; padding: 0 4px; font-size: 12px; border: 0; border-radius: 10px; }
-    & .side a .icon { display: block; width: 22px; height: 22px; }
-    & .side a.active { color: var(--green); background: var(--green-tint); }
-    & .admin-main { padding: 20px 16px 96px; }
-    & .dash-grid { grid-template-columns: minmax(0, 1fr); }
-    & .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    & .side { order: 3; flex: 1 1 100%; gap: 22px; margin: 0; overflow-x: auto; scrollbar-width: none; }
+    & .admin-main { padding: 20px 16px 48px; }
   }
   @media (max-width: 640px) {
     & h1 { font-size: 26px; }
     & .pill { display: none; }
-    & .bar-val { display: none; }
-    & .kpi strong { font-size: 24px; }
+      & .kpi strong { font-size: 24px; }
     & .search { flex: 1 1 100%; margin-bottom: 12px; }
     & .toolbar { gap: 0; }
     & .tabs { width: 100%; gap: 20px; }

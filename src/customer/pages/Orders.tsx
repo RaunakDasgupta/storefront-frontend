@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { money } from "../../shared/data";
 import { OrderSummary } from "../parts";
-import { itemCount, useOrders } from "../orders";
+import { itemCount } from "../../shared/orderlogic";
+import { useMyOrders } from "../myOrders";
 
 export function Orders() {
-  const { orders } = useOrders();
+  const orders = useMyOrders();
   return (
     <div className="wrap page narrow">
       <h1>My orders</h1>

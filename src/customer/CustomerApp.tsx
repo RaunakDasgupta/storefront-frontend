@@ -1,11 +1,11 @@
 // The customer storefront ("Everyday Market"). Shares only data (catalog) and UI primitives with the staff app.
 import { Route, Routes } from "react-router-dom";
 import { CatalogProvider } from "../shared/catalog";
+import { OrdersProvider } from "../shared/orders";
 import { RequireCustomer, CustomerAuthProvider } from "./auth";
 import { CartProvider } from "./cart";
 import { CustomerLayout } from "./Layout";
 import { Login } from "./Login";
-import { OrdersProvider } from "./orders";
 import { Signup } from "./Signup";
 import { Account } from "./pages/Account";
 import { CartPage } from "./pages/Cart";

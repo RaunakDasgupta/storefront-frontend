@@ -1,7 +1,7 @@
 // Run with `npm test` (Node's built-in test runner, no extra packages).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { orders, revenueOf, salesByDay } from "./data.ts";
+import { SAMPLE_ORDERS, isOrder, makeOrder, nextOrderId, orderTotal, revenueOf } from "./orderlogic.ts";
 import { parseCsv, parseSkuCsv } from "./csv.ts";
 
 test("parseCsv handles quotes, escaped quotes, newlines in cells, CRLF and a BOM", () => {
@@ -55,7 +55,23 @@ test("compare_at_price is kept only when it is higher than the price", () => {
   assert.equal(rows[1].was, undefined);
 });
 
-test("the 7-day sales chart adds up to the revenue stat", () => {
-  const total = salesByDay().reduce((s, d) => s + d.total, 0);
-  assert.equal(total, revenueOf(orders));
+test("a new order gets the next id, a total from its items, and starts at Confirmed", () => {
+  assert.equal(nextOrderId(SAMPLE_ORDERS), "ORD_1002");
+  const items = [{ id: "detergent", name: "Detergent", qty: 2, price: 249 }, { id: "shampoo", name: "Shampoo", qty: 1, price: 199 }];
+  const order = makeOrder(SAMPLE_ORDERS, { name: "A", email: "a@b.co" }, items, "2026-11-17");
+  assert.equal(order.id, "ORD_1002");
+  assert.equal(order.total, 697);
+  assert.equal(order.step, 0);
+  assert.equal(nextOrderId([order, ...SAMPLE_ORDERS]), "ORD_1003");
+});
+
+test("sample orders are valid and their totals match their items", () => {
+  assert.ok(SAMPLE_ORDERS.every(isOrder));
+  assert.ok(SAMPLE_ORDERS.every((o) => o.total === orderTotal(o.items)));
+  assert.equal(revenueOf(SAMPLE_ORDERS), SAMPLE_ORDERS.reduce((s, o) => s + o.total, 0));
+});
+
+test("isOrder rejects malformed stored data", () => {
+  assert.equal(isOrder({ id: "x" }), false);
+  assert.equal(isOrder(null), false);
 });

@@ -4,7 +4,8 @@ import { money, type Product } from "../shared/data";
 import { Icon, ProductImage } from "../shared/ui";
 import { useCustomer } from "./auth";
 import { useCart } from "./cart";
-import { STEPS, STEP_MESSAGE, itemCount, useOrders, type CustomerOrder } from "./orders";
+import { STEPS, STEP_MESSAGE, itemCount, type Order } from "../shared/orderlogic";
+import { useOrders } from "../shared/orders";
 
 /** Stock line under the size: green when plentiful, amber when low, red when gone. */
 export function StockNote({ stock }: { stock: number }) {
@@ -40,7 +41,7 @@ export function CartPanel() {
 
   function placeOrder() {
     if (!user) return navigate("/login", { state: { from: pathname } });
-    place(items.map(({ p, qty }) => ({ id: p.id, name: p.name, size: p.size, qty, price: p.price })));
+    place({ name: user.name, email: user.email }, items.map(({ p, qty }) => ({ id: p.id, name: p.name, size: p.size, qty, price: p.price })));
     clear();
     navigate("/orders");
   }
@@ -92,7 +93,7 @@ export function Tracker({ step }: { step: number }) {
   );
 }
 
-export function OrderSummary({ o }: { o: CustomerOrder }) {
+export function OrderSummary({ o }: { o: Order }) {
   return (
     <div className="order">
       <div>

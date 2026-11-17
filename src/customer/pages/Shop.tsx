@@ -2,7 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../../shared/catalog";
 import type { Channel } from "../../shared/data";
 import { CartPanel, OrderSummary, ProductCard } from "../parts";
-import { useOrders } from "../orders";
+import { useMyOrders } from "../myOrders";
 
 const COPY: Record<Channel, { title: string; lede: string }> = {
   retail: { title: "Everyday essentials, ready to order", lede: "Shop individual items or choose bulk packs for your business." },
@@ -12,7 +12,7 @@ const COPY: Record<Channel, { title: string; lede: string }> = {
 /** Retail (/) and Bulk orders (/bulk): category tabs, product grid and the cart beside it. Search comes from the header (?q=). */
 export function Shop({ channel }: { channel: Channel }) {
   const { products } = useCatalog();
-  const { orders } = useOrders();
+  const orders = useMyOrders();
   const [params, setParams] = useSearchParams();
   const q = (params.get("q") ?? "").trim().toLowerCase();
   const category = params.get("category") ?? "";

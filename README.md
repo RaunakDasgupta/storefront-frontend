@@ -24,7 +24,7 @@ Then open http://localhost:5173 (customer) or http://localhost:5173/staff (staff
 | `npm run build`     | Typecheck, then build into `dist/`    |
 | `npm run preview`   | Serve the production build locally    |
 | `npm run typecheck` | Run `tsc` without emitting files      |
-| `npm test`          | Run the CSV parser and data tests     |
+| `npm test`          | Run the CSV parser and order tests    |
 
 ## Demo logins
 
@@ -52,20 +52,20 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 | `/account`           | Profile (log in required)                                                          |
 
 - **Search** is in the header and filters the page you are on (`/?q=soap`, `/bulk?q=carton`). Category tabs use `?category=`.
-- **Demo checkout:** "Place demo order" needs a log in, then creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. No payment is collected. The first order, `ORD_1001`, is a sample at **Preparing**. Orders do not advance on their own, since fulfilment would come from a warehouse system.
+- **Demo checkout:** "Place demo order" needs a log in, then creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. No payment is collected. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the staff portal. Orders do not advance on their own, since fulfilment would come from a warehouse system.
 - The profile avatar is blank when logged out and opens a menu with Log in and Create account.
 
 ## Staff portal
 
 | Route             | What it does                                                                               |
 | ----------------- | ------------------------------------------------------------------------------------------ |
-| `/staff`          | Overview: revenue, orders, average order, SKUs, a 7-day sales chart, what needs attention, recent orders |
-| `/staff/orders`   | Orders with status tabs (All, Pending, Paid, Fulfilled) and search                         |
+| `/staff`          | Overview: revenue, order count, what needs attention (new orders, low stock) and recent orders |
+| `/staff/orders`   | Every order placed in the storefront, with status tabs (All, Confirmed, Preparing, Packed, Ready for dispatch) and search |
 | `/staff/products` | Products with SKU, size, retail or bulk type, price and inventory, a low-stock filter and search |
 | `/staff/import`   | Import SKUs from CSV                                                                       |
 | `/staff/login`    | Staff log in                                                                               |
 
-The staff portal uses the same look as the storefront (white, green, rounded, underline tabs). Navigation is a row of tabs in the header on desktop and a bottom tab bar on phones, so the four sections are always one tap away. "Needs attention" on the overview links straight to the pending orders and the low-stock products. The sales chart is built from the same sample orders as the Revenue card, so the two always agree.
+The staff portal uses the same look as the storefront (white, green, rounded, underline tabs). The navigation is always a row of tabs at the top, on phones too, so the four sections are one tap away. "Needs attention" on the overview links straight to the new orders and the low-stock products.
 
 ### Importing SKUs from CSV
 
@@ -100,10 +100,12 @@ src/App.tsx             Loads the customer or staff app by URL (/staff/* is staf
 src/shared/             Only what both apps genuinely share
   data.ts               Sample products and orders, money formatting
   catalog.tsx           Catalog state (sample products plus CSV imports)
-  csv.ts, csv.test.ts   CSV parser and validation, with tests
+  orders.tsx            Orders store used by both apps (customers place, staff read)
+  orderlogic.ts         Order types, sample orders and pure helpers
+  csv.ts, csv.test.ts   CSV parser and validation, with tests (also covers the order helpers)
   ui.tsx                Icon, Logo, ProductImage, Field, Menu, OrdersTable
   base.css              Colour tokens and primitives (buttons, forms, tables)
-src/customer/           The storefront: auth, cart, orders, layout, pages, customer.css
+src/customer/           The storefront: auth, cart, layout, pages, customer.css
 src/staff/              The staff portal: auth, layout, pages, staff.css
 ```
 
@@ -114,6 +116,6 @@ Each app's stylesheet is scoped to its own root (`.cx` for the customer app, `.s
 There is no backend yet, so this is a working prototype:
 
 - **Accounts are mocked in the browser.** The demo accounts and any customer sign-ups (plaintext passwords in `localStorage`) are checked in `src/customer/auth.tsx` and `src/staff/auth.tsx`, and each session lives in its own `sessionStorage` key. Do not deploy as is: replace `signIn()` and `signUp()` with calls to your auth API.
-- **Products and the staff orders are sample data** in `src/shared/data.ts`. Imported SKUs and customer demo orders persist in `localStorage` only, and customer orders are separate from the staff order list.
+- **Products and the staff orders are sample data** in `src/shared/data.ts`. Imported SKUs and all orders persist in `localStorage` only. The customer and staff apps read and write the same orders store, so an order placed in the storefront shows up in the staff portal (even in another open tab).
 - **Checkout is a demo**: no payment is collected. The cart lives in memory and resets on reload.
 - "Forgot password" and company SSO are placeholders.

@@ -1,15 +1,17 @@
 import { useSearchParams } from "react-router-dom";
-import { orders, type Order } from "../../shared/data";
+import { STEPS } from "../../shared/orderlogic";
+import { useOrders } from "../../shared/orders";
 import { Icon, OrdersTable } from "../../shared/ui";
 
-const STATUSES = ["All", "Pending", "Paid", "Fulfilled"] as const;
+const FILTERS = ["All", ...STEPS] as const;
 
-/** Orders list. The status filter and search live in the URL, so the dashboard can link straight to "pending". */
+/** Every order placed in the storefront. The status filter and search live in the URL, so the overview can link straight to "Confirmed". */
 export function StaffOrders() {
+  const { orders } = useOrders();
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
   const statusParam = params.get("status") ?? "All";
-  const status = (STATUSES as readonly string[]).includes(statusParam) ? statusParam : "All";
+  const status = (FILTERS as readonly string[]).includes(statusParam) ? statusParam : "All";
 
   function update(patch: Record<string, string | null>) {
     const next = new URLSearchParams(params);
@@ -18,15 +20,15 @@ export function StaffOrders() {
   }
 
   const needle = q.trim().toLowerCase();
-  const rows = orders.filter((o: Order) => (status === "All" || o.status === status) && (!needle || `${o.id} ${o.customer}`.toLowerCase().includes(needle)));
-  const count = (s: string) => orders.filter((o) => s === "All" || o.status === s).length;
+  const rows = orders.filter((o) => (status === "All" || STEPS[o.step] === status) && (!needle || `${o.id} ${o.customer.name} ${o.customer.email}`.toLowerCase().includes(needle)));
+  const count = (s: string) => orders.filter((o) => s === "All" || STEPS[o.step] === s).length;
 
   return (
     <>
       <div className="page-head"><h1>Orders</h1></div>
       <div className="toolbar">
         <div className="tabs" role="group" aria-label="Filter by status">
-          {STATUSES.map((s) => (
+          {FILTERS.map((s) => (
             <button key={s} aria-pressed={status === s} onClick={() => update({ status: s === "All" ? null : s })}>{s} <span>{count(s)}</span></button>
           ))}
         </div>

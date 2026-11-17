@@ -1,6 +1,7 @@
 // The staff portal. Shares only data (catalog) and UI primitives with the customer app.
 import { Link, Route, Routes } from "react-router-dom";
 import { CatalogProvider } from "../shared/catalog";
+import { OrdersProvider } from "../shared/orders";
 import { RequireStaff, StaffAuthProvider } from "./auth";
 import { StaffLayout } from "./Layout";
 import { StaffLogin } from "./Login";
@@ -24,16 +25,18 @@ export default function StaffApp() {
     <div className="sx">
       <StaffAuthProvider>
         <CatalogProvider>
-          <Routes>
-            <Route path="login" element={<StaffLogin />} />
-            <Route element={<RequireStaff><StaffLayout /></RequireStaff>}>
-              <Route index element={<Overview />} />
-              <Route path="orders" element={<StaffOrders />} />
-              <Route path="products" element={<StaffProducts />} />
-              <Route path="import" element={<ImportPage />} />
-              <Route path="*" element={<StaffNotFound />} />
-            </Route>
-          </Routes>
+          <OrdersProvider>
+            <Routes>
+              <Route path="login" element={<StaffLogin />} />
+              <Route element={<RequireStaff><StaffLayout /></RequireStaff>}>
+                <Route index element={<Overview />} />
+                <Route path="orders" element={<StaffOrders />} />
+                <Route path="products" element={<StaffProducts />} />
+                <Route path="import" element={<ImportPage />} />
+                <Route path="*" element={<StaffNotFound />} />
+              </Route>
+            </Routes>
+          </OrdersProvider>
         </CatalogProvider>
       </StaffAuthProvider>
     </div>
