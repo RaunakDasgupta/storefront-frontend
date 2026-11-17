@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-
-type Role = "customer" | "employee";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { homeFor, useAuth, type Role } from "./auth";
 
 const ROLES: Role[] = ["customer", "employee"];
 
@@ -21,13 +21,10 @@ const COPY: Record<Role, { label: string; subtitle: string; identityLabel: strin
   },
 };
 
-// shortcut: no backend wired yet, so this always fails; replace with a fetch to the auth API
-// (e.g. POST /api/auth/<role>/login) and redirect to the storefront or staff portal on success.
-async function signIn(_role: Role, _identity: string, _password: string): Promise<void> {
-  throw new Error("Sign-in isn't connected to a backend yet.");
-}
-
 export function LoginPage() {
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+  const from = (useLocation().state as { from?: string } | null)?.from;
   const [role, setRole] = useState<Role>("customer");
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
@@ -66,6 +63,7 @@ export function LoginPage() {
     setBusy(true);
     try {
       await signIn(role, id, password);
+      navigate(from ?? homeFor(role), { replace: true });
     } catch (err) {
       fail(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -75,10 +73,10 @@ export function LoginPage() {
 
   return (
     <main className="shell">
-      <div className="brand" aria-label="Storefront">
+      <Link to="/" className="brand" aria-label="Storefront home">
         <span className="brand-mark" aria-hidden="true">S</span>
         <span className="brand-name">Storefront</span>
-      </div>
+      </Link>
 
       <section className="card" data-role={role}>
         <h1>Sign in</h1>

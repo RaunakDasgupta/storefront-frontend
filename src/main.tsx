@@ -1,10 +1,20 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { LoginPage } from "./LoginPage";
+import { BrowserRouter } from "react-router-dom";
+import { App } from "./App";
+import { AuthProvider } from "./auth";
+import { CartProvider } from "./cart";
 import "./styles.css";
+import "./store.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <LoginPage />
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          <App />
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </StrictMode>,
 );
