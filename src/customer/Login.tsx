@@ -1,11 +1,13 @@
 import { useRef, useState, type FormEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthLayout } from "./AuthLayout";
 import { DEMO_CUSTOMER, useCustomer } from "./auth";
+import { useAuthDialog } from "./authDialog";
 
 export function Login() {
   const { signIn } = useCustomer();
   const navigate = useNavigate();
+  const authDialog = useAuthDialog();
   const from = (useLocation().state as { from?: string } | null)?.from;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +32,7 @@ export function Login() {
   }
 
   return (
-    <AuthLayout title="Log in" subtitle="Log in to place and track your orders." foot={<>New to Everyday Market? <Link to="/signup" className="link">Create account</Link></>}>
+    <AuthLayout title="Log in" subtitle="Log in to place and track your orders." foot={<>New to Everyday Market? <button type="button" className="linkbtn" onClick={() => authDialog.open({ mode: "signup", onSuccess: () => navigate(from ?? "/", { replace: true }) })}>Create account</button></>}>
       <form onSubmit={onSubmit} noValidate>
         <div className="field">
           <label htmlFor="email">Email</label>

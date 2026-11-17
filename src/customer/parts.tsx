@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { LoginDialog } from "./LoginDialog";
+import { Link } from "react-router-dom";
+import { useAuthDialog } from "./authDialog";
 import { useToast } from "./toast";
 import { useCatalog } from "../shared/catalog";
 import { money, type Product } from "../shared/data";
@@ -89,8 +88,7 @@ export function CartPanel() {
   const { user } = useCustomer();
   const { place } = useOrders();
   const toast = useToast();
-  const [asking, setAsking] = useState(false);
-  const { pathname } = useLocation();
+  const authDialog = useAuthDialog();
   const items = lines.flatMap((l) => { const p = byId(l.id); return p ? [{ p, qty: l.qty }] : []; });
   const mixed = items.some(({ p }) => p.channel === "bulk") && items.some(({ p }) => p.channel === "retail");
 
@@ -108,8 +106,8 @@ export function CartPanel() {
       : { message: `Order ${made[0].id} placed`, actionLabel: "View order", to: "/orders" });
   }
 
-  // logged out: ask them to log in right here instead of sending them to another page
-  const placeOrder = () => (user ? placeFor(user) : setAsking(true));
+  // logged out: log in or sign up in a popup right here instead of sending them to another page
+  const placeOrder = () => (user ? placeFor(user) : authDialog.open({ mode: "login", reason: "place your order", onSuccess: placeFor }));
 
   return (
     <aside className="cartpanel" aria-label="Your cart">
@@ -144,7 +142,6 @@ export function CartPanel() {
       <button className="btn primary" disabled={items.length === 0} onClick={placeOrder}>Place demo order</button>
       {mixed && <p className="demo-note"><Icon name="truck" /> Retail and bulk items are placed as two separate orders.</p>}
       <p className="demo-note"><Icon name="info" /> Demo checkout. No payment collected.</p>
-      {asking && <LoginDialog from={pathname} onClose={() => setAsking(false)} onLoggedIn={(u) => { setAsking(false); placeFor(u); }} />}
     </aside>
   );
 }

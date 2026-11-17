@@ -1,12 +1,14 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Icon, Logo, Menu } from "../shared/ui";
 import { useCustomer } from "./auth";
+import { useAuthDialog } from "./authDialog";
 import { useCart } from "./cart";
 import { useCategories } from "./categories";
 import { CategoryCard } from "./parts";
 
 function AccountMenu() {
   const { user, signOut } = useCustomer();
+  const authDialog = useAuthDialog();
   return (
     <Menu label="Account menu" trigger={<span className={user ? "avatar" : "avatar blank"}>{user?.name[0]?.toUpperCase()}</span>}>
       {(close) =>
@@ -20,8 +22,8 @@ function AccountMenu() {
         ) : (
           <>
             <div className="dd-head"><strong>Welcome</strong><span className="muted">Log in to place and track orders.</span></div>
-            <Link role="menuitem" className="dd-primary" to="/login" onClick={close}>Log in</Link>
-            <Link role="menuitem" to="/signup" onClick={close}>Create account</Link>
+            <button role="menuitem" className="dd-primary" onClick={() => { close(); authDialog.open({ mode: "login" }); }}>Log in</button>
+            <button role="menuitem" onClick={() => { close(); authDialog.open({ mode: "signup" }); }}>Create account</button>
           </>
         )
       }
