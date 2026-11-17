@@ -13,6 +13,7 @@ const ICONS = {
   upload: <><path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v4h16v-4" /></>,
   truck: <><path d="M2 6h11v10H2z" /><path d="M13 9h5l3 3v4h-8" /><circle cx="7" cy="18" r="2" /><circle cx="17" cy="18" r="2" /></>,
   undo: <><path d="M9 14L4 9l5-5" /><path d="M4 9h11a5 5 0 010 10h-3" /></>,
+  chevD: <path d="M6 9l6 6 6-6" />,
   chevL: <path d="M15 5l-7 7 7 7" />,
   chevR: <path d="M9 5l7 7-7 7" />,
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
@@ -70,8 +71,10 @@ export function Field({ id, label, error, ...input }: { id: string; label: strin
   );
 }
 
-/** Avatar button with a dropdown. Closes on Escape or an outside click. */
-export function Menu({ label, trigger, children }: { label: string; trigger: ReactNode; children: (close: () => void) => ReactNode }) {
+/** Button with a dropdown. Closes on Escape or an outside click. `kind="menu"` is a list of actions; `kind="panel"` is a richer panel such as a card grid. */
+export function Menu({ label, trigger, children, buttonClass = "iconbtn", panelClass = "", kind = "menu" }: {
+  label: string; trigger: ReactNode; children: (close: () => void) => ReactNode; buttonClass?: string; panelClass?: string; kind?: "menu" | "panel";
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -90,8 +93,8 @@ export function Menu({ label, trigger, children }: { label: string; trigger: Rea
 
   return (
     <div className="menu" ref={ref}>
-      <button className="iconbtn" aria-label={label} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{trigger}</button>
-      {open && <div className="dropdown" role="menu">{children(() => setOpen(false))}</div>}
+      <button className={buttonClass} aria-label={label} aria-haspopup={kind === "menu" ? "menu" : "true"} aria-expanded={open} onClick={() => setOpen((o) => !o)}>{trigger}</button>
+      {open && <div className={`dropdown ${panelClass}`.trim()} role={kind === "menu" ? "menu" : "group"} aria-label={kind === "panel" ? label : undefined}>{children(() => setOpen(false))}</div>}
     </div>
   );
 }

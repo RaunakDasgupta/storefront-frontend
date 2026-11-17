@@ -46,9 +46,9 @@ export function ProductCard({ p }: { p: Product }) {
 }
 
 /** A standalone category card: photo, name and product count, linking to that category's full list. */
-export function CategoryCard({ name, count, cover, to }: { name: string; count: number; cover: Product; to: string }) {
+export function CategoryCard({ name, count, cover, to, onClick }: { name: string; count: number; cover: Product; to: string; onClick?: () => void }) {
   return (
-    <Link to={to} className="cat-card">
+    <Link to={to} className="cat-card" onClick={onClick}>
       <ProductImage p={cover} />
       <span className="cat-card-label">
         <strong>{name}</strong>

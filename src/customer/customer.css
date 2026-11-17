@@ -14,9 +14,9 @@
   & .search .icon { position: absolute; left: 12px; top: 9px; width: 20px; height: 20px; color: var(--muted); pointer-events: none; }
   & .search input { padding-left: 38px; border-color: #cfcfcf; border-radius: 999px; }
   & .topnav { display: flex; align-items: center; gap: 22px; }
-  & .topnav a { display: inline-flex; align-items: center; height: 40px; text-decoration: none; color: var(--muted); font-weight: 550; border-bottom: 2px solid transparent; border-top: 2px solid transparent; }
-  & .topnav a:hover { color: var(--ink); }
-  & .topnav a.active { color: var(--ink); border-bottom-color: var(--green); }
+  & .topnav > a { display: inline-flex; align-items: center; height: 40px; text-decoration: none; color: var(--muted); font-weight: 550; border-bottom: 2px solid transparent; border-top: 2px solid transparent; }
+  & .topnav > a:hover { color: var(--ink); }
+  & .topnav > a.active { color: var(--ink); border-bottom-color: var(--green); }
   & .tools { display: flex; align-items: center; gap: 14px; margin-left: auto; }
   & .cartlink { display: inline-flex; align-items: center; gap: 8px; height: 40px; text-decoration: none; font-weight: 550; }
   & .cartlink .icon { color: var(--green); }
@@ -88,20 +88,36 @@
 
   /* categories: a proper strip of photo chips */
   & .block-title { font-size: 20px; font-weight: 750; margin: 0 0 12px; }
-  & .cat-strip { display: flex; gap: 10px; margin: 0 -4px 30px; padding: 4px 4px 6px; overflow-x: auto; scrollbar-width: none; }
-  & .cat-chip { flex: none; display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: inherit; font-weight: 650; color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s, background .2s, transform .2s; }
-  & .cat-chip .pimg { width: 40px; height: 40px; aspect-ratio: 1; border-radius: 50%; }
-  & .cat-chip small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
-  & .cat-chip:hover { border-color: var(--green); box-shadow: 0 4px 14px rgba(43,138,30,.15); transform: translateY(-1px); }
-  & .cat-chip[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
-  & .cat-chip[aria-pressed="true"] small { color: rgba(255,255,255,.85); }
   & .list-head h2 { display: flex; align-items: baseline; gap: 10px; }
   & .list-head h2 .muted { font-size: 13px; font-weight: 500; }
 
 
+
+  /* Categories dropdown button sits with the other tabs */
+  & .navbtn { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0; border: 0; border-top: 2px solid transparent; border-bottom: 2px solid transparent; background: none; font: inherit; font-weight: 550; color: var(--muted); cursor: pointer; }
+  & .navbtn:hover, & .navbtn[aria-expanded="true"] { color: var(--ink); }
+  & .navbtn[aria-expanded="true"] { border-bottom-color: var(--green); }
+  & .navbtn .icon { width: 16px; height: 16px; transition: transform .2s; }
+  & .navbtn[aria-expanded="true"] .icon { transform: rotate(180deg); }
+
+  /* card-based categories panel */
+  /* anchored to the header (not the button) so it never runs off the right edge */
+  & .topnav .menu { position: static; }
+  & .mega { left: 28px; right: auto; width: min(760px, calc(100% - 56px)); padding: 18px; border-radius: 16px; }
+  & .mega-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  & .mega-head strong { font-size: 16px; }
+  & .mega-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  & .mega .cat-card { aspect-ratio: auto; height: 116px; border-radius: 12px; }
+  & .mega .cat-card-label { padding: 10px 12px; }
+  & .mega .cat-card-label strong { font-size: 14px; }
+  & .mega .cat-card-label small { font-size: 11.5px; }
+  & .all-cats { display: flex; justify-content: center; margin: 4px 0 8px; }
+  & .cat-cards-page { margin-top: 24px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+  & .cat-cards-page .cat-card { aspect-ratio: 1 / .85; }
+
   /* standalone category cards */
   & .cat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 16px; margin-bottom: 32px; }
-  & .cat-card { position: relative; isolation: isolate; display: flex; align-items: flex-end; aspect-ratio: 1 / .82; overflow: hidden; border-radius: 16px; color: #fff; text-decoration: none; background: var(--gray); box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: transform .25s, box-shadow .25s; }
+  & .cat-card { position: relative; isolation: isolate; width: 100%; align-self: start; display: flex; align-items: flex-end; aspect-ratio: 1 / .82; overflow: hidden; border-radius: 16px; color: #fff; text-decoration: none; background: var(--gray); box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: transform .25s, box-shadow .25s; }
   & .cat-card .pimg { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; aspect-ratio: auto; transition: transform .5s; }
   & .cat-card::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(8,40,6,.78), rgba(8,40,6,.1) 62%); }
   & .cat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(0,0,0,.18); }
@@ -194,7 +210,8 @@
 
   /* tablet */
   @media (max-width: 1000px) {
-    & .topbar { position: static; flex-wrap: wrap; gap: 12px 20px; }
+    & .topbar { position: relative; flex-wrap: wrap; gap: 12px 20px; }
+    & .topbar { position: relative; }
     & .search { order: 3; flex: 1 1 260px; min-width: 0; }
     & .topnav { order: 4; flex: 0 0 auto; margin-left: 0; }
     & .tools { margin-left: auto; }
@@ -217,6 +234,8 @@
     & .intro { padding-block: 28px 24px; }
     & .features li { font-size: 12.5px; padding: 6px 12px 6px 8px; }
     & .cat-cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+    & .mega { left: 12px; right: 12px; width: auto; padding: 14px; }
+    & .mega-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
     & .bulk-banner { flex-direction: column; align-items: flex-start; padding: 22px 20px; gap: 16px; }
     & .bulk-banner .pimg { width: 70%; opacity: .3; }
     & .bulk-copy h2 { font-size: 26px; }

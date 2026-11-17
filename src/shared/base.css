@@ -47,10 +47,10 @@ h1, h2, h3 { letter-spacing: -.015em; }
 .menu { position: relative; }
 .dropdown { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: 250px; padding: 8px; background: #fff; border-radius: 12px; box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 12px 28px rgba(0,0,0,.16); display: flex; flex-direction: column; gap: 2px; animation: pop .14s ease-out; }
 @keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
-.dropdown a, .dropdown button { display: flex; align-items: center; min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; font-weight: 550; color: var(--ink); text-align: left; text-decoration: none; cursor: pointer; }
-.dropdown a:hover, .dropdown button:hover { background: var(--gray); }
-.dropdown .dd-primary { justify-content: center; background: var(--green); color: #fff; margin-top: 4px; }
-.dropdown .dd-primary:hover { background: var(--green-dark); }
+.dropdown > a, .dropdown > button { display: flex; align-items: center; min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; font-weight: 550; color: var(--ink); text-align: left; text-decoration: none; cursor: pointer; }
+.dropdown > a:hover, .dropdown > button:hover { background: var(--gray); }
+.dropdown > .dd-primary { justify-content: center; background: var(--green); color: #fff; margin-top: 4px; }
+.dropdown > .dd-primary:hover { background: var(--green-dark); }
 .dd-head { display: flex; flex-direction: column; padding: 10px 12px 12px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
 
 .btn { width: 100%; padding: 11px 18px; font: inherit; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid transparent; text-decoration: none; text-align: center; transition: background .15s; }

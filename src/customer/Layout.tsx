@@ -2,6 +2,8 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { Icon, Logo, Menu } from "../shared/ui";
 import { useCustomer } from "./auth";
 import { useCart } from "./cart";
+import { useCategories } from "./categories";
+import { CategoryCard } from "./parts";
 
 function AccountMenu() {
   const { user, signOut } = useCustomer();
@@ -23,6 +25,26 @@ function AccountMenu() {
           </>
         )
       }
+    </Menu>
+  );
+}
+
+/** Card-based Categories dropdown next to Retail and Bulk orders. */
+function CategoriesMenu() {
+  const categories = useCategories();
+  return (
+    <Menu label="Categories" kind="panel" buttonClass="navbtn" panelClass="mega" trigger={<>Categories <Icon name="chevD" /></>}>
+      {(close) => (
+        <>
+          <div className="mega-head">
+            <strong>Shop by category</strong>
+            <Link to="/categories" className="link" onClick={close}>See all categories</Link>
+          </div>
+          <div className="mega-grid">
+            {categories.map((c) => <CategoryCard key={c.name} name={c.name} count={c.count} cover={c.cover} to={c.to} onClick={close} />)}
+          </div>
+        </>
+      )}
     </Menu>
   );
 }
@@ -57,6 +79,7 @@ export function CustomerLayout() {
         <nav className="topnav" aria-label="Main">
           <NavLink to="/" end>Retail</NavLink>
           <NavLink to="/bulk">Bulk orders</NavLink>
+          <CategoriesMenu />
         </nav>
         <div className="tools">
           <Link to="/cart" className="cartlink" aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}>

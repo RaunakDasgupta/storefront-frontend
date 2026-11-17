@@ -9,6 +9,7 @@ import { Login } from "./Login";
 import { Signup } from "./Signup";
 import { Account } from "./pages/Account";
 import { CartPage } from "./pages/Cart";
+import { Categories } from "./pages/Categories";
 import { NotFound } from "./pages/NotFound";
 import { Orders } from "./pages/Orders";
 import { ProductPage } from "./pages/Product";
@@ -29,6 +30,7 @@ export default function CustomerApp() {
                   <Route index element={<Shop channel="retail" />} />
                   <Route path="bulk" element={<Shop channel="bulk" />} />
                   <Route path="products/:id" element={<ProductPage />} />
+                  <Route path="categories" element={<Categories />} />
                   <Route path="cart" element={<CartPage />} />
                   <Route path="orders" element={<RequireCustomer><Orders /></RequireCustomer>} />
                   <Route path="account" element={<RequireCustomer><Account /></RequireCustomer>} />

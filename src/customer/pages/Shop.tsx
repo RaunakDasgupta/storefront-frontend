@@ -2,8 +2,9 @@ import { useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../../shared/catalog";
 import type { Channel, Product } from "../../shared/data";
-import { Icon, ProductImage } from "../../shared/ui";
-import { BulkBanner, CartPanel, CategoryCard, ProductCard } from "../parts";
+import { Icon } from "../../shared/ui";
+import { useCategories } from "../categories";
+import { BulkBanner, CartPanel, ProductCard } from "../parts";
 
 const COPY: Record<Channel, { title: string; lede: string }> = {
   retail: { title: "Everyday essentials, ready to order", lede: "Shop individual items or choose bulk packs for your business." },
@@ -11,6 +12,7 @@ const COPY: Record<Channel, { title: string; lede: string }> = {
 };
 
 const ROW_LIMIT = 5; // products shown in a section row before "See more"
+const CATEGORY_ROWS = 2; // category sections shown on the landing page after Featured
 
 const FEATURES = [
   { icon: "bag", text: "Retail packs for the home" },
@@ -52,29 +54,24 @@ function Section({ title, items, to }: { title: string; items: Product[]; to: st
   );
 }
 
-/** Retail (/) and Bulk orders (/bulk): intro, categories, one Featured row (or the full list once a category, search or See more is chosen) and the cart beside it. Search comes from the header (?q=). */
+/**
+ * Retail (/) and Bulk orders (/bulk).
+ * Landing: a Featured row, then (Retail only) two category rows and a See all categories button.
+ * A category, a search (?q=) or See more (?view=all) shows the full list instead. Categories themselves live in the header dropdown.
+ */
 export function Shop({ channel }: { channel: Channel }) {
   const { products } = useCatalog();
-  const [params, setParams] = useSearchParams();
+  const categories = useCategories();
+  const [params] = useSearchParams();
   const q = (params.get("q") ?? "").trim().toLowerCase();
   const category = params.get("category") ?? "";
+  const all = params.get("view") === "all";
 
   const inChannel = products.filter((p) => p.channel === channel);
-  const categories = [...new Set(inChannel.map((p) => p.category))];
   const shown = inChannel.filter((p) => (!category || p.category === category) && (!q || `${p.name} ${p.size ?? ""} ${p.category}`.toLowerCase().includes(q)));
 
   const base = channel === "bulk" ? "/bulk" : "/";
-  const all = params.get("view") === "all";
-  // nothing picked: show a single Featured row. A category, a search or See more shows the full list instead.
   const overview = !category && !q && !all;
-
-  function pick(c: string) {
-    const next = new URLSearchParams(params);
-    next.delete("view");
-    category === c ? next.delete("category") : next.set("category", c);
-    setParams(next, { replace: true });
-  }
-
   const heading = category || (q ? "Search results" : "All products");
 
   return (
@@ -96,38 +93,18 @@ export function Shop({ channel }: { channel: Channel }) {
 
         <div className="shop">
           <div className="shop-main">
-            <section aria-labelledby="cats-title">
-              <h2 id="cats-title" className="block-title">Categories</h2>
-              {overview ? (
-                <div className="cat-cards">
-                  {categories.map((c) => (
-                    <CategoryCard
-                      key={c}
-                      name={c}
-                      count={inChannel.filter((p) => p.category === c).length}
-                      cover={inChannel.find((p) => p.category === c)!}
-                      to={`${base}?category=${encodeURIComponent(c)}`}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="cat-strip" role="group" aria-label="Categories">
-                  {categories.map((c) => {
-                    const first = inChannel.find((p) => p.category === c)!;
-                    return (
-                      <button key={c} className="cat-chip" aria-pressed={category === c} onClick={() => pick(c)}>
-                        <ProductImage p={first} small />
-                        <span>{c}</span>
-                        <small>{inChannel.filter((p) => p.category === c).length}</small>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-
             {overview ? (
-              <Section title="Featured" items={inChannel} to={`${base}?view=all`} />
+              <>
+                <Section title="Featured" items={inChannel} to={`${base}?view=all`} />
+                {channel === "retail" && (
+                  <>
+                    {categories.slice(0, CATEGORY_ROWS).map((c) => <Section key={c.name} title={c.name} items={c.products} to={c.to} />)}
+                    <div className="all-cats">
+                      <Link to="/categories" className="btn secondary inline">See all {categories.length} categories</Link>
+                    </div>
+                  </>
+                )}
+              </>
             ) : (
               <>
                 <div className="row-head list-head">
