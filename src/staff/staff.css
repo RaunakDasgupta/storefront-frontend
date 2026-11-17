@@ -52,10 +52,6 @@
   & .kpi { margin: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px; }
   & .kpi p { margin: 0; }
   & .kpi strong { font-size: 28px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; }
-  & .todo { list-style: none; margin: 0; padding: 0 8px 12px; }
-  & .todo a { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; text-decoration: none; }
-  & .todo a:hover { background: var(--green-tint); }
-  & .todo strong { font-size: 24px; min-width: 28px; }
 
   /* import */
   & .import-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }

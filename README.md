@@ -43,7 +43,7 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 
 | Route                | What it does                                                                       |
 | -------------------- | ---------------------------------------------------------------------------------- |
-| `/`                  | Retail: category tabs, product grid, cart panel, bulk banner and your latest order |
+| `/`                  | Retail: intro, a bulk-orders banner, category tabs, product grid, cart panel and your latest order |
 | `/bulk`              | Bulk orders: cartons and pallets, with the same cart panel                         |
 | `/orders`            | My orders: every order with its items and a 4-step progress tracker (log in required) |
 | `/cart`              | The cart as its own page (used on phones)                                          |
@@ -51,6 +51,7 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 | `/login`, `/signup`  | Customer log in and create account                                                 |
 | `/account`           | Profile (log in required)                                                          |
 
+- **Landing page:** the bulk banner sits right under the intro so it is hard to miss. Product cards turn into a quantity stepper once an item is in the cart. The cart panel sits beside the products and scrolls away with the page (the header's Cart link is always visible).
 - **Search** is in the header and filters the page you are on (`/?q=soap`, `/bulk?q=carton`). Category tabs use `?category=`.
 - **Demo checkout:** "Place demo order" needs a log in, then creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. No payment is collected. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the staff portal. Orders do not advance on their own, since fulfilment would come from a warehouse system.
 - The profile avatar is blank when logged out and opens a menu with Log in and Create account.
@@ -59,13 +60,13 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 
 | Route             | What it does                                                                               |
 | ----------------- | ------------------------------------------------------------------------------------------ |
-| `/staff`          | Overview: revenue, order count, what needs attention (new orders, low stock) and recent orders |
+| `/staff`          | Overview: revenue, order count and recent orders                                           |
 | `/staff/orders`   | Every order placed in the storefront, with status tabs (All, Confirmed, Preparing, Packed, Ready for dispatch) and search |
 | `/staff/products` | Products with SKU, size, retail or bulk type, price and inventory, a low-stock filter and search |
 | `/staff/import`   | Import SKUs from CSV                                                                       |
 | `/staff/login`    | Staff log in                                                                               |
 
-The staff portal uses the same look as the storefront (white, green, rounded, underline tabs). The navigation is always a row of tabs at the top, on phones too, so the four sections are one tap away. "Needs attention" on the overview links straight to the new orders and the low-stock products.
+The staff portal uses the same look as the storefront (white, green, rounded, underline tabs). The navigation is always a row of tabs at the top, on phones too, so the four sections are one tap away.
 
 ### Importing SKUs from CSV
 

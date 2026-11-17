@@ -1,11 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCatalog } from "../shared/catalog";
 import { money, type Product } from "../shared/data";
+import { STEPS, STEP_MESSAGE, itemCount, type Order } from "../shared/orderlogic";
+import { useOrders } from "../shared/orders";
 import { Icon, ProductImage } from "../shared/ui";
 import { useCustomer } from "./auth";
 import { useCart } from "./cart";
-import { STEPS, STEP_MESSAGE, itemCount, type Order } from "../shared/orderlogic";
-import { useOrders } from "../shared/orders";
 
 /** Stock line under the size: green when plentiful, amber when low, red when gone. */
 export function StockNote({ stock }: { stock: number }) {
@@ -13,23 +13,56 @@ export function StockNote({ stock }: { stock: number }) {
   return <p className={`stock ${tone}`}><i />{stock === 0 ? "Out of stock" : stock < 10 ? `Only ${stock} left` : "In stock"}</p>;
 }
 
+/** Quantity stepper, also used inside the cart. */
+export function Stepper({ name, qty, onChange }: { name: string; qty: number; onChange: (qty: number) => void }) {
+  return (
+    <div className="qty">
+      <button aria-label={`Decrease ${name}`} onClick={() => onChange(qty - 1)}>−</button>
+      <span aria-live="polite">{qty}</span>
+      <button aria-label={`Increase ${name}`} onClick={() => onChange(qty + 1)}>+</button>
+    </div>
+  );
+}
+
 export function ProductCard({ p }: { p: Product }) {
-  const { add } = useCart();
+  const { lines, add, setQty } = useCart();
+  const inCart = lines.find((l) => l.id === p.id)?.qty ?? 0;
   return (
     <article className="pcard">
       <Link to={`/products/${p.id}`} className="pcard-link">
-        <ProductImage p={p} />
+        <div className="pic"><ProductImage p={p} /></div>
         <h3>{p.name}</h3>
         {p.size && <p className="size">{p.size}</p>}
       </Link>
       <StockNote stock={p.stock} />
       <p className="price">{money(p.price)}{p.was && <s>{money(p.was)}</s>}</p>
-      <button className="btn primary" disabled={p.stock === 0} onClick={() => add(p.id)}>{p.stock === 0 ? "Out of stock" : "Add to cart"}</button>
+      {inCart > 0 ? (
+        <div className="in-cart"><Stepper name={p.name} qty={inCart} onChange={(q) => setQty(p.id, q)} /></div>
+      ) : (
+        <button className="btn primary" disabled={p.stock === 0} onClick={() => add(p.id)}>{p.stock === 0 ? "Out of stock" : "Add to cart"}</button>
+      )}
     </article>
   );
 }
 
-/** Cart beside the products: quantities, order total and the demo checkout. */
+/** The bulk-orders call to action. Sits near the top of the Retail page so it is hard to miss. */
+export function BulkBanner() {
+  const { products } = useCatalog();
+  const packs = products.filter((p) => p.channel === "bulk").length;
+  return (
+    <section className="bulk-banner" aria-labelledby="bulk-title">
+      <img className="pimg" src="/products/bulk-cartons.jpg" alt="" width={1000} height={420} loading="eager" />
+      <div className="bulk-copy">
+        <span className="bulk-tag"><Icon name="truck" /> Bulk orders</span>
+        <h2 id="bulk-title">Buying in bulk?</h2>
+        <p>Order complete cartons or pallets for your business.</p>
+      </div>
+      <Link to="/bulk" className="btn light inline">Browse {packs} bulk packs</Link>
+    </section>
+  );
+}
+
+/** Cart panel: quantities, order total and the demo checkout. */
 export function CartPanel() {
   const { lines, count, total, setQty, clear } = useCart();
   const { byId } = useCatalog();
@@ -48,11 +81,17 @@ export function CartPanel() {
 
   return (
     <aside className="cartpanel" aria-label="Your cart">
-      <h2>Your cart</h2>
-      <p className="muted">{count} {count === 1 ? "item" : "items"}</p>
+      <div className="cart-head">
+        <h2>Your cart</h2>
+        <span className="cart-count">{count} {count === 1 ? "item" : "items"}</span>
+      </div>
 
       {items.length === 0 ? (
-        <p className="cart-empty">Your cart is empty. Add items to get started.</p>
+        <div className="cart-empty">
+          <span className="cart-empty-icon"><Icon name="bag" /></span>
+          <strong>Your cart is empty</strong>
+          <span>Add items to get started.</span>
+        </div>
       ) : (
         <ul className="cart-lines">
           {items.map(({ p, qty }) => (
@@ -62,11 +101,7 @@ export function CartPanel() {
                 <strong>{p.name}</strong>
                 {p.size && <span className="muted">{p.size}</span>}
               </div>
-              <div className="qty">
-                <button aria-label={`Decrease ${p.name}`} onClick={() => setQty(p.id, qty - 1)}>−</button>
-                <span aria-live="polite">{qty}</span>
-                <button aria-label={`Increase ${p.name}`} onClick={() => setQty(p.id, qty + 1)}>+</button>
-              </div>
+              <Stepper name={p.name} qty={qty} onChange={(q) => setQty(p.id, q)} />
               <strong className="line-total">{money(p.price * qty)}</strong>
             </li>
           ))}
