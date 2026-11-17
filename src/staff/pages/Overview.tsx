@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { money, type Channel } from "../../shared/data";
 import { revenueOf } from "../../shared/orderlogic";
 import { useOrders } from "../../shared/orders";
-import { OrdersTable } from "../../shared/ui";
+import { OrderGrid } from "../OrderGrid";
 import { useStaff } from "../auth";
 
 const CHANNELS: { id: Channel; label: string }[] = [
@@ -37,17 +37,18 @@ export function Overview() {
         })}
       </div>
 
-      {CHANNELS.map((c) => (
-        <section key={c.id} className="cardbox">
-          <header className="cardhead">
-            <h2>Recent {c.label.toLowerCase()} orders</h2>
-            <Link to={`/staff/orders${c.id === "bulk" ? "?type=bulk" : ""}`} className="link">View all {c.label.toLowerCase()} orders</Link>
-          </header>
-          {orders.filter((o) => o.channel === c.id).length === 0
-            ? <p className="muted pad">No {c.label.toLowerCase()} orders yet.</p>
-            : <OrdersTable rows={orders.filter((o) => o.channel === c.id).slice(0, 5)} />}
-        </section>
-      ))}
+      {CHANNELS.map((c) => {
+        const list = orders.filter((o) => o.channel === c.id);
+        return (
+          <section key={c.id} className="orders-block" aria-label={`Recent ${c.label.toLowerCase()} orders`}>
+            <header className="block-head">
+              <h2>Recent {c.label.toLowerCase()} orders</h2>
+              <Link to={`/staff/orders${c.id === "bulk" ? "?type=bulk" : ""}`} className="link">View all {list.length} {c.label.toLowerCase()} orders</Link>
+            </header>
+            {list.length === 0 ? <p className="muted">No {c.label.toLowerCase()} orders yet.</p> : <OrderGrid orders={list.slice(0, 12)} />}
+          </section>
+        );
+      })}
     </>
   );
 }

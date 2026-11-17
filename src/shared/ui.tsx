@@ -100,9 +100,9 @@ export function Menu({ label, trigger, children, buttonClass = "iconbtn", panelC
 }
 
 /** "Detergent (Carton of 12 x 1 kg) × 1, ..." so a bulk pack is distinct from the retail item. */
-const itemsText = (o: Order) => o.items.map((i) => `${i.name}${i.size ? ` (${i.size})` : ""} × ${i.qty}`).join(", ");
+export const itemsText = (o: Order) => o.items.map((i) => `${i.name}${i.size ? ` (${i.size})` : ""} × ${i.qty}`).join(", ");
 
-const STEP_BADGE = ["pending", "paid", "packed", "fulfilled"] as const;
+export const STEP_BADGE = ["pending", "paid", "packed", "fulfilled"] as const;
 
 /** Staff order list: who ordered, what, when, and where it is in fulfilment. */
 export function OrdersTable({ rows, onStep }: { rows: Order[]; onStep?: (id: string, step: number) => void }) {
