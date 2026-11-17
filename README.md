@@ -2,8 +2,8 @@
 
 Two independent apps in one **React 19 + TypeScript + Vite** project, built around keeping each flow short and easy to navigate:
 
-- **Customer storefront** at `/`: browse, search, add to cart, and manage an account.
-- **Staff portal** at `/staff`: dashboard, orders, products and CSV SKU import.
+- **Customer storefront ("Everyday Market")** at `/`: retail and bulk shopping, a cart with a simulated checkout, and order-progress tracking.
+- **Staff portal ("Everyday Market Staff")** at `/staff`: dashboard, orders, products and CSV SKU import.
 
 The two apps have their own log in pages, sessions, route guards, layouts and stylesheets. Neither links to the other, being signed in to one never signs you in to the other, and each is built and loaded as a separate bundle.
 
@@ -39,16 +39,21 @@ Customer credentials do not work on the staff login, and the other way round. Ne
 
 ## Customer storefront
 
-| Route                | What it does                                                           |
-| -------------------- | ---------------------------------------------------------------------- |
-| `/`                  | Hero, category tiles, four featured products, delivery perks           |
-| `/shop`              | All products with search, category chips, an "On sale" filter and sort |
-| `/products/:id`      | Product page with add to cart                                          |
-| `/cart`              | Quantities, total and a free-shipping hint                             |
-| `/login`, `/signup`  | Customer log in and create account                                     |
-| `/account`           | Profile and recent orders (log in required)                            |
+The design follows the "Everyday Market" reference: green theme, search in the header, Retail / Bulk orders / My orders tabs, product cards with stock and price, the cart beside the products, a bulk banner and an order-progress tracker.
 
-The header has two links (Shop, Sale), the cart and a profile avatar. The avatar is blank when logged out and opens a menu with Log in and Create account. Shop filters live in the URL (`/shop?category=Bags&sale=1&q=tote`), so any filtered view can be linked to.
+| Route                | What it does                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `/`                  | Retail: category tabs, product grid, cart panel, bulk banner and your latest order |
+| `/bulk`              | Bulk orders: cartons and pallets, with the same cart panel                         |
+| `/orders`            | My orders: every order with its items and a 4-step progress tracker (log in required) |
+| `/cart`              | The cart as its own page (used on phones)                                          |
+| `/products/:id`      | Product page                                                                       |
+| `/login`, `/signup`  | Customer log in and create account                                                 |
+| `/account`           | Profile (log in required)                                                          |
+
+- **Search** is in the header and filters the page you are on (`/?q=soap`, `/bulk?q=carton`). Category tabs use `?category=`.
+- **Demo checkout:** "Place demo order" needs a log in, then creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. No payment is collected. The first order, `ORD_1001`, is a sample at **Preparing**. Orders do not advance on their own, since fulfilment would come from a warehouse system.
+- The profile avatar is blank when logged out and opens a menu with Log in and Create account.
 
 ## Staff portal
 
@@ -56,7 +61,7 @@ The header has two links (Shop, Sale), the cart and a profile avatar. The avatar
 | ----------------- | ------------------------------------------------------------------------------------------ |
 | `/staff`          | Overview: revenue, orders, average order, SKUs, a 7-day sales chart, what needs attention, recent orders |
 | `/staff/orders`   | Orders with status tabs (All, Pending, Paid, Fulfilled) and search                         |
-| `/staff/products` | Products with SKU, logo, price and inventory, a low-stock filter and search               |
+| `/staff/products` | Products with SKU, size, retail or bulk type, price and inventory, a low-stock filter and search |
 | `/staff/import`   | Import SKUs from CSV                                                                       |
 | `/staff/login`    | Staff log in                                                                               |
 
@@ -70,18 +75,20 @@ On `/staff/import`, drop in a `.csv` file with one SKU per row. You see a previe
 | ------------------ | -------- | ------------------------------------------------------------- |
 | `sku`              | yes      | Unique key. An existing SKU is updated, a new one is added.   |
 | `name`             | yes      | Up to 120 characters.                                         |
+| `size`             | no       | Pack size shown under the name, for example `1 kg` or `Carton of 12`. |
 | `price`            | yes      | Rupees, for example `1499` or `₹1,499`.                       |
 | `category`         | no       | Defaults to `General`.                                        |
+| `channel`          | no       | `retail` (default) or `bulk`. Bulk SKUs appear on the Bulk orders page. |
 | `compare_at_price` | no       | Shown as the crossed-out price when higher than `price`.      |
 | `stock`            | no       | Whole number, defaults to `0`.                                |
 | `description`      | no       | Up to 500 characters. Blank keeps the current description.    |
 | `logo_url`         | no       | Full `http(s)` link to the product logo or photo. Blank keeps the current image. |
 
-Header names are case-insensitive, and `logo`, `image` and `image_url` also work for `logo_url`. Files are limited to 1 MB and 1,000 rows. Rows with problems are skipped and nothing is ever deleted. Imported SKUs appear in the storefront and the Products table straight away. They are stored in this browser's `localStorage`, and **Reset catalog** on the Products page restores the 8 sample products. Logo links load straight from the URL you give, so the image host must allow hotlinking; a broken link shows a placeholder icon.
+Header names are case-insensitive, and `logo`, `image` and `image_url` also work for `logo_url`. Files are limited to 1 MB and 1,000 rows. Rows with problems are skipped and nothing is ever deleted. Imported SKUs appear in the storefront and the Products table straight away. They are stored in this browser's `localStorage`, and **Reset catalog** on the Products page restores the 12 sample products. Logo links load straight from the URL you give, so the image host must allow hotlinking; a broken link shows a placeholder icon.
 
 ## Prices and photos
 
-Prices are in Indian rupees (₹), formatted with the `en-IN` locale (for example ₹1,23,456), and free shipping starts at ₹999. Product photos are in `public/products/<product-id>.jpg` (900x900) with 200px versions in `public/products/thumbs/` for tables and the cart. To change a photo, replace the file with the same name.
+Prices are in Indian rupees (₹), formatted with the `en-IN` locale (for example ₹1,23,456). Product photos are in `public/products/<product-id>.jpg` (900x900) with 200px versions in `public/products/thumbs/` for tables and the cart; bulk packs reuse the matching retail photo, and `bulk-cartons.jpg` is the banner. To change a photo, replace the file with the same name.
 
 The photos are free stock images from [Unsplash](https://unsplash.com), used under the [Unsplash License](https://unsplash.com/license). They are placeholders: swap in your own product photography before launch.
 
@@ -96,7 +103,7 @@ src/shared/             Only what both apps genuinely share
   csv.ts, csv.test.ts   CSV parser and validation, with tests
   ui.tsx                Icon, Logo, ProductImage, Field, Menu, OrdersTable
   base.css              Colour tokens and primitives (buttons, forms, tables)
-src/customer/           The storefront: auth, cart, layout, pages, customer.css
+src/customer/           The storefront: auth, cart, orders, layout, pages, customer.css
 src/staff/              The staff portal: auth, layout, pages, staff.css
 ```
 
@@ -107,6 +114,6 @@ Each app's stylesheet is scoped to its own root (`.cx` for the customer app, `.s
 There is no backend yet, so this is a working prototype:
 
 - **Accounts are mocked in the browser.** The demo accounts and any customer sign-ups (plaintext passwords in `localStorage`) are checked in `src/customer/auth.tsx` and `src/staff/auth.tsx`, and each session lives in its own `sessionStorage` key. Do not deploy as is: replace `signIn()` and `signUp()` with calls to your auth API.
-- **Products and orders are sample data** in `src/shared/data.ts`. Imported SKUs persist in `localStorage` only.
-- **Checkout is disabled**; there is no payment provider. The cart lives in memory and resets on reload.
-- "Forgot password" and company SSO are placeholders. The 14 orders shown to staff and the customer's recent orders are the same sample data.
+- **Products and the staff orders are sample data** in `src/shared/data.ts`. Imported SKUs and customer demo orders persist in `localStorage` only, and customer orders are separate from the staff order list.
+- **Checkout is a demo**: no payment is collected. The cart lives in memory and resets on reload.
+- "Forgot password" and company SSO are placeholders.

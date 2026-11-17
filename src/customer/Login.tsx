@@ -30,7 +30,7 @@ export function Login() {
   }
 
   return (
-    <AuthLayout title="Log in" subtitle="Log in to see your orders and saved details." foot={<>New to Storefront? <Link to="/signup" className="link">Create account</Link></>}>
+    <AuthLayout title="Log in" subtitle="Log in to place and track your orders." foot={<>New to Everyday Market? <Link to="/signup" className="link">Create account</Link></>}>
       <form onSubmit={onSubmit} noValidate>
         <div className="field">
           <label htmlFor="email">Email</label>

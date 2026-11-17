@@ -16,7 +16,7 @@ export function StaffLayout() {
   return (
     <div className="admin">
       <header className="atop">
-        <Logo to="/staff" label="Storefront Staff" />
+        <Logo to="/staff" label="Everyday Market Staff" />
         <Menu label="Account menu" trigger={<span className="avatar">{user?.name[0]?.toUpperCase()}</span>}>
           {(close) => (
             <>

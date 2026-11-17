@@ -1,7 +1,7 @@
 // Parses SKU CSV uploads. Kept free of runtime imports so it can run under `node --test`.
 import type { Product } from "./data";
 
-export type SkuRow = Pick<Product, "sku" | "name" | "category" | "price" | "was" | "stock" | "blurb" | "image">;
+export type SkuRow = Pick<Product, "sku" | "name" | "category" | "price" | "was" | "stock" | "blurb" | "image" | "size" | "channel">;
 export type CsvIssue = { line: number; message: string };
 export type ParseResult = { rows: SkuRow[]; issues: CsvIssue[]; fatal?: string };
 
@@ -84,6 +84,12 @@ export function parseSkuCsv(text: string): ParseResult {
     const logo = col(r, "logo_url");
     if (logo && !isHttpUrl(logo)) return fail(`${sku}: logo_url must be a full http(s) link.`);
 
+    const channelRaw = col(r, "channel").toLowerCase();
+    if (channelRaw && channelRaw !== "retail" && channelRaw !== "bulk") return fail(`${sku}: channel must be retail or bulk.`);
+
+    const size = col(r, "size");
+    if (size.length > 60) return fail(`${sku}: size is longer than 60 characters.`);
+
     const blurb = col(r, "description");
     if (blurb.length > 500) return fail(`${sku}: description is longer than 500 characters.`);
 
@@ -93,6 +99,8 @@ export function parseSkuCsv(text: string): ParseResult {
       category: col(r, "category") || "General",
       was: was !== undefined && was > price ? was : undefined,
       stock, blurb,
+      size: size || undefined,
+      channel: channelRaw === "bulk" ? "bulk" : "retail",
       image: logo || undefined,
     });
   });
@@ -103,8 +111,8 @@ export function parseSkuCsv(text: string): ParseResult {
 /** Example file. `origin` makes the logo links point at photos this app already serves. */
 export const skuTemplate = (origin: string) =>
   [
-    "sku,name,category,price,compare_at_price,stock,description,logo_url",
-    `TOT-002,Weekend Duffel,Bags,5499,6999,25,"Roomy canvas duffel, with a shoulder strap",${origin}/products/everyday-tote.jpg`,
-    `CAP-002,Corduroy Cap,Apparel,1799,,40,Soft corduroy six-panel cap,${origin}/products/canvas-cap.jpg`,
-    `SHT-001,Linen Shirt,Apparel,4999,6499,18,Relaxed-fit shirt in breathable European linen,${origin}/products/linen-shirt.jpg`,
+    "sku,name,size,category,channel,price,compare_at_price,stock,description,logo_url",
+    `DSH-001,Dishwash liquid,750 ml,Home care,retail,129,,40,"Lemon dishwash liquid, cuts grease fast",${origin}/products/glass-cleaner.jpg`,
+    `HND-002,Hand wash refill,1 L,Personal care,retail,189,229,25,Refill pouch for pump bottles,${origin}/products/hand-wash.jpg`,
+    `BLK-GLS-12,Glass cleaner,Carton of 12 x 500 ml,Home care,bulk,1399,,10,Twelve 500 ml bottles per carton,${origin}/products/glass-cleaner.jpg`,
   ].join("\n") + "\n";

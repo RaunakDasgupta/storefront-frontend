@@ -1,33 +1,45 @@
 // shortcut: hard-coded mock data; replace with calls to the real catalog/orders API.
 // Seed product photos live in public/products/<id>.jpg (see README for credits).
+export type Channel = "retail" | "bulk";
+
 export type Product = {
   id: string;
   sku: string;
   name: string;
+  /** Pack size shown under the name, for example "1 kg" or "Carton of 12". */
+  size?: string;
   price: number;
   was?: number;
   category: string;
   blurb: string;
   stock: number;
-  /** Logo/photo URL from a CSV import. Seed products leave it out and use public/products/<id>.jpg. */
+  channel: Channel;
+  /** Photo or logo: an http(s) URL from a CSV import, or a /products/... file bundled with the app. Defaults to public/products/<id>.jpg. */
   image?: string;
 };
 
 export const seedProducts: Product[] = [
-  { id: "everyday-tote", sku: "TOT-001", name: "Everyday Tote", price: 3499, category: "Bags", blurb: "Heavy canvas tote with a reinforced base and an inner zip pocket.", stock: 42 },
-  { id: "ceramic-mug", sku: "MUG-001", name: "Ceramic Mug", price: 1499, category: "Home", blurb: "Hand-glazed 12 oz mug that is dishwasher and microwave safe.", stock: 8 },
-  { id: "canvas-cap", sku: "CAP-001", name: "Canvas Cap", price: 1999, category: "Apparel", blurb: "Six-panel cap in washed canvas with an adjustable brass buckle.", stock: 61 },
-  { id: "linen-shirt", sku: "SHT-001", name: "Linen Shirt", price: 4999, was: 6499, category: "Apparel", blurb: "Relaxed-fit shirt in breathable European linen.", stock: 5 },
-  { id: "desk-lamp", sku: "LMP-001", name: "Desk Lamp", price: 4499, was: 5999, category: "Home", blurb: "Dimmable LED lamp with a weighted base and a warm glow.", stock: 17 },
-  { id: "notebook-set", sku: "NTB-001", name: "Notebook Set", price: 799, category: "Stationery", blurb: "Three dot-grid notebooks with lay-flat binding and 120 gsm paper.", stock: 120 },
-  { id: "water-bottle", sku: "BTL-001", name: "Water Bottle", price: 1299, category: "Home", blurb: "Insulated steel bottle that keeps drinks cold for 24 hours.", stock: 0 },
-  { id: "wool-beanie", sku: "BNE-001", name: "Wool Beanie", price: 1499, category: "Apparel", blurb: "Soft merino beanie with a double-knit cuff.", stock: 33 },
+  { id: "detergent", sku: "DET-001", name: "Detergent", size: "1 kg", price: 249, category: "Home care", blurb: "Laundry detergent for everyday washes.", stock: 64, channel: "retail" },
+  { id: "shampoo", sku: "SHM-001", name: "Shampoo", size: "500 ml", price: 199, category: "Personal care", blurb: "Gentle moisturising shampoo for daily use.", stock: 48, channel: "retail" },
+  { id: "surface-cleaner", sku: "CLN-001", name: "Surface cleaner", size: "1 L", price: 179, category: "Home care", blurb: "Spray cleaner for counters, tiles and tables.", stock: 8, channel: "retail" },
+  { id: "tissue-box", sku: "TIS-001", name: "Tissue box", size: "200 sheets", price: 149, category: "Paper essentials", blurb: "Soft two-ply facial tissues.", stock: 120, channel: "retail" },
+  { id: "glass-cleaner", sku: "GLS-001", name: "Glass cleaner", size: "500 ml", price: 129, category: "Home care", blurb: "Streak-free cleaner for windows and mirrors.", stock: 35, channel: "retail" },
+  { id: "hand-wash", sku: "HND-001", name: "Hand wash", size: "250 ml", price: 99, category: "Personal care", blurb: "Pump-bottle liquid hand wash.", stock: 0, channel: "retail" },
+  { id: "toilet-paper", sku: "TPR-001", name: "Toilet paper", size: "12 rolls", price: 349, category: "Paper essentials", blurb: "Soft, strong two-ply toilet rolls.", stock: 52, channel: "retail" },
+  { id: "kitchen-towel", sku: "KTW-001", name: "Kitchen towel", size: "2 rolls", price: 159, category: "Paper essentials", blurb: "Absorbent kitchen paper rolls.", stock: 6, channel: "retail" },
+  { id: "detergent-carton", sku: "BLK-DET-12", name: "Detergent", size: "Carton of 12 x 1 kg", price: 2699, category: "Home care", blurb: "Twelve 1 kg packs for shops and offices.", stock: 30, channel: "bulk", image: "/products/detergent.jpg" },
+  { id: "shampoo-carton", sku: "BLK-SHM-24", name: "Shampoo", size: "Carton of 24 x 500 ml", price: 4299, category: "Personal care", blurb: "Twenty-four 500 ml bottles per carton.", stock: 18, channel: "bulk", image: "/products/shampoo.jpg" },
+  { id: "tissue-carton", sku: "BLK-TIS-36", name: "Tissue box", size: "Carton of 36 boxes", price: 4899, category: "Paper essentials", blurb: "Thirty-six boxes of 200 sheets.", stock: 22, channel: "bulk", image: "/products/tissue-box.jpg" },
+  { id: "toilet-paper-carton", sku: "BLK-TPR-48", name: "Toilet paper", size: "Carton of 48 rolls", price: 5999, category: "Paper essentials", blurb: "Forty-eight rolls per carton.", stock: 14, channel: "bulk", image: "/products/toilet-paper.jpg" },
 ];
 
 export const money = (n: number) => n.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
 /** Photo for a product: its imported URL, otherwise the bundled file (small = 200px thumbnail). */
-export const imageSrc = (p: Product, small = false) => p.image ?? (small ? `/products/thumbs/${p.id}.jpg` : `/products/${p.id}.jpg`);
+export const imageSrc = (p: Product, small = false) => {
+  if (!p.image) return small ? `/products/thumbs/${p.id}.jpg` : `/products/${p.id}.jpg`;
+  return small && p.image.startsWith("/products/") ? p.image.replace("/products/", "/products/thumbs/") : p.image;
+};
 
 export type Order = { id: string; customer: string; total: number; status: "Paid" | "Fulfilled" | "Pending"; date: string };
 

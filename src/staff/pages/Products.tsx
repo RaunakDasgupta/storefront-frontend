@@ -25,7 +25,7 @@ export function StaffProducts() {
         <h1>Products</h1>
         <div className="head-actions">
           {customized && (
-            <button className="btn secondary inline" onClick={() => { if (window.confirm("Reset the catalog to the 8 sample products? Imported SKUs will be removed from this browser.")) reset(); }}>
+            <button className="btn secondary inline" onClick={() => { if (window.confirm("Reset the catalog to the 12 sample products? Imported SKUs will be removed from this browser.")) reset(); }}>
               Reset catalog
             </button>
           )}
@@ -46,13 +46,14 @@ export function StaffProducts() {
         {rows.length === 0 ? <p className="muted pad">No products match.</p> : (
           <div className="tablewrap">
             <table>
-              <thead><tr><th>Product</th><th>SKU</th><th className="hide-sm">Category</th><th className="num">Price</th><th className="num">Inventory</th></tr></thead>
+              <thead><tr><th>Product</th><th>SKU</th><th className="hide-sm">Category</th><th className="hide-sm">Type</th><th className="num">Price</th><th className="num">Inventory</th></tr></thead>
               <tbody>
                 {rows.map((p) => (
                   <tr key={p.id}>
-                    <td><span className="rank-name"><ProductImage p={p} className="thumb" small eager />{p.name}</span></td>
+                    <td><span className="rank-name"><ProductImage p={p} className="thumb" small eager /><span>{p.name}{p.size && <span className="muted"> · {p.size}</span>}</span></span></td>
                     <td>{p.sku}</td>
                     <td className="hide-sm">{p.category}</td>
+                    <td className="hide-sm"><span className={p.channel === "bulk" ? "badge paid" : "badge"}>{p.channel === "bulk" ? "Bulk" : "Retail"}</span></td>
                     <td className="num">{money(p.price)}</td>
                     <td className="num">{p.stock === 0 ? <span className="badge pending">Out of stock</span> : p.stock < 10 ? <span className="badge pending">{p.stock} left</span> : p.stock}</td>
                   </tr>

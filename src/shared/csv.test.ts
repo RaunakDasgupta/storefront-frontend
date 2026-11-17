@@ -20,6 +20,14 @@ test("parseSkuCsv accepts valid rows, rupee symbols, aliases and optional column
   assert.equal(rows[1].image, undefined);
   assert.equal(rows[1].category, "General");
   assert.equal(rows[1].stock, 0);
+  assert.equal(rows[1].channel, "retail");
+});
+
+test("parseSkuCsv reads size and channel and rejects an unknown channel", () => {
+  const { rows, issues } = parseSkuCsv("sku,name,price,size,channel\nA,Pack,100,Carton of 12,BULK\nB,Odd,100,,wholesale\n");
+  assert.equal(rows[0].channel, "bulk");
+  assert.equal(rows[0].size, "Carton of 12");
+  assert.deepEqual(issues.map((i) => i.line), [3]);
 });
 
 test("parseSkuCsv reports a missing required column", () => {

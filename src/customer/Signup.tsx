@@ -46,7 +46,7 @@ export function Signup() {
   }
 
   return (
-    <AuthLayout title="Create account" subtitle="Save your details for faster checkout." foot={<>Already have an account? <Link to="/login" className="link">Log in</Link></>}>
+    <AuthLayout title="Create account" subtitle="Save your details to order faster." foot={<>Already have an account? <Link to="/login" className="link">Log in</Link></>}>
       <form onSubmit={onSubmit} noValidate>
         <div className="row2">
           <Field label="First name" autoComplete="given-name" {...bind("first")} />

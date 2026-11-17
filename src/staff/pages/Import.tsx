@@ -68,7 +68,7 @@ export function ImportPage() {
             <summary>CSV format</summary>
             <p className="muted">
               One SKU per row, with a header row. Required columns: <code>sku</code>, <code>name</code>, <code>price</code>. Optional:
-              {" "}<code>category</code>, <code>compare_at_price</code>, <code>stock</code>, <code>description</code> and <code>logo_url</code> (a full https link to the product logo or photo).
+              {" "}<code>size</code>, <code>category</code>, <code>channel</code> (<code>retail</code> or <code>bulk</code>), <code>compare_at_price</code>, <code>stock</code>, <code>description</code> and <code>logo_url</code> (a full https link to the product logo or photo).
               A SKU that already exists is updated, a new SKU is added, and nothing is deleted.
             </p>
           </details>
@@ -103,7 +103,7 @@ export function ImportPage() {
                               ? <img className="pimg thumb" src={r.image} alt="" width={32} height={32} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/products/placeholder.svg"; }} />
                               : <span className="muted">None</span>}
                           </td>
-                          <td>{r.sku}</td><td>{r.name}</td><td className="hide-sm">{r.category}</td>
+                          <td>{r.sku}</td><td>{r.name}{r.size && <span className="muted"> · {r.size}</span>}</td><td className="hide-sm">{r.category}</td>
                           <td className="num">{money(r.price)}</td><td className="num hide-sm">{r.stock}</td>
                           <td><span className={exists(r.sku) ? "badge paid" : "badge fulfilled"}>{exists(r.sku) ? "Update" : "New"}</span></td>
                         </tr>

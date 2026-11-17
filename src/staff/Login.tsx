@@ -32,7 +32,7 @@ export function StaffLogin() {
 
   return (
     <main className="login">
-      <Logo to="/staff/login" label="Storefront Staff" />
+      <Logo to="/staff/login" label="Everyday Market Staff" />
       <section className="card">
         <h1>Log in</h1>
         <p className="sub">Use your work account to open the staff portal.</p>

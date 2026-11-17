@@ -5,7 +5,7 @@ import { Logo } from "../shared/ui";
 export function AuthLayout({ title, subtitle, children, foot }: { title: string; subtitle: string; children: ReactNode; foot?: ReactNode }) {
   return (
     <main className="auth">
-      <Logo to="/" label="Storefront" />
+      <Logo to="/" label="Everyday Market" />
       <section className="card">
         <h1>{title}</h1>
         <p className="sub">{subtitle}</p>

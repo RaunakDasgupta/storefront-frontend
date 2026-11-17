@@ -14,13 +14,15 @@ type Catalog = {
 };
 
 // shortcut: the catalog lives in this browser's localStorage; replace with your catalog API.
-const KEY = "storefront.catalog";
+const KEY = "everyday.catalog";
 const Ctx = createContext<Catalog | null>(null);
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "sku";
 
-function isHttpUrl(v: unknown) {
+/** An http(s) link, or a file bundled under /products/. Nothing else (no javascript:, data: or other schemes). */
+function isSafeImage(v: unknown) {
   if (typeof v !== "string") return false;
+  if (/^\/products\/[\w.-]+$/.test(v)) return true;
   try { return /^https?:$/.test(new URL(v).protocol); } catch { return false; }
 }
 
@@ -29,7 +31,7 @@ function isProduct(p: unknown): p is Product {
   const x = p as Product;
   return !!x && typeof x.id === "string" && typeof x.sku === "string" && typeof x.name === "string" &&
     Number.isFinite(x.price) && Number.isFinite(x.stock) && typeof x.category === "string" && typeof x.blurb === "string" &&
-    (x.image === undefined || isHttpUrl(x.image)) && (x.was === undefined || Number.isFinite(x.was));
+    (x.image === undefined || isSafeImage(x.image)) && (x.channel === "retail" || x.channel === "bulk") && (x.size === undefined || typeof x.size === "string") && (x.was === undefined || Number.isFinite(x.was));
 }
 
 function load(): Product[] | null {
@@ -55,12 +57,12 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       const i = next.findIndex((p) => p.sku.toLowerCase() === r.sku.toLowerCase());
       if (i >= 0) {
         // blank description / logo columns keep what is already there
-        next[i] = { ...next[i], name: r.name, category: r.category, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb || next[i].blurb, image: r.image ?? next[i].image };
+        next[i] = { ...next[i], name: r.name, size: r.size ?? next[i].size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb || next[i].blurb, image: r.image ?? next[i].image };
         updated++;
       } else {
         let id = slug(r.sku), n = 2;
         while (next.some((p) => p.id === id)) id = `${slug(r.sku)}-${n++}`;
-        next.push({ id, sku: r.sku, name: r.name, category: r.category, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb, image: r.image });
+        next.push({ id, sku: r.sku, name: r.name, size: r.size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb, image: r.image });
         added++;
       }
     }
