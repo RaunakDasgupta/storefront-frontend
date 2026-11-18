@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import { useOrders } from "../../shared/hooks/useOrders";
 import { OrderFilterBar, useOrderFilters } from "../components/OrderFilterBar";
-import { citiesOf, matchesFilters } from "../lib/orderfilters";
+import { citiesOf, matchesFilters, statesOf } from "../lib/orderfilters";
 import { fmtDate, money } from "../../shared/lib/data";
 import { STEPS, countByStep, revenueByDay, revenueOf } from "../../shared/lib/orderlogic";
 import { STEP_BADGE } from "../../shared/ui";
@@ -39,7 +39,7 @@ export function Overview() {
         </div>
       </div>
 
-      <OrderFilterBar filters={filters} cities={citiesOf(allOrders)} count={orders.length} showClear={filtering} set={set} onClear={() => clear()} />
+      <OrderFilterBar filters={filters} states={statesOf(allOrders)} cities={citiesOf(allOrders, filters.state)} count={orders.length} showClear={filtering} set={set} onClear={() => clear()} />
 
       <div className="kpis">
         {kpis.map((k) => (

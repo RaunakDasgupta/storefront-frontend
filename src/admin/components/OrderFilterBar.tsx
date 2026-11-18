@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DATE_PRESETS, VALUE_BANDS, isFiltering, type DatePreset, type OrderFilters, type ValueBand } from "../lib/orderfilters";
 
-const KEYS = ["date", "from", "to", "value", "city"] as const;
+const KEYS = ["date", "from", "to", "value", "state", "city"] as const;
 
-/** The date, order value and delivery city filters, kept in the page's URL (`?date=7d&value=high&city=Pune`). Used by Overview and Orders. */
+/** The date, order value and delivery city filters, kept in the page's URL (`?date=7d&value=high&state=Maharashtra&city=Pune`). Used by Overview and Orders. */
 export function useOrderFilters() {
   const [params, setParams] = useSearchParams();
   const dateParam = params.get("date");
@@ -14,6 +14,7 @@ export function useOrderFilters() {
     from: params.get("from") ?? "",
     to: params.get("to") ?? "",
     value: VALUE_BANDS.some((b) => b.id === valueParam) ? (valueParam as ValueBand) : "all",
+    state: params.get("state") ?? "",
     city: params.get("city") ?? "",
   }), [params, dateParam, valueParam]);
 
@@ -28,7 +29,8 @@ export function useOrderFilters() {
 
 type Props = {
   filters: OrderFilters;
-  /** The delivery cities to offer. */
+  /** The delivery states and cities to offer. The cities are already narrowed to the chosen state. */
+  states: string[];
   cities: string[];
   /** How many orders match, shown at the end of the row. */
   count: number;
@@ -38,7 +40,7 @@ type Props = {
   onClear: () => void;
 };
 
-export function OrderFilterBar({ filters, cities, count, showClear, set, onClear }: Props) {
+export function OrderFilterBar({ filters, states, cities, count, showClear, set, onClear }: Props) {
   return (
     <div className="filterbar" role="group" aria-label="Filter orders">
       <div className="field">
@@ -63,6 +65,15 @@ export function OrderFilterBar({ filters, cities, count, showClear, set, onClear
         <label htmlFor="of-value">Order value</label>
         <select id="of-value" value={filters.value} onChange={(e) => set({ value: e.target.value === "all" ? null : e.target.value })}>
           {VALUE_BANDS.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
+        </select>
+      </div>
+      <div className="field">
+        <label htmlFor="of-state">Delivery state</label>
+        {/* the city list follows the state, so a state change drops a city that is no longer in it */}
+        <select id="of-state" value={filters.state} onChange={(e) => set({ state: e.target.value || null, city: null })}>
+          <option value="">Any state</option>
+          {states.map((s) => <option key={s} value={s}>{s}</option>)}
+          {filters.state && !states.includes(filters.state) && <option value={filters.state}>{filters.state}</option>}
         </select>
       </div>
       <div className="field">

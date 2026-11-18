@@ -1,4 +1,4 @@
-// The Orders page's extra filters: when the order was placed, how much it was worth, and where it is going.
+// The extra order filters (Overview and Orders): when the order was placed, how much it was worth, and where it is going.
 // Plain functions with no React, so the tests can run under `node --test`.
 import type { Order } from "../../shared/lib/orderlogic.ts";
 
@@ -25,10 +25,12 @@ export type OrderFilters = {
   from: string;
   to: string;
   value: ValueBand;
+  /** A delivery state, or "" for any. */
+  state: string;
   /** A delivery city, or "" for any. */
   city: string;
 };
-export const NO_FILTERS: OrderFilters = { date: "all", from: "", to: "", value: "all", city: "" };
+export const NO_FILTERS: OrderFilters = { date: "all", from: "", to: "", value: "all", state: "", city: "" };
 
 const DAY = 86_400_000;
 const shift = (iso: string, days: number) => new Date(new Date(`${iso}T00:00:00Z`).getTime() + days * DAY).toISOString().slice(0, 10);
@@ -50,13 +52,19 @@ export function matchesFilters(o: Order, f: OrderFilters, today: string): boolea
   if (to && o.date > to) return false;
   const band = VALUE_BANDS.find((b) => b.id === f.value);
   if (band && "min" in band && (o.total < band.min || o.total > band.max)) return false;
+  if (f.state && o.shipping?.state.trim().toLowerCase() !== f.state.toLowerCase()) return false;
   if (f.city && o.shipping?.city.trim().toLowerCase() !== f.city.toLowerCase()) return false;
   return true;
 }
 
 /** Whether any of the extra filters is set. */
-export const isFiltering = (f: OrderFilters) => f.date !== "all" || f.value !== "all" || f.city !== "";
+export const isFiltering = (f: OrderFilters) => f.date !== "all" || f.value !== "all" || f.state !== "" || f.city !== "";
 
-/** The delivery cities in the orders, each once, A to Z. */
-export const citiesOf = (list: Order[]) =>
-  [...new Set(list.flatMap((o) => (o.shipping?.city.trim() ? [o.shipping.city.trim()] : [])))].sort((a, b) => a.localeCompare(b));
+const distinct = (values: string[]) => [...new Set(values.map((v) => v.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+/** The delivery states in the orders, each once, A to Z. */
+export const statesOf = (list: Order[]) => distinct(list.flatMap((o) => (o.shipping ? [o.shipping.state] : [])));
+
+/** The delivery cities in the orders, each once, A to Z. With a state, only the cities in that state. */
+export const citiesOf = (list: Order[], state = "") =>
+  distinct(list.flatMap((o) => (o.shipping && (!state || o.shipping.state.trim().toLowerCase() === state.toLowerCase()) ? [o.shipping.city] : [])));

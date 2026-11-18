@@ -8,7 +8,7 @@ import { Icon } from "../../shared/ui";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { OrderGrid } from "../components/OrderGrid";
 import { OrderFilterBar, useOrderFilters } from "../components/OrderFilterBar";
-import { citiesOf, matchesFilters } from "../lib/orderfilters";
+import { citiesOf, matchesFilters, statesOf } from "../lib/orderfilters";
 
 const FILTERS = ["All", ...STEPS] as const;
 const CHANNELS: { id: Channel; label: string }[] = [
@@ -62,7 +62,8 @@ export function AdminOrders() {
   const matching = inChannel.filter((o) => matchesFilters(o, filters, today) && (!needle || `${o.id} ${o.customer.name} ${o.customer.email} ${o.shipping ? `${o.shipping.phone} ${addressText(o.shipping)}` : ""}`.toLowerCase().includes(needle)));
   const rows = matching.filter((o) => status === "All" || STEPS[o.step] === status);
   const count = (s: string) => matching.filter((o) => s === "All" || STEPS[o.step] === s).length;
-  const cities = citiesOf(inChannel);
+  const states = statesOf(inChannel);
+  const cities = citiesOf(inChannel, filters.state);
 
   return (
     <>
@@ -95,7 +96,7 @@ export function AdminOrders() {
           <input type="search" aria-label="Search orders" placeholder="Search order, customer or address" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
-      <OrderFilterBar filters={filters} cities={cities} count={rows.length} showClear={filtering || !!q} set={set} onClear={() => clear("q")} />
+      <OrderFilterBar filters={filters} states={states} cities={cities} count={rows.length} showClear={filtering || !!q} set={set} onClear={() => clear("q")} />
 
       {rows.length === 0 ? <p className="muted">No {channel} orders match{filtering || q || status !== "All" ? " these filters" : ""}.</p> : <OrderGrid orders={rows} onStep={(id, step) => void attempt(() => setStep(id, step))} onDelete={setDeleting} />}
 

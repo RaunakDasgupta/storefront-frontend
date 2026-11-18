@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { SAMPLE_ORDERS, type Order } from "../../shared/lib/orderlogic.ts";
-import { NO_FILTERS, citiesOf, dateBounds, isFiltering, matchesFilters } from "./orderfilters.ts";
+import { NO_FILTERS, citiesOf, dateBounds, isFiltering, matchesFilters, statesOf } from "./orderfilters.ts";
 
-const shipping = (city: string) => ({ fullName: "A", phone: "9876543210", line1: "1 Rd", line2: "", city, state: "MH", pin: "411001" });
+const shipping = (city: string, state = "MH") => ({ fullName: "A", phone: "9876543210", line1: "1 Rd", line2: "", city, state, pin: "411001" });
 const order = (patch: Partial<Order>): Order => ({ ...SAMPLE_ORDERS[0], ...patch });
 const TODAY = "2026-11-18";
 
@@ -42,4 +42,20 @@ test("cities are listed once each, A to Z, and filtering is detected", () => {
   assert.deepEqual(citiesOf([order({ shipping: shipping("Pune") }), order({ shipping: shipping("Delhi") }), order({ shipping: shipping("Pune ") }), order({ shipping: undefined })]), ["Delhi", "Pune"]);
   assert.ok(!isFiltering(NO_FILTERS));
   assert.ok(isFiltering({ ...NO_FILTERS, city: "Pune" }));
+});
+
+test("the state filter matches the delivery state, ignoring case, and skips orders with no address", () => {
+  const f = { ...NO_FILTERS, state: "maharashtra" };
+  assert.ok(matchesFilters(order({ shipping: shipping("Pune", "Maharashtra") }), f, TODAY));
+  assert.ok(!matchesFilters(order({ shipping: shipping("Delhi", "Delhi") }), f, TODAY));
+  assert.ok(!matchesFilters(order({ shipping: undefined }), f, TODAY));
+  assert.ok(!matchesFilters(order({ shipping: shipping("Pune", "Maharashtra") }), { ...f, city: "Mumbai" }, TODAY), "state and city must both match");
+  assert.ok(isFiltering(f));
+});
+
+test("states are listed once each, A to Z, and a state narrows the city list", () => {
+  const list = [order({ shipping: shipping("Pune", "Maharashtra") }), order({ shipping: shipping("Mumbai", "Maharashtra") }), order({ shipping: shipping("Delhi", "Delhi") }), order({ shipping: undefined })];
+  assert.deepEqual(statesOf(list), ["Delhi", "Maharashtra"]);
+  assert.deepEqual(citiesOf(list), ["Delhi", "Mumbai", "Pune"]);
+  assert.deepEqual(citiesOf(list, "Maharashtra"), ["Mumbai", "Pune"]);
 });
