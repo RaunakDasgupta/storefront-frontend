@@ -7,6 +7,7 @@ import { createApi } from "./index.ts";
 import { memoryKV } from "./kv.ts";
 import { seedProducts } from "../lib/data.ts";
 import { SAMPLE_ORDERS } from "../lib/orderlogic.ts";
+import { isSafeImage } from "../lib/productform.ts";
 
 type Call = { url: string; method?: string; headers: Record<string, string>; body?: string };
 /** A fetch that records what was asked and answers from a queue. */
@@ -107,4 +108,6 @@ test("the mock API serves the whole interface from storage and never needs the n
   await assert.rejects(api.adminAuth.signIn({ identity: "EMP-1001", password: "nope" }), /incorrect/);
   const rows = await api.importer.connect({ connector: "sqlite", service: "sqlite", settings: {} });
   assert.equal(rows.length, 5);
+  // the new SKUs come with a logo that points at a bundled photo, so the preview and the shop show pictures
+  assert.ok(rows.slice(0, 4).every((r) => r.image && isSafeImage(r.image)));
 });

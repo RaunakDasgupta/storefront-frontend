@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { STEPS } from "../../shared/lib/orderlogic";
 import { DATE_PRESETS, VALUE_BANDS, isFiltering, type DatePreset, type OrderFilters, type ValueBand } from "../lib/orderfilters";
 
 const KEYS = ["date", "from", "to", "value", "state", "city"] as const;
@@ -24,7 +25,11 @@ export function useOrderFilters() {
   /** Removes the filters, and any other parameters named in `also` (the Orders page's search, for example). */
   const clear = (...also: string[]) => set(Object.fromEntries([...KEYS, ...also].map((k) => [k, null])));
 
-  return { filters, filtering: isFiltering(filters), today: new Date().toISOString().slice(0, 10), set, clear };
+  const statusParam = params.get("status") ?? "";
+  /** The fulfilment status to show (a name from STEPS), or "" for all. Only the Overview uses this; the Orders page has status tabs. */
+  const status = (STEPS as readonly string[]).includes(statusParam) ? statusParam : "";
+
+  return { filters, status, filtering: isFiltering(filters), today: new Date().toISOString().slice(0, 10), set, clear };
 }
 
 type Props = {
@@ -34,13 +39,16 @@ type Props = {
   cities: string[];
   /** How many orders match, shown at the end of the row. */
   count: number;
+  /** With these, a Status filter is shown too (the Overview). `status` is "" for all. */
+  statuses?: readonly string[];
+  status?: string;
   /** Show "Clear filters" even when only something outside this bar is active (a search, for example). */
   showClear: boolean;
   set: (patch: Record<string, string | null>) => void;
   onClear: () => void;
 };
 
-export function OrderFilterBar({ filters, states, cities, count, showClear, set, onClear }: Props) {
+export function OrderFilterBar({ filters, states, cities, statuses, status = "", count, showClear, set, onClear }: Props) {
   return (
     <div className="filterbar" role="group" aria-label="Filter orders">
       <div className="field">
@@ -60,6 +68,15 @@ export function OrderFilterBar({ filters, states, cities, count, showClear, set,
             <input id="of-to" type="date" value={filters.to} min={filters.from || undefined} onChange={(e) => set({ to: e.target.value || null })} />
           </div>
         </>
+      )}
+      {statuses && (
+        <div className="field">
+          <label htmlFor="of-status">Status</label>
+          <select id="of-status" value={status} onChange={(e) => set({ status: e.target.value || null })}>
+            <option value="">All statuses</option>
+            {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
       )}
       <div className="field">
         <label htmlFor="of-value">Order value</label>

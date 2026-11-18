@@ -52,13 +52,13 @@ export function RevenueChart({ days }: { days: { date: string; revenue: number; 
 }
 
 /** How many orders sit at each fulfilment step, one hue from light to dark as the order moves along. */
-export function StatusBars({ counts }: { counts: number[] }) {
+export function StatusBars({ counts, selected, onSelect }: { counts: number[]; /** The status being filtered on, if any. */ selected?: string; onSelect: (status: string | null) => void }) {
   const max = Math.max(1, ...counts);
   return (
     <ul className="status-bars">
       {STEPS.map((label, i) => (
         <li key={label}>
-          <span className="sb-label">{label}</span>
+          <button type="button" className="sb-label" aria-pressed={selected === label} title={selected === label ? "Show all statuses" : `Show only ${label}`} onClick={() => onSelect(selected === label ? null : label)}>{label}</button>
           <span className="sb-track" aria-hidden="true"><span className="sb-fill" style={{ width: `${(counts[i] / max) * 100}%`, opacity: 0.4 + i * 0.2 }} /></span>
           <strong className="sb-count">{counts[i]}</strong>
         </li>

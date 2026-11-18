@@ -13,16 +13,19 @@ const LOW_STOCK = 10;
 /** The dashboard: headline numbers, revenue and fulfilment charts, the newest orders and what is running low. */
 export function Overview() {
   const { orders: allOrders } = useOrders();
-  const { filters, filtering, today, set, clear } = useOrderFilters();
+  const { filters, status, filtering, today, set, clear } = useOrderFilters();
   // the numbers, charts and recent orders below follow the filters; low stock is about products, so it does not
-  const orders = allOrders.filter((o) => matchesFilters(o, filters, today));
+  const matching = allOrders.filter((o) => matchesFilters(o, filters, today));
+  const orders = matching.filter((o) => !status || STEPS[o.step] === status);
+  const filteringAny = filtering || !!status;
   const { products } = useCatalog();
 
   const retail = orders.filter((o) => o.channel === "retail"), bulk = orders.filter((o) => o.channel === "bulk");
-  const counts = countByStep(orders);
-  const open = orders.length - counts[3];
+  // the status bars show every status for the other filters, with the chosen one marked, so you can see what you are narrowing
+  const counts = countByStep(matching);
+  const open = orders.filter((o) => o.step < 3).length;
   const low = products.filter((p) => p.stock < LOW_STOCK).sort((a, b) => a.stock - b.stock);
-  const emptyText = filtering ? "No orders match these filters." : "No orders yet.";
+  const emptyText = filteringAny ? "No orders match these filters." : "No orders yet.";
   const kpis = [
     { label: "Revenue", value: money(revenueOf(orders)), sub: `Retail ${money(revenueOf(retail))} · Bulk ${money(revenueOf(bulk))}` },
     { label: "Orders", value: String(orders.length), sub: `Retail ${retail.length} · Bulk ${bulk.length}` },
@@ -39,7 +42,7 @@ export function Overview() {
         </div>
       </div>
 
-      <OrderFilterBar filters={filters} states={statesOf(allOrders)} cities={citiesOf(allOrders, filters.state)} count={orders.length} showClear={filtering} set={set} onClear={() => clear()} />
+      <OrderFilterBar filters={filters} states={statesOf(allOrders)} cities={citiesOf(allOrders, filters.state)} count={orders.length} statuses={STEPS} status={status} showClear={filteringAny} set={set} onClear={() => clear("status")} />
 
       <div className="kpis">
         {kpis.map((k) => (
@@ -58,7 +61,7 @@ export function Overview() {
         </section>
         <section className="cardbox dash-card" aria-label="Orders by status">
           <header className="cardhead"><h2>Orders by status</h2><Link to="/admin/orders" className="link">Manage</Link></header>
-          <div className="dash-body"><StatusBars counts={counts} /></div>
+          <div className="dash-body"><StatusBars counts={counts} selected={status} onSelect={(s) => set({ status: s })} /></div>
         </section>
       </div>
 

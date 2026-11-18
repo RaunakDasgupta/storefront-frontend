@@ -49,7 +49,13 @@ export function ProductImage({ p, alt = "", className = "", eager, small }: { p:
       loading={eager ? "eager" : "lazy"}
       decoding="async"
       referrerPolicy="no-referrer"
-      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/products/placeholder.svg"; }}
+      onError={(e) => {
+        const img = e.currentTarget;
+        // a missing thumbnail falls back to the full photo first, then to the placeholder
+        const full = imageSrc(p);
+        if (small && img.getAttribute("src") !== full) img.src = full;
+        else { img.onerror = null; img.src = "/products/placeholder.svg"; }
+      }}
     />
   );
 }

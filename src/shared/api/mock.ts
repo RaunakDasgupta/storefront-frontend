@@ -89,7 +89,7 @@ function mockPayments(delayMs: number): PaymentsApi {
 
 const SOURCE_NAMES: Record<string, string> = { postgres: "PostgreSQL", sqlite: "SQLite", aws: "Amazon Web Services", gcp: "Google Cloud" };
 
-/** Sample products standing in for what a real source would return: four new SKUs and one change to an existing product. */
+/** Sample products standing in for what a real source would return: four new SKUs (with logos from the bundled photos) and one change to an existing product. */
 function mockImporter(delayMs: number): ImportApi {
   return {
     async connect({ connector }) {
@@ -97,10 +97,10 @@ function mockImporter(delayMs: number): ImportApi {
       const blurb = `Imported from ${SOURCE_NAMES[connector] ?? connector}.`;
       const existing = seedProducts[0];
       const rows: SkuRow[] = [
-        { sku: "DB-101", name: "Dishwash liquid", size: "500 ml", price: 129, category: "Home care", blurb, stock: 80, channel: "retail" },
-        { sku: "DB-102", name: "Body lotion", size: "250 ml", price: 219, category: "Personal care", blurb, stock: 36, channel: "retail" },
-        { sku: "DB-103", name: "Paper napkins", size: "Pack of 100", price: 79, category: "Paper essentials", blurb, stock: 120, channel: "retail" },
-        { sku: "DB-201", name: "Dishwash liquid", size: "Carton of 12", price: 1399, category: "Home care", blurb, stock: 20, channel: "bulk" },
+        { sku: "DB-101", name: "Dishwash liquid", size: "500 ml", price: 129, category: "Home care", blurb, stock: 80, channel: "retail", image: "/products/sponge-scrubbers.jpg" },
+        { sku: "DB-102", name: "Body lotion", size: "250 ml", price: 219, category: "Personal care", blurb, stock: 36, channel: "retail", image: "/products/shampoo.jpg" },
+        { sku: "DB-103", name: "Paper napkins", size: "Pack of 100", price: 79, category: "Paper essentials", blurb, stock: 120, channel: "retail", image: "/products/tissue-box.jpg" },
+        { sku: "DB-201", name: "Dishwash liquid", size: "Carton of 12", price: 1399, category: "Home care", blurb, stock: 20, channel: "bulk", image: "/products/detergent.jpg" },
         { sku: existing.sku, name: existing.name, size: existing.size, price: existing.price - 10, category: existing.category, blurb: existing.blurb, stock: existing.stock, channel: existing.channel },
       ];
       return rows;
