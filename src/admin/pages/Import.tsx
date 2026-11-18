@@ -6,6 +6,7 @@ import { messageOf } from "../../shared/store/errors";
 import { ConnectorForm } from "../components/ConnectorForm";
 import { ImportPreview } from "../components/ImportPreview";
 import { CONNECTORS } from "../lib/connectors";
+import { CARD, H1, PAGE_HEAD } from "../ui";
 
 const MAX_BYTES = 1_000_000;
 const SOURCES = [{ id: "csv", label: "CSV file", badge: "CSV", description: "Upload a file from your computer" }, ...CONNECTORS];
@@ -48,41 +49,41 @@ export function ImportPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className={PAGE_HEAD}>
         <div>
-          <h1>Import SKUs</h1>
-          <p className="muted">Add or update products from a CSV file, a database or a cloud service.</p>
+          <h1 className={H1}>Import SKUs</h1>
+          <p className="mt-1 text-muted">Add or update products from a CSV file, a database or a cloud service.</p>
         </div>
-        <a className="btn secondary inline" download="sku-template.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(skuTemplate(window.location.origin))}`}>
+        <a className="btn btn-secondary btn-inline px-[18px] py-[9px]" download="sku-template.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(skuTemplate(window.location.origin))}`}>
           Download CSV template
         </a>
       </div>
 
-      <div className="sources" role="radiogroup" aria-label="Data source">
+      <div className="mb-4 grid grid-cols-5 gap-3 max-[1100px]:grid-cols-3 max-sm:grid-cols-2" role="radiogroup" aria-label="Data source">
         {SOURCES.map((s) => (
-          <button key={s.id} type="button" role="radio" aria-checked={source === s.id} className="source" onClick={() => pick(s.id)}>
-            <span className="source-badge" aria-hidden="true">{s.badge}</span>
+          <button key={s.id} type="button" role="radio" aria-checked={source === s.id} className="group flex flex-col items-start gap-1 rounded-xl border border-line bg-white p-3.5 text-left text-ink transition duration-150 hover:border-[#b5b5b5] aria-checked:border-brand aria-checked:bg-brand-tint aria-checked:shadow-[0_0_0_1px_var(--color-brand)]" onClick={() => pick(s.id)}>
+            <span className="mb-1.5 inline-grid h-7 min-w-9 place-items-center rounded-lg bg-ink px-2 text-[11.5px] font-bold tracking-[0.02em] text-white group-aria-checked:bg-brand" aria-hidden="true">{s.badge}</span>
             <strong>{s.label}</strong>
-            <span className="muted">{s.description}</span>
+            <span className="text-[12.5px] leading-[1.35] text-muted">{s.description}</span>
           </button>
         ))}
       </div>
 
-      <section className="cardbox import">
-        <div className="import-body">
+      <section className={`${CARD} mb-5`}>
+        <div className="flex flex-col gap-3.5 p-5">
           {connector ? (
             <ConnectorForm key={connector.id} connector={connector} onRows={(label, rows) => { setDone(null); setPreview({ label, rows, issues: [] }); }} />
           ) : (
             <>
-              <label className={dragging ? "dropzone drag" : "dropzone"} onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop}>
-                <input type="file" accept=".csv,text/csv" onChange={(e) => { void load(e.target.files?.[0]); e.target.value = ""; }} />
+              <label className={`relative mb-0 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-[1.5px] border-dashed bg-brand-tint px-4 py-9 text-center transition-colors hover:border-brand focus-within:border-brand focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus ${dragging ? "border-brand" : "border-brand-line"}`} onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop}>
+                <input className="absolute inset-0 size-full cursor-pointer opacity-0" type="file" accept=".csv,text/csv" onChange={(e) => { void load(e.target.files?.[0]); e.target.value = ""; }} />
                 <strong>Drop a CSV here or choose a file</strong>
-                <span className="muted">Up to {MAX_ROWS.toLocaleString("en-IN")} rows, 1 MB.</span>
+                <span className="text-muted">Up to {MAX_ROWS.toLocaleString("en-IN")} rows, 1 MB.</span>
               </label>
 
-              <details className="format">
-                <summary>CSV format</summary>
-                <p className="muted">
+              <details>
+                <summary className="p-0 font-[550]">CSV format</summary>
+                <p className="mt-2 text-muted">
                   One SKU per row, with a header row. Required columns: <code>sku</code>, <code>name</code>, <code>price</code>. Optional:
                   {" "}<code>size</code>, <code>category</code>, <code>channel</code> (<code>retail</code> or <code>bulk</code>), <code>compare_at_price</code>, <code>stock</code>, <code>description</code> and <code>logo_url</code> (a full https link to the product logo or photo).
                   A SKU that already exists is updated, a new SKU is added, and nothing is deleted.
@@ -91,7 +92,7 @@ export function ImportPage() {
             </>
           )}
 
-          {problem && <p className="error" role="alert">{problem}</p>}
+          {problem && <p className="error mb-0" role="alert">{problem}</p>}
 
           {done && (
             <p className="notice" role="status">

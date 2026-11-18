@@ -24,24 +24,24 @@ export function RevenueChart({ days }: { days: { date: string; revenue: number; 
 
   return (
     <div>
-      <p className="chart-readout" aria-live="polite">
-        {shown ? <><strong>{dayLabel(shown.date)}</strong> · {money(shown.revenue)} from {shown.orders} {shown.orders === 1 ? "order" : "orders"}</> : <span className="muted">Hover a day for details</span>}
+      <p className="mb-1 min-h-[22px] text-[13.5px]" aria-live="polite">
+        {shown ? <><strong>{dayLabel(shown.date)}</strong> · {money(shown.revenue)} from {shown.orders} {shown.orders === 1 ? "order" : "orders"}</> : <span className="text-muted">Hover a day for details</span>}
       </p>
-      <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Revenue per day, ${days.length} days: ${days.map((d) => `${dayLabel(d.date)} ${money(d.revenue)}`).join(", ")}`}>
+      <svg className="block h-auto w-full" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Revenue per day, ${days.length} days: ${days.map((d) => `${dayLabel(d.date)} ${money(d.revenue)}`).join(", ")}`}>
         {[0, 1, 2, 3, 4].map((i) => (
           <g key={i}>
-            <line x1={LEFT} x2={W - RIGHT} y1={y((top / 4) * i)} y2={y((top / 4) * i)} className="grid" />
-            <text x={LEFT - 8} y={y((top / 4) * i) + 4} textAnchor="end" className="tick">{compact((top / 4) * i)}</text>
+            <line x1={LEFT} x2={W - RIGHT} y1={y((top / 4) * i)} y2={y((top / 4) * i)} className="stroke-line" strokeWidth={1} />
+            <text x={LEFT - 8} y={y((top / 4) * i) + 4} textAnchor="end" className="fill-muted text-[11px]">{compact((top / 4) * i)}</text>
           </g>
         ))}
         {days.map((d, i) => {
           const x = LEFT + slot * i + (slot - bar) / 2;
           return (
-            <g key={d.date} className={hover === i ? "col on" : "col"}>
-              <path d={barPath(x, y(d.revenue), bar, base)} className="bar" />
-              <text x={x + bar / 2} y={H - 8} textAnchor="middle" className="tick">{dayLabel(d.date)}</text>
+            <g key={d.date}>
+              <path d={barPath(x, y(d.revenue), bar, base)} className={`fill-brand transition-opacity duration-150 ${hover === i ? "opacity-100" : "opacity-85"}`} />
+              <text x={x + bar / 2} y={H - 8} textAnchor="middle" className="fill-muted text-[11px]">{dayLabel(d.date)}</text>
               {/* a wider invisible target than the bar, so it is easy to hit */}
-              <rect x={LEFT + slot * i} y={TOP} width={slot} height={plotH + BOTTOM} fill="transparent" tabIndex={0} aria-label={`${dayLabel(d.date)}: ${money(d.revenue)}, ${d.orders} orders`}
+              <rect x={LEFT + slot * i} y={TOP} width={slot} height={plotH + BOTTOM} className="fill-transparent focus-visible:outline-2 focus-visible:outline-focus" tabIndex={0} aria-label={`${dayLabel(d.date)}: ${money(d.revenue)}, ${d.orders} orders`}
                 onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)} />
             </g>
           );
@@ -55,12 +55,12 @@ export function RevenueChart({ days }: { days: { date: string; revenue: number; 
 export function StatusBars({ counts, selected, onSelect }: { counts: number[]; /** The status being filtered on, if any. */ selected?: string; onSelect: (status: string | null) => void }) {
   const max = Math.max(1, ...counts);
   return (
-    <ul className="status-bars">
+    <ul className="mt-2 flex flex-col gap-3.5">
       {STEPS.map((label, i) => (
-        <li key={label}>
-          <button type="button" className="sb-label" aria-pressed={selected === label} title={selected === label ? "Show all statuses" : `Show only ${label}`} onClick={() => onSelect(selected === label ? null : label)}>{label}</button>
-          <span className="sb-track" aria-hidden="true"><span className="sb-fill" style={{ width: `${(counts[i] / max) * 100}%`, opacity: 0.4 + i * 0.2 }} /></span>
-          <strong className="sb-count">{counts[i]}</strong>
+        <li key={label} className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1">
+          <button type="button" className="justify-self-start border-0 bg-transparent p-0 text-left hover:underline aria-pressed:font-bold aria-pressed:text-forest" aria-pressed={selected === label} title={selected === label ? "Show all statuses" : `Show only ${label}`} onClick={() => onSelect(selected === label ? null : label)}>{label}</button>
+          <span className="col-span-full row-start-2 h-2 overflow-hidden rounded bg-soft" aria-hidden="true"><span className="block h-full rounded bg-brand" style={{ width: `${(counts[i] / max) * 100}%`, opacity: 0.4 + i * 0.2 }} /></span>
+          <strong className="text-[15px]">{counts[i]}</strong>
         </li>
       ))}
     </ul>

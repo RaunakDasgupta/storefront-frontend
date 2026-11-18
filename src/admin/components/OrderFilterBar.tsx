@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { STEPS } from "../../shared/lib/orderlogic";
 import { DATE_PRESETS, VALUE_BANDS, isFiltering, type DatePreset, type OrderFilters, type ValueBand } from "../lib/orderfilters";
@@ -48,61 +48,65 @@ type Props = {
   onClear: () => void;
 };
 
+/** One labelled filter. Two to a row on a phone. */
+function Filter({ id, label, children }: { id: string; label: string; children: ReactNode }) {
+  return (
+    <div className="mb-2 min-w-[150px] max-sm:min-w-0 max-sm:flex-[1_1_calc(50%-7px)]">
+      <label htmlFor={id} className="mb-1 text-[12.5px] font-[550] text-muted">{label}</label>
+      {children}
+    </div>
+  );
+}
+const CONTROL = "h-9 border-[#cfcfcf]";
+
 export function OrderFilterBar({ filters, states, cities, statuses, status = "", count, showClear, set, onClear }: Props) {
   return (
-    <div className="filterbar" role="group" aria-label="Filter orders">
-      <div className="field">
-        <label htmlFor="of-date">Placed</label>
-        <select id="of-date" value={filters.date} onChange={(e) => set({ date: e.target.value === "all" ? null : e.target.value, ...(e.target.value === "custom" ? {} : { from: null, to: null }) })}>
+    <div className="mb-[18px] flex flex-wrap items-end gap-x-3.5" role="group" aria-label="Filter orders">
+      <Filter id="of-date" label="Placed">
+        <select id="of-date" className={CONTROL} value={filters.date} onChange={(e) => set({ date: e.target.value === "all" ? null : e.target.value, ...(e.target.value === "custom" ? {} : { from: null, to: null }) })}>
           {DATE_PRESETS.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
         </select>
-      </div>
+      </Filter>
       {filters.date === "custom" && (
         <>
-          <div className="field">
-            <label htmlFor="of-from">From</label>
-            <input id="of-from" type="date" value={filters.from} max={filters.to || undefined} onChange={(e) => set({ from: e.target.value || null })} />
-          </div>
-          <div className="field">
-            <label htmlFor="of-to">To</label>
-            <input id="of-to" type="date" value={filters.to} min={filters.from || undefined} onChange={(e) => set({ to: e.target.value || null })} />
-          </div>
+          <Filter id="of-from" label="From">
+            <input id="of-from" type="date" className={CONTROL} value={filters.from} max={filters.to || undefined} onChange={(e) => set({ from: e.target.value || null })} />
+          </Filter>
+          <Filter id="of-to" label="To">
+            <input id="of-to" type="date" className={CONTROL} value={filters.to} min={filters.from || undefined} onChange={(e) => set({ to: e.target.value || null })} />
+          </Filter>
         </>
       )}
       {statuses && (
-        <div className="field">
-          <label htmlFor="of-status">Status</label>
-          <select id="of-status" value={status} onChange={(e) => set({ status: e.target.value || null })}>
+        <Filter id="of-status" label="Status">
+          <select id="of-status" className={CONTROL} value={status} onChange={(e) => set({ status: e.target.value || null })}>
             <option value="">All statuses</option>
             {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-        </div>
+        </Filter>
       )}
-      <div className="field">
-        <label htmlFor="of-value">Order value</label>
-        <select id="of-value" value={filters.value} onChange={(e) => set({ value: e.target.value === "all" ? null : e.target.value })}>
+      <Filter id="of-value" label="Order value">
+        <select id="of-value" className={CONTROL} value={filters.value} onChange={(e) => set({ value: e.target.value === "all" ? null : e.target.value })}>
           {VALUE_BANDS.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
         </select>
-      </div>
-      <div className="field">
-        <label htmlFor="of-state">Delivery state</label>
+      </Filter>
+      <Filter id="of-state" label="Delivery state">
         {/* the city list follows the state, so a state change drops a city that is no longer in it */}
-        <select id="of-state" value={filters.state} onChange={(e) => set({ state: e.target.value || null, city: null })}>
+        <select id="of-state" className={CONTROL} value={filters.state} onChange={(e) => set({ state: e.target.value || null, city: null })}>
           <option value="">Any state</option>
           {states.map((s) => <option key={s} value={s}>{s}</option>)}
           {filters.state && !states.includes(filters.state) && <option value={filters.state}>{filters.state}</option>}
         </select>
-      </div>
-      <div className="field">
-        <label htmlFor="of-city">Delivery city</label>
-        <select id="of-city" value={filters.city} onChange={(e) => set({ city: e.target.value || null })}>
+      </Filter>
+      <Filter id="of-city" label="Delivery city">
+        <select id="of-city" className={CONTROL} value={filters.city} onChange={(e) => set({ city: e.target.value || null })}>
           <option value="">Any city</option>
           {cities.map((c) => <option key={c} value={c}>{c}</option>)}
           {filters.city && !cities.includes(filters.city) && <option value={filters.city}>{filters.city}</option>}
         </select>
-      </div>
-      {showClear && <button type="button" className="linkbtn filter-clear" onClick={onClear}>Clear filters</button>}
-      <p className="muted filter-count" aria-live="polite">{count} {count === 1 ? "order" : "orders"}</p>
+      </Filter>
+      {showClear && <button type="button" className="linkbtn mb-4 font-[550]" onClick={onClear}>Clear filters</button>}
+      <p className="mr-0 mb-3.5 ml-auto text-muted" aria-live="polite">{count} {count === 1 ? "order" : "orders"}</p>
     </div>
   );
 }

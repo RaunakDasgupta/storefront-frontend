@@ -7,6 +7,7 @@ import { messageOf } from "../../shared/store/errors";
 import { Icon } from "../../shared/ui";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { OrderGrid } from "../components/OrderGrid";
+import { H1, PAGE_HEAD, PILL_BTN, PILL_SWITCH, SEARCH_BOX, SEARCH_ICON, SEARCH_INPUT, TAB_BTN, TABS, TOOLBAR } from "../ui";
 import { OrderFilterBar, useOrderFilters } from "../components/OrderFilterBar";
 import { citiesOf, matchesFilters, statesOf } from "../lib/orderfilters";
 
@@ -67,38 +68,38 @@ export function AdminOrders() {
 
   return (
     <>
-      <div className="page-head"><h1>Orders</h1></div>
+      <div className={PAGE_HEAD}><h1 className={H1}>Orders</h1></div>
 
       {undo && (
-        <p className="notice" role="status">
+        <p className="notice mb-3" role="status">
           Deleted {undo.order.id} ({undo.order.customer.name}).{" "}
           <button className="linkbtn" onClick={() => { const { order, index } = undo; setUndo(null); void attempt(() => restore(order, index)); }}>Undo</button>
         </p>
       )}
       {failure && <p className="error" role="alert">{failure}</p>}
 
-      <div className="channel-switch" role="group" aria-label="Order type">
+      <div className={PILL_SWITCH} role="group" aria-label="Order type">
         {CHANNELS.map((c) => (
-          <button key={c.id} aria-pressed={channel === c.id} onClick={() => update({ type: c.id === "retail" ? null : c.id, status: null })}>
-            {c.label} <span>{orders.filter((o) => o.channel === c.id).length}</span>
+          <button key={c.id} className={PILL_BTN} aria-pressed={channel === c.id} onClick={() => update({ type: c.id === "retail" ? null : c.id, status: null })}>
+            {c.label} <span className="ml-1 font-medium opacity-75">{orders.filter((o) => o.channel === c.id).length}</span>
           </button>
         ))}
       </div>
 
-      <div className="toolbar">
-        <div className="tabs" role="group" aria-label="Filter by status">
+      <div className={TOOLBAR}>
+        <div className={TABS} role="group" aria-label="Filter by status">
           {FILTERS.map((s) => (
-            <button key={s} aria-pressed={status === s} onClick={() => update({ status: s === "All" ? null : s })}>{s} <span>{count(s)}</span></button>
+            <button key={s} className={TAB_BTN} aria-pressed={status === s} onClick={() => update({ status: s === "All" ? null : s })}>{s} <span className="ml-1 font-medium opacity-70">{count(s)}</span></button>
           ))}
         </div>
-        <div className="search">
-          <Icon name="search" />
-          <input type="search" aria-label="Search orders" placeholder="Search order, customer or address" value={q} onChange={(e) => update({ q: e.target.value || null })} />
+        <div className={SEARCH_BOX}>
+          <Icon name="search" className={SEARCH_ICON} />
+          <input className={SEARCH_INPUT} type="search" aria-label="Search orders" placeholder="Search order, customer or address" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
       <OrderFilterBar filters={filters} states={states} cities={cities} count={rows.length} showClear={filtering || !!q} set={set} onClear={() => clear("q")} />
 
-      {rows.length === 0 ? <p className="muted">No {channel} orders match{filtering || q || status !== "All" ? " these filters" : ""}.</p> : <OrderGrid orders={rows} onStep={(id, step) => void attempt(() => setStep(id, step))} onDelete={setDeleting} />}
+      {rows.length === 0 ? <p className="text-muted">No {channel} orders match{filtering || q || status !== "All" ? " these filters" : ""}.</p> : <OrderGrid orders={rows} onStep={(id, step) => void attempt(() => setStep(id, step))} onDelete={setDeleting} />}
 
       {deleting && (
         <ConfirmDelete

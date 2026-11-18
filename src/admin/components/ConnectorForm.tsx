@@ -41,20 +41,20 @@ export function ConnectorForm({ connector, onRows }: { connector: Connector; onR
   }
 
   return (
-    <form className="connector" onSubmit={onSubmit} noValidate>
+    <form className="flex flex-col gap-3.5" onSubmit={onSubmit} noValidate>
       {demo ? (
-        <p className="notice demo-banner" role="note">
+        <p className="notice text-[13px]" role="note">
           Demo connection. A browser cannot open a database connection, so nothing is contacted: <strong>Connect and preview</strong> checks the form and loads sample products
           so you can try the import. Credentials stay in this form and are never saved or sent.
         </p>
       ) : (
-        <p className="notice demo-banner" role="note">
+        <p className="notice text-[13px]" role="note">
           These settings are sent to your import service, which connects to the source for you. They are not saved in this browser.
         </p>
       )}
 
       {connector.services.length > 1 && (
-        <div className="field">
+        <div className="mb-4">
           <label htmlFor="cx-service">Service</label>
           <select id="cx-service" value={serviceId} onChange={(e) => pickService(e.target.value)} disabled={busy}>
             {connector.services.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
@@ -62,9 +62,9 @@ export function ConnectorForm({ connector, onRows }: { connector: Connector; onR
         </div>
       )}
 
-      <div className="connector-fields">
+      <div className="grid grid-cols-2 gap-x-4 max-sm:grid-cols-1">
         {service.fields.map((f) => f.kind === "select" ? (
-          <div className="field" key={f.key}>
+          <div className="mb-4" key={f.key}>
             <label htmlFor={`cx-${f.key}`}>{f.label}</label>
             <select id={`cx-${f.key}`} value={values[f.key]} onChange={(e) => setValues({ ...values, [f.key]: e.target.value })} disabled={busy}>
               {f.options?.map((o) => <option key={o}>{o}</option>)}
@@ -79,9 +79,9 @@ export function ConnectorForm({ connector, onRows }: { connector: Connector; onR
         ))}
       </div>
 
-      {failure && <p className="error" role="alert">{failure}</p>}
-      <div className="import-actions">
-        <button type="submit" className="btn primary inline" disabled={busy}>{busy ? "Connecting…" : "Connect and preview"}</button>
+      {failure && <p className="error mb-0" role="alert">{failure}</p>}
+      <div className="flex flex-wrap items-center gap-2.5 max-sm:[&_.btn]:flex-1">
+        <button type="submit" className="btn btn-primary btn-inline" disabled={busy}>{busy ? "Connecting…" : "Connect and preview"}</button>
       </div>
     </form>
   );

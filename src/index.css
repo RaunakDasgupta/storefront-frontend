@@ -1,0 +1,112 @@
+/* Tailwind CSS v4, loaded by the Vite plugin (see vite.config.ts). There is no tailwind.config.js: the theme below is the config.
+   Everything else in the app is styled with utility classes in the components. This file only holds the theme, a few
+   element defaults, and the handful of shared pieces that would otherwise repeat dozens of utilities (buttons, badges, dialogs). */
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+
+  /* the storefront's palette */
+  --color-ink: #1a1a1a;
+  --color-ink-2: #303030;
+  --color-muted: #616161;
+  --color-line: #e3e3e3;
+  --color-soft: #f1f1f1;
+  --color-brand: #2b8a1e;
+  --color-brand-dark: #206b16;
+  --color-brand-tint: #edf7ea;
+  --color-brand-line: #cfe6c9;
+  --color-forest: #1f5c17;
+  --color-focus: #005bd3;
+  --color-danger: #c70a24;
+  --color-page: #f6f7f6;
+
+  /* named text sizes keep the app's 1.5 line height instead of Tailwind's per-size defaults */
+  --text-xs--line-height: 1.5;
+  --text-sm--line-height: 1.5;
+  --text-base--line-height: 1.5;
+  --text-lg--line-height: 1.5;
+  --text-xl--line-height: 1.5;
+  --text-2xl--line-height: 1.5;
+
+  --animate-pop: pop 0.14s ease-out;
+  --animate-toast-in: toast-in 0.25s ease-out;
+  --animate-browse-in: browse-in 0.28s ease-out;
+  @keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes browse-in { from { opacity: 0; transform: translateY(8px); } }
+}
+
+/* Tailwind v4 starts borders at currentColor and buttons at the default cursor: put back what the app always had. */
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button { border-color: var(--color-line); }
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-white font-sans text-[14px] leading-normal text-ink antialiased; }
+  h1, h2, h3 { font-weight: 700; letter-spacing: -0.015em; }
+  button:not(:disabled), [role="button"]:not(:disabled), summary { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  ::placeholder { color: #757575; opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+
+  label { @apply mb-1.5 block font-[550]; }
+  input, select, textarea { @apply h-10 w-full rounded-lg border border-[#8a8a8a] bg-white px-3 text-inherit hover:border-ink; }
+  textarea { @apply h-auto resize-y py-2.5 leading-[1.4]; }
+  input[aria-invalid="true"], textarea[aria-invalid="true"] { @apply border-danger shadow-[0_0_0_1px_var(--color-danger)]; }
+  code { @apply rounded bg-soft px-[5px] py-px text-[12.5px]; }
+}
+
+@layer components {
+  /* icons: 24px line drawings that take the text colour; give them a size with a size-* utility */
+  .icon { @apply block size-[22px] fill-none stroke-current stroke-[1.6]; stroke-linecap: round; stroke-linejoin: round; }
+
+  .link { @apply text-focus no-underline hover:underline; }
+  .linkbtn { @apply border-0 bg-transparent p-0 text-focus hover:underline; font: inherit; }
+
+  /* buttons: .btn plus one of -primary, -secondary, -light, -danger, and -inline to size to the text */
+  .btn { @apply w-full rounded-lg border border-transparent px-[18px] py-[11px] text-center font-semibold no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply bg-brand text-white hover:bg-brand-dark; }
+  .btn-secondary { @apply border-[#c9c9c9] bg-white text-ink hover:bg-[#f7f7f7]; }
+  .btn-light { @apply bg-white text-ink hover:bg-soft; }
+  .btn-danger { @apply bg-danger text-white hover:bg-[#a3081d]; }
+  .btn-inline { @apply inline-block w-auto px-6; }
+
+  .badge { @apply inline-block rounded-lg bg-[#e3e3e3] px-2 py-0.5 text-xs font-[550] whitespace-nowrap; }
+  .status-select { @apply h-[30px] w-auto cursor-pointer rounded-lg border-0 bg-[#e3e3e3] px-2 text-[12.5px] font-semibold hover:border-0 hover:shadow-[0_0_0_1px_rgba(0,0,0,.25)]; }
+
+  /* order status colours, for badges and for the status dropdown */
+  .tone-pending { @apply bg-[#ffe9a8] text-[#5e4200]; }
+  .tone-paid { @apply bg-[#cce6ff] text-[#003a5a]; }
+  .tone-packed { @apply bg-[#e6dcff] text-[#3d1f8a]; }
+  .tone-fulfilled { @apply bg-[#cdfee1] text-[#0c5132]; }
+
+  .error { @apply mb-3 text-sm text-danger; }
+  .notice { @apply rounded-lg border border-brand-line bg-brand-tint px-3.5 py-3 text-forest; }
+
+  /* a modal <dialog>: the widths and contents are set where it is used */
+  .dlg { @apply m-auto max-h-[calc(100vh-32px)] overflow-auto rounded-[18px] border-0 p-0 text-ink shadow-[0_24px_60px_rgba(0,0,0,.35)] backdrop:bg-[rgba(10,30,8,.45)]; }
+  .dlg-x { @apply size-8 shrink-0 rounded-full border-0 bg-transparent text-2xl leading-none text-muted hover:bg-soft hover:text-ink; }
+
+  /* the dropdown under a header button; its direct children are menu items */
+  .dropdown { @apply absolute top-[calc(100%+8px)] right-0 z-20 flex w-[250px] animate-pop flex-col gap-0.5 rounded-xl bg-white p-2 shadow-[0_0_0_1px_rgba(0,0,0,.08),0_12px_28px_rgba(0,0,0,.16)]; }
+  .dropdown > a, .dropdown > button { @apply flex min-h-10 items-center rounded-lg border-0 bg-transparent px-3 text-left font-[550] text-ink no-underline hover:bg-soft; }
+  .dropdown > .dd-primary { @apply mt-1 justify-center bg-brand text-white hover:bg-brand-dark; }
+
+  /* a data table: hairline rows, a tinted header, right-aligned numbers with text-right */
+  .tbl { @apply w-full border-collapse; }
+  .tbl th, .tbl td { @apply border-t border-[#ececec] px-5 py-3 text-left whitespace-nowrap max-sm:px-3 max-sm:first:pl-4 max-sm:last:pr-4; }
+  .tbl th { @apply bg-[#f7faf6] font-[550] text-muted; }
+  .tbl tbody tr:hover { background: #fafcf9; }
+
+  /* order progress: dots joined by a line, done and current steps in green */
+  .tracker { @apply m-0 flex list-none p-0; }
+  .tracker li { @apply relative flex flex-1 flex-col items-center gap-1.5 text-center text-xs text-muted max-sm:text-[11px]; }
+  .tracker li + li::before { content: ""; @apply absolute top-[9px] right-1/2 -left-1/2 h-0.5 bg-[#d9d9d9]; }
+  .tracker li.done::before, .tracker li.now::before { @apply bg-brand; }
+  .tracker .dot { @apply relative z-[1] grid size-5 place-items-center rounded-full border-[3px] border-white bg-[#d9d9d9] shadow-[0_0_0_1px_#d9d9d9]; }
+  .tracker .dot .icon { @apply size-3 stroke-white stroke-[3]; }
+  .tracker li.done .dot { @apply bg-brand shadow-[0_0_0_1px_var(--color-brand)]; }
+  .tracker li.now .dot { @apply bg-brand shadow-[0_0_0_1px_var(--color-brand),0_0_0_5px_var(--color-brand-line)]; }
+  .tracker li.done, .tracker li.now { @apply font-semibold text-ink; }
+}

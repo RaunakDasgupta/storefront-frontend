@@ -33,31 +33,31 @@ export function AdminLogin() {
   }
 
   return (
-    <main className="login">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-8">
       <Logo to="/admin/login" label="Everyday Market" />
-      <section className="card">
-        <h1>Admin log in</h1>
-        <p className="sub">Use your work account to open the admin portal.</p>
+      <section className="w-full max-w-[380px]">
+        <h1 className="mb-1 text-[26px] leading-[1.15] font-[750]">Admin log in</h1>
+        <p className="mb-6 text-muted">Use your work account to open the admin portal.</p>
         <form onSubmit={onSubmit} noValidate>
-          <div className="field">
+          <div className="mb-4">
             <label htmlFor="identity">Work email or employee ID</label>
             <input id="identity" autoComplete="username" value={identity} onChange={(e) => setIdentity(e.target.value)} aria-invalid={error?.field === "identity" || undefined} autoFocus />
           </div>
-          <div className="field">
+          <div className="mb-4">
             <label htmlFor="password">Password</label>
             <input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={error?.field === "password" || undefined} />
           </div>
           <p className="error" role="alert" hidden={!error}>{error?.message}</p>
-          <button type="submit" className="btn primary" disabled={busy}>Log in</button>
-          <div className="divider"><span>or</span></div>
-          <button type="button" className="btn secondary" onClick={() => setError({ message: "Single sign-on isn't set up yet." })}>Continue with company SSO</button>
+          <button type="submit" className="btn btn-primary" disabled={busy}>Log in</button>
+          <div className="my-4 flex items-center gap-3 text-muted before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line"><span>or</span></div>
+          <button type="button" className="btn btn-secondary" onClick={() => setError({ message: "Single sign-on isn't set up yet." })}>Continue with company SSO</button>
         </form>
 
         {/* sample credentials only show in `npm run dev`, and only while sign-in is the built-in mock, never in a production build */}
         {import.meta.env.DEV && mockAuth && (
-          <aside className="demo" aria-label="Demo account">
+          <aside className="mt-5 rounded-[10px] border border-dashed border-[#b5b5b5] bg-[#fafafa] px-4 py-3.5 text-[13px]" aria-label="Demo account">
             <strong>Demo admin account</strong>
-            <dl><dt>Email or ID</dt><dd>{DEMO_ADMIN.email} or {DEMO_ADMIN.employeeId}</dd><dt>Password</dt><dd>{DEMO_ADMIN.password}</dd></dl>
+            <dl className="my-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 [&_dd]:m-0 [&_dd]:font-mono [&_dd]:[overflow-wrap:anywhere] [&_dt]:text-muted"><dt>Email or ID</dt><dd>{DEMO_ADMIN.email} or {DEMO_ADMIN.employeeId}</dd><dt>Password</dt><dd>{DEMO_ADMIN.password}</dd></dl>
             <button type="button" className="linkbtn" onClick={() => { setIdentity(DEMO_ADMIN.email); setPassword(DEMO_ADMIN.password); setError(null); }}>
               Fill in these details
             </button>

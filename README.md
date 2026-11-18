@@ -1,11 +1,11 @@
 # storefront-frontend
 
-Two independent apps in one **React 19 + TypeScript + Vite + Redux Toolkit** project, built around keeping each flow short and easy to navigate:
+Two independent apps in one **React 19 + TypeScript + Vite + Redux Toolkit + Tailwind CSS** project, built around keeping each flow short and easy to navigate:
 
 - **Customer storefront ("Everyday Market")** at `/`: retail and bulk shopping, a cart with a simulated checkout, and order-progress tracking.
 - **Admin portal ("Everyday Market Admin")** at `/admin`: a dashboard, orders (with each delivery address), products, and SKU import from CSV, PostgreSQL, SQLite, AWS or Google Cloud.
 
-The two apps have their own logins, sessions, route guards, layouts and stylesheets. Neither links to the other, being signed in to one never signs you in to the other, and each is built and loaded as a separate bundle.
+The two apps have their own logins, sessions, route guards and layouts. Neither links to the other, being signed in to one never signs you in to the other, and each is built and loaded as a separate bundle.
 
 ## Getting started
 
@@ -110,19 +110,24 @@ src/shared/              Only what both apps genuinely share
   lib/                   Pure code with no React: data.ts, csv.ts, catalog.ts, orderlogic.ts, productform.ts (tests in lib.test.ts)
   store/                 Redux slices for the catalog, orders and meta (loading status, API thunks), session and typed-hook helpers, store.test.ts
   hooks/                 useCatalog and useOrders (plus useLoadCatalog / useLoadOrders): selectors plus dispatch for the components
-  ui/                    Icon, Logo, ProductImage, Field, Menu, LoadGate (index.tsx) and base.css (colour tokens and primitives)
-src/customer/            The storefront (its styles are scoped to .cx)
+  ui/                    Icon, Logo, Avatar, ProductImage, Field, Menu, LoadGate (index.tsx), ErrorBoundary and shared class strings (classes.ts)
+src/index.css            Tailwind: the theme (colours, fonts, animations), element defaults and a few shared pieces (buttons, badges, dialogs, tracker, tables)
+src/customer/            The storefront (ui.ts holds the class strings its pages share)
   store/                 Its own store, slices (auth, cart, toast, authDialog, checkout), checkout thunks, form checks (gateway.ts), store.test.ts
   hooks/                 useCustomer, useCart, useMyOrders, useCategories
   components/            Layout, AuthDialog, CheckoutDialog (address, dummy payment, order placed), Toast, parts (ProductCard, CartPanel and the other pieces)
   pages/                 Shop, Product, Categories, Cart, Orders, Account, NotFound
-src/admin/               The admin portal (its styles are scoped to .ax)
+src/admin/               The admin portal (ui.ts holds the class strings its pages share)
   store/                 Its own store, auth slice and the import thunk
   hooks/                 useAdmin
   lib/                   connectors.ts (the database and cloud import sources) and orderfilters.ts (the Orders page filters), with tests
   components/            Layout (sidebar shell), RequireAdmin, Charts, OrderGrid, OrderFilterBar (shared by Overview and Orders), ProductGrid, ProductEditor, ConfirmDelete, ScrollGrid, ImportPreview, ConnectorForm
   pages/                 Login, Overview, Orders, Products, Import
 ```
+
+## Styling
+
+Everything is styled with [Tailwind CSS](https://tailwindcss.com) v4: utility classes in the components, no hand-written stylesheets. Tailwind runs as a Vite plugin (`@tailwindcss/vite` in `vite.config.ts`), so there is no `tailwind.config.js` and no PostCSS setup; the theme lives in `src/index.css` under `@theme` (the brand colours such as `bg-brand`, `text-forest` and `border-line`, the font, and the animations) and Tailwind finds the classes in `src/` by itself. That one file also holds the few shared pieces that would repeat dozens of utilities: `.btn` with `.btn-primary` / `.btn-secondary` / `.btn-light` / `.btn-danger` / `.btn-inline`, `.badge` with the `.tone-*` status colours, `.dlg` (modals), `.tracker` (order progress), `.tbl` (tables) and the element defaults for forms. Strings both apps repeat (page width, card and dialog shapes) are constants in `src/shared/ui/classes.ts`, `src/customer/ui.ts` and `src/admin/ui.ts`. Breakpoints are the usual `max-sm:` (phone, 640px), plus `max-[900px]:` and `max-[1000px]:` for the tablet layouts.
 
 ## State management
 
@@ -139,7 +144,7 @@ State lives in [Redux Toolkit](https://redux-toolkit.js.org). Each app creates *
 - Each login (user and token) is kept in its own `sessionStorage` key for the tab. The catalog and orders are no longer saved by the store: where they live is the data layer's business (below).
 - The slices have no React in them, so they are tested with `node --test` against the mock API (`src/shared/store/store.test.ts`, `src/customer/store/store.test.ts`); `src/shared/api/api.test.ts` tests the HTTP side with a fake `fetch`.
 
-Each app's stylesheet is scoped to its own root (`.cx` for the customer app, `.ax` for admin), so styles cannot leak between them. The only data the apps share is the product catalog: SKUs imported by admins show up in the storefront.
+The only data the apps share is the product catalog: SKUs imported by admins show up in the storefront.
 
 ## Connecting a real API
 

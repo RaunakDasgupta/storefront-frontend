@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Field } from "../../shared/ui";
+import { DLG, DLG_BODY, DLG_DEMO, DLG_HEAD, DLG_TITLE } from "../ui";
 import { DEMO_CUSTOMER, useCustomer, type User } from "../hooks/useCustomer";
 import { dialogClosed, dialogModeChanged, dialogOpened, type DialogRequest } from "../store/authDialogSlice";
 import { checkoutOpened } from "../store/checkoutSlice";
@@ -55,21 +56,21 @@ function LoginForm({ reason, onDone }: { reason?: string; onDone: (u: User) => v
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <div className="dlg-body">
-        <div className="field">
+      <div className={DLG_BODY}>
+        <div className="mb-4">
           <label htmlFor="ad-email">Email</label>
           <input id="ad-email" ref={emailRef} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={error?.field === "email" || undefined} autoFocus />
         </div>
-        <div className="field">
+        <div className="mb-4">
           <label htmlFor="ad-password">Password</label>
           <input id="ad-password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={error?.field === "password" || undefined} />
         </div>
         <p className="error" role="alert" hidden={!error}>{error?.message}</p>
-        <button type="submit" className="btn primary" disabled={busy}>{reason ? "Log in and continue" : "Log in"}</button>
+        <button type="submit" className="btn btn-primary" disabled={busy}>{reason ? "Log in and continue" : "Log in"}</button>
 
         {/* sample credentials only show in `npm run dev`, and only while sign-in is the built-in mock, never in a production build */}
         {import.meta.env.DEV && mockAuth && (
-          <p className="dlg-demo">
+          <p className={DLG_DEMO}>
             Demo: <code>{DEMO_CUSTOMER.email}</code> / <code>{DEMO_CUSTOMER.password}</code>{" "}
             <button type="button" className="linkbtn" onClick={() => { setEmail(DEMO_CUSTOMER.email); setPassword(DEMO_CUSTOMER.password); setError(null); }}>Fill in</button>
           </p>
@@ -108,15 +109,15 @@ function SignupForm({ reason, onDone }: { reason?: string; onDone: (u: User) => 
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <div className="dlg-body">
-        <div className="row2">
+      <div className={DLG_BODY}>
+        <div className="grid grid-cols-2 gap-3">
           <Field label="First name" autoComplete="given-name" {...bind("first")} autoFocus />
           <Field label="Last name" autoComplete="family-name" {...bind("last")} />
         </div>
         <Field label="Email" type="email" autoComplete="email" {...bind("email")} />
         <Field label="Password" type="password" autoComplete="new-password" {...bind("password")} />
         <p className="error" role="alert" hidden={!formError}>{formError}</p>
-        <button type="submit" className="btn primary" disabled={busy}>{reason ? "Create account and continue" : "Create account"}</button>
+        <button type="submit" className="btn btn-primary" disabled={busy}>{reason ? "Create account and continue" : "Create account"}</button>
       </div>
     </form>
   );
@@ -142,16 +143,16 @@ function AuthDialog({ request }: { request: DialogRequest }) {
   return (
     <dialog
       ref={ref}
-      className="dlg"
+      className={DLG}
       aria-labelledby="ad-title"
       onCancel={(e) => { e.preventDefault(); close(); }}
       onClose={onClose}
       onClick={(e) => { if (e.target === ref.current) close(); }}
     >
-      <header className="dlg-head">
+      <header className={DLG_HEAD}>
         <div>
-          <h2 id="ad-title">{login ? (request.reason ? `Log in to ${request.reason}` : "Log in") : "Create your account"}</h2>
-          <p className="muted">
+          <h2 id="ad-title" className={DLG_TITLE}>{login ? (request.reason ? `Log in to ${request.reason}` : "Log in") : "Create your account"}</h2>
+          <p className="mt-1 text-[13.5px] text-muted">
             {login
               ? (request.reason ? "Your cart is saved. Log in to enter your delivery address and pay." : "Log in to place and track your orders.")
               : (request.reason ? "Your cart is saved. Create an account to enter your delivery address and pay." : "Save your details to order faster.")}
@@ -162,7 +163,7 @@ function AuthDialog({ request }: { request: DialogRequest }) {
 
       {login ? <LoginForm reason={request.reason} onDone={done} /> : <SignupForm reason={request.reason} onDone={done} />}
 
-      <footer className="dlg-foot">
+      <footer className="px-[22px] pt-3.5 pb-5 text-center text-[13.5px] text-muted">
         {login
           ? <>New here? <button type="button" className="linkbtn" onClick={() => onMode("signup")}>Create an account</button></>
           : <>Already have an account? <button type="button" className="linkbtn" onClick={() => onMode("login")}>Log in</button></>}

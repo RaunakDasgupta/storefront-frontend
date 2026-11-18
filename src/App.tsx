@@ -13,7 +13,7 @@ function OldStaffLink() {
 
 export function App() {
   return (
-    <Suspense fallback={<p className="load-state muted" role="status">Loading…</p>}>
+    <Suspense fallback={<p className="px-4 py-14 text-center text-muted" role="status">Loading…</p>}>
       <Routes>
         <Route path="/admin/*" element={<AdminApp />} />
         <Route path="/staff/*" element={<OldStaffLink />} />

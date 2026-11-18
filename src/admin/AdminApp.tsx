@@ -10,13 +10,12 @@ import { AdminOrders } from "./pages/Orders";
 import { Overview } from "./pages/Overview";
 import { AdminProducts } from "./pages/Products";
 import { bootAdminStore, persistAdmin } from "./store/store";
-import "./admin.css";
 
 function AdminNotFound() {
   return (
-    <div className="empty">
-      <h1>Page not found</h1>
-      <Link to="/admin" className="btn primary inline">Back to overview</Link>
+    <div className="pt-12 text-center">
+      <h1 className="text-[30px] leading-[1.15] font-[750] max-sm:text-[26px]">Page not found</h1>
+      <Link to="/admin" className="btn btn-primary btn-inline mt-4">Back to overview</Link>
     </div>
   );
 }
@@ -27,7 +26,7 @@ export default function AdminApp() {
   useEffect(() => persistAdmin(store), [store]);
 
   return (
-    <div className="ax">
+    <div className="min-h-screen bg-page">
       <Provider store={store}>
         <Routes>
           <Route path="login" element={<AdminLogin />} />

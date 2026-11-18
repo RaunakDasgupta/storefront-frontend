@@ -24,24 +24,32 @@ const ICONS = {
   lock: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>,
 };
 
-export function Icon({ name }: { name: keyof typeof ICONS }) {
-  return <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>;
+/** `className` is for a size (size-5) or colour (text-brand); the icon takes the text colour by default. */
+export function Icon({ name, className = "" }: { name: keyof typeof ICONS; className?: string }) {
+  return <svg className={`icon ${className}`.trim()} viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>;
 }
 
 export function Logo({ to, label, className = "" }: { to: string; label: string; className?: string }) {
   return (
-    <Link to={to} className={`logo ${className}`.trim()}>
-      <span className="logo-mark" aria-hidden="true"><Icon name="bag" /></span>
-      <span className="logo-text">{label}</span>
+    <Link to={to} className={`inline-flex items-center gap-2.5 text-xl font-bold tracking-[-0.02em] text-ink no-underline ${className}`.trim()}>
+      <span className="grid size-[34px] shrink-0 place-items-center rounded-[10px] bg-brand text-white" aria-hidden="true"><Icon name="bag" className="size-5" /></span>
+      <span className="max-[340px]:hidden">{label}</span>
     </Link>
   );
 }
 
-/** Product photo. Decorative (alt="") unless the caller passes alt, e.g. when no name sits next to it. */
+/** Product photo. Decorative (alt="") unless the caller passes alt, e.g. when no name sits next to it. It fills its width and is square, unless `className` sets a size (w-*, size-*) or an aspect-* itself. */
+/** The round letter button for the signed-in person; blank (grey) when nobody is signed in. */
+export function Avatar({ letter }: { letter?: string }) {
+  return (
+    <span className={`grid size-[30px] place-items-center rounded-full text-[13px] leading-none font-bold ${letter ? "bg-brand text-white" : "bg-[#e3e3e3] shadow-[inset_0_0_0_1px_#cfcfcf]"}`}>{letter}</span>
+  );
+}
+
 export function ProductImage({ p, alt = "", className = "", eager, small }: { p: Product; alt?: string; className?: string; eager?: boolean; small?: boolean }) {
   return (
     <img
-      className={`pimg ${className}`.trim()}
+      className={`block bg-soft object-cover ${/(^|\s)(size|w)-/.test(className) ? "" : "h-auto w-full"} ${/(^|\s)aspect-/.test(className) ? "" : "aspect-square"} ${className}`.trim().replace(/\s+/g, " ")}
       src={imageSrc(p, small)}
       alt={alt}
       width={small ? 200 : 900}
@@ -62,26 +70,28 @@ export function ProductImage({ p, alt = "", className = "", eager, small }: { p:
 
 export function Price({ p }: { p: Product }) {
   return (
-    <p className="pprice">
-      <span className={p.was ? "now sale" : "now"}>{money(p.price)}</span>
-      {p.was && <s className="was">{money(p.was)}</s>}
+    <p className="mt-0.5 flex gap-2">
+      <span className={p.was ? "text-danger" : undefined}>{money(p.price)}</span>
+      {p.was && <s className="text-muted">{money(p.was)}</s>}
     </p>
   );
 }
 
 export function Field({ id, label, error, ...input }: { id: string; label: string; error?: string } & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="field">
+    <div className="mb-4">
       <label htmlFor={id}>{label}</label>
       <input id={id} aria-invalid={error ? true : undefined} aria-describedby={error ? `${id}-error` : undefined} {...input} />
-      {error && <p className="field-error" id={`${id}-error`}>{error}</p>}
+      {error && <p className="mt-1.5 text-[13px] text-danger" id={`${id}-error`}>{error}</p>}
     </div>
   );
 }
 
+const ICON_BUTTON = "relative inline-grid size-10 place-items-center rounded-full border-0 bg-transparent p-0 text-ink transition-colors hover:bg-soft aria-expanded:bg-soft";
+
 /** Button with a dropdown. Closes on Escape or an outside click. `kind="menu"` is a list of actions; `kind="panel"` is a richer panel such as a card grid. */
-export function Menu({ label, trigger, children, buttonClass = "iconbtn", panelClass = "", kind = "menu" }: {
-  label: string; trigger: ReactNode; children: (close: () => void) => ReactNode; buttonClass?: string; panelClass?: string; kind?: "menu" | "panel";
+export function Menu({ label, trigger, children, buttonClass = ICON_BUTTON, panelClass = "", wrapperClass = "", kind = "menu" }: {
+  label: string; trigger: ReactNode; children: (close: () => void) => ReactNode; buttonClass?: string; panelClass?: string; wrapperClass?: string; kind?: "menu" | "panel";
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -100,7 +110,7 @@ export function Menu({ label, trigger, children, buttonClass = "iconbtn", panelC
   }, [open]);
 
   return (
-    <div className="menu" ref={ref}>
+    <div className={`relative ${wrapperClass}`.trim()} ref={ref}>
       <button className={buttonClass} aria-label={label} aria-haspopup={kind === "menu" ? "menu" : "true"} aria-expanded={open} onClick={() => setOpen((o) => !o)}>{trigger}</button>
       {open && <div className={`dropdown ${panelClass}`.trim()} role={kind === "menu" ? "menu" : "group"} aria-label={kind === "panel" ? label : undefined}>{children(() => setOpen(false))}</div>}
     </div>
@@ -110,19 +120,20 @@ export function Menu({ label, trigger, children, buttonClass = "iconbtn", panelC
 /** "Detergent (Carton of 12 x 1 kg) × 1, ..." so a bulk pack is distinct from the retail item. */
 export const itemsText = (o: Order) => o.items.map((i) => `${i.name}${i.size ? ` (${i.size})` : ""} × ${i.qty}`).join(", ");
 
-export const STEP_BADGE = ["pending", "paid", "packed", "fulfilled"] as const;
+/** Colour classes (see index.css) for each fulfilment step, used by badges and the status dropdown. */
+export const STEP_BADGE = ["tone-pending", "tone-paid", "tone-packed", "tone-fulfilled"] as const;
 
 /** Shows what a screen needs once it has loaded; until then a loading note, or the error with a Try again button. */
 export function LoadGate({ status, error, what, onRetry, children }: { status: "idle" | "loading" | "ready" | "failed"; error: string | null; what: string; onRetry: () => void; children: ReactNode }) {
   if (status === "ready") return <>{children}</>;
   if (status === "failed") {
     return (
-      <div className="load-state" role="alert">
-        <h2>Couldn&apos;t load {what}</h2>
-        <p className="muted">{error}</p>
-        <button className="btn primary inline" onClick={onRetry}>Try again</button>
+      <div className="px-4 py-14 text-center" role="alert">
+        <h2 className="mb-1.5 text-xl">Couldn&apos;t load {what}</h2>
+        <p className="text-muted">{error}</p>
+        <button className="btn btn-primary btn-inline mt-4" onClick={onRetry}>Try again</button>
       </div>
     );
   }
-  return <p className="load-state muted" role="status">Loading {what}…</p>;
+  return <p className="px-4 py-14 text-center text-muted" role="status">Loading {what}…</p>;
 }

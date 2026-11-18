@@ -7,6 +7,7 @@ import { Icon } from "../../shared/ui";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { ProductEditor } from "../components/ProductEditor";
 import { ProductGrid } from "../components/ProductGrid";
+import { H1, PAGE_HEAD, PILL_BTN, PILL_SWITCH, SEARCH_BOX, SEARCH_ICON, SEARCH_INPUT, TAB_BTN, TABS, TOOLBAR } from "../ui";
 
 const CHANNELS: { id: Channel; label: string }[] = [
   { id: "retail", label: "Retail products" },
@@ -54,44 +55,44 @@ export function AdminProducts() {
 
   return (
     <>
-      <div className="page-head">
-        <h1>Products</h1>
-        <div className="head-actions">
+      <div className={PAGE_HEAD}>
+        <h1 className={H1}>Products</h1>
+        <div className="flex flex-wrap gap-2 max-sm:w-full max-sm:[&_.btn]:flex-1">
           {canReset && (
-            <button className="btn secondary inline" onClick={() => { if (window.confirm("Reset the catalog to the sample products? Imported and edited products will be removed from this browser.")) void attempt(reset); }}>
+            <button className="btn btn-secondary btn-inline px-[18px] py-[9px]" onClick={() => { if (window.confirm("Reset the catalog to the sample products? Imported and edited products will be removed from this browser.")) void attempt(reset); }}>
               Reset catalog
             </button>
           )}
-          <Link to="/admin/import" className="btn primary inline">Import SKUs</Link>
+          <Link to="/admin/import" className="btn btn-primary btn-inline px-[18px] py-[9px]">Import SKUs</Link>
         </div>
       </div>
       {undo && (
-        <p className="notice" role="status">
+        <p className="notice mb-3" role="status">
           Deleted {undo.product.name} ({undo.product.sku}).{" "}
           <button className="linkbtn" onClick={() => { const { product, index } = undo; setUndo(null); void attempt(() => restore(product, index)); }}>Undo</button>
         </p>
       )}
       {failure && <p className="error" role="alert">{failure}</p>}
 
-      <div className="channel-switch" role="group" aria-label="Product type">
+      <div className={PILL_SWITCH} role="group" aria-label="Product type">
         {CHANNELS.map((c) => (
-          <button key={c.id} aria-pressed={channel === c.id} onClick={() => update({ type: c.id === "retail" ? null : c.id })}>
-            {c.label} <span>{products.filter((p) => p.channel === c.id).length}</span>
+          <button key={c.id} className={PILL_BTN} aria-pressed={channel === c.id} onClick={() => update({ type: c.id === "retail" ? null : c.id })}>
+            {c.label} <span className="ml-1 font-medium opacity-75">{products.filter((p) => p.channel === c.id).length}</span>
           </button>
         ))}
       </div>
 
-      <div className="toolbar">
-        <div className="tabs" role="group" aria-label="Filter by stock">
-          <button aria-pressed={!lowOnly} onClick={() => update({ stock: null })}>All <span>{inChannel.length}</span></button>
-          <button aria-pressed={lowOnly} onClick={() => update({ stock: "low" })}>Low stock <span>{lowCount}</span></button>
+      <div className={TOOLBAR}>
+        <div className={TABS} role="group" aria-label="Filter by stock">
+          <button className={TAB_BTN} aria-pressed={!lowOnly} onClick={() => update({ stock: null })}>All <span className="ml-1 font-medium opacity-70">{inChannel.length}</span></button>
+          <button className={TAB_BTN} aria-pressed={lowOnly} onClick={() => update({ stock: "low" })}>Low stock <span className="ml-1 font-medium opacity-70">{lowCount}</span></button>
         </div>
-        <div className="search">
-          <Icon name="search" />
-          <input type="search" aria-label="Search products" placeholder="Search name or SKU" value={q} onChange={(e) => update({ q: e.target.value || null })} />
+        <div className={SEARCH_BOX}>
+          <Icon name="search" className={SEARCH_ICON} />
+          <input className={SEARCH_INPUT} type="search" aria-label="Search products" placeholder="Search name or SKU" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
-      {rows.length === 0 ? <p className="muted">No {channel} products match.</p> : <ProductGrid products={rows} onEdit={setEditing} onDelete={setDeleting} />}
+      {rows.length === 0 ? <p className="text-muted">No {channel} products match.</p> : <ProductGrid products={rows} onEdit={setEditing} onDelete={setDeleting} />}
       {deleting && (
         <ConfirmDelete
           key={deleting.id}

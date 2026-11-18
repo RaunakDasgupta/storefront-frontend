@@ -14,7 +14,6 @@ import { NotFound } from "./pages/NotFound";
 import { Orders } from "./pages/Orders";
 import { ProductPage } from "./pages/Product";
 import { Shop } from "./pages/Shop";
-import "./customer.css";
 
 export default function CustomerApp() {
   // this app's own store: the admin portal has another one
@@ -22,7 +21,7 @@ export default function CustomerApp() {
   useEffect(() => persistCustomer(store), [store]);
 
   return (
-    <div className="cx">
+    <div>
       <Provider store={store}>
         <Routes>
           <Route path="login" element={<AuthRoute mode="login" />} />

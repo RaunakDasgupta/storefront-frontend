@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { money } from "../../shared/lib/data";
 import type { Address } from "../../shared/lib/orderlogic";
 import { Icon, Field } from "../../shared/ui";
+import { DLG_BODY, DLG_DEMO, DLG_HEAD, DLG_TITLE, DLG_WIDE } from "../ui";
 import { useCart } from "../hooks/useCart";
 import { useCustomer, type User } from "../hooks/useCustomer";
 import { TEST_CARD, DECLINED_CARD } from "../../shared/api/mock";
@@ -14,6 +15,9 @@ import {
   type AddressErrors, type Card, type CardErrors,
 } from "../store/gateway";
 import { useAppDispatch, useAppSelector } from "../store/typedHooks";
+
+/** A step in the "Address > Payment" line: every step after the first gets a › in front. */
+const CO_STEP = "not-first:before:mr-1.5 not-first:before:content-['›']";
 
 /** Renders the checkout popup (address, then payment, then "order placed") while the store says it is open. */
 export function CheckoutDialogHost() {
@@ -38,17 +42,17 @@ function AddressStep({ initial, onDone }: { initial: Address; onDone: (a: Addres
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <div className="dlg-body">
+      <div className={DLG_BODY}>
         <Field label="Full name" autoComplete="name" {...bind("fullName")} autoFocus />
         <Field label="Mobile number" type="tel" inputMode="numeric" autoComplete="tel" {...bind("phone")} />
         <Field label="Address" autoComplete="address-line1" {...bind("line1")} />
         <Field label="Apartment, landmark (optional)" autoComplete="address-line2" {...bind("line2")} />
-        <div className="row2">
+        <div className="grid grid-cols-2 gap-3">
           <Field label="City" autoComplete="address-level2" {...bind("city")} />
           <Field label="State" autoComplete="address-level1" {...bind("state")} />
         </div>
         <Field label="PIN code" inputMode="numeric" maxLength={6} autoComplete="postal-code" {...bind("pin")} />
-        <button type="submit" className="btn primary">Continue to payment</button>
+        <button type="submit" className="btn btn-primary">Continue to payment</button>
       </div>
     </form>
   );
@@ -76,22 +80,22 @@ function PaymentStep({ total, busy, onPay, onBack, address, demoGateway }: {
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <div className="dlg-body">
-        <p className="ship-to">
-          <Icon name="truck" />
-          <span>Deliver to <strong>{address.fullName}</strong>, {address.line1}{address.line2 && `, ${address.line2}`}, {address.city} {address.pin}</span>
+      <div className={DLG_BODY}>
+        <p className="mb-4 flex items-start gap-2 rounded-[10px] bg-soft px-3 py-2.5 text-[13.5px]">
+          <Icon name="truck" className="mt-px size-[18px] shrink-0" />
+          <span className="min-w-0 flex-1">Deliver to <strong>{address.fullName}</strong>, {address.line1}{address.line2 && `, ${address.line2}`}, {address.city} {address.pin}</span>
           <button type="button" className="linkbtn" onClick={onBack} disabled={busy}>Change</button>
         </p>
         <Field label="Card number" inputMode="numeric" autoComplete="cc-number" placeholder="1234 1234 1234 1234" {...set("number", formatCardNumber)} autoFocus />
         <Field label="Name on card" autoComplete="cc-name" {...set("name")} />
-        <div className="row2">
+        <div className="grid grid-cols-2 gap-3">
           <Field label="Expiry (MM/YY)" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" maxLength={5} {...set("expiry", formatExpiry)} />
           <Field label="Security code" inputMode="numeric" autoComplete="cc-csc" maxLength={4} type="password" {...set("cvc", (s) => s.replace(/\D/g, ""))} />
         </div>
         <p className="error" role="alert" hidden={!failure}>{failure}</p>
-        <button type="submit" className="btn primary" disabled={busy}>{busy ? "Processing payment…" : `Pay ${money(total)}`}</button>
+        <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? "Processing payment…" : `Pay ${money(total)}`}</button>
         {demoGateway && (
-          <p className="dlg-demo">
+          <p className={DLG_DEMO}>
             Dummy gateway, no real payment. Use <code>{TEST_CARD}</code>, any future expiry and any code.
             Use <code>{DECLINED_CARD}</code> to see a declined payment.{" "}
             <button type="button" className="linkbtn" disabled={busy} onClick={() => setCard({ number: TEST_CARD, name: card.name || "Test Customer", expiry: "12/39", cvc: "123" })}>Fill in test card</button>
@@ -108,18 +112,18 @@ function PlacedStep({ onClose }: { onClose: () => void }) {
   if (!receipt) return null;
   const many = receipt.orderIds.length > 1;
   return (
-    <div className="dlg-body placed">
-      <span className="placed-icon"><Icon name="check" /></span>
-      <h2 id="co-title">{many ? "Orders placed" : "Order placed"}</h2>
-      <p className="muted">Thank you. We have received your payment and will start preparing {many ? "your orders" : "your order"}.</p>
-      <dl className="receipt">
+    <div className="flex flex-col items-stretch gap-2.5 px-[22px] pt-7 pb-[22px] text-center">
+      <span className="grid size-14 place-items-center self-center rounded-full border border-brand-line bg-brand-tint text-brand"><Icon name="check" className="size-7" /></span>
+      <h2 id="co-title" className="text-[22px] font-[750]">{many ? "Orders placed" : "Order placed"}</h2>
+      <p className="text-muted">Thank you. We have received your payment and will start preparing {many ? "your orders" : "your order"}.</p>
+      <dl className="my-1.5 rounded-xl border border-line px-3.5 py-1 text-left text-sm [&>div]:flex [&>div]:justify-between [&>div]:gap-4 [&>div]:py-[9px] [&>div+div]:border-t [&>div+div]:border-line [&_dd]:m-0 [&_dd]:text-right [&_dd]:font-semibold [&_dt]:text-muted">
         <div><dt>{many ? "Orders" : "Order"}</dt><dd>{receipt.orderIds.join(" and ")}</dd></div>
         <div><dt>Paid</dt><dd>{money(receipt.paid)}</dd></div>
         <div><dt>Payment reference</dt><dd>{receipt.paymentRef}</dd></div>
         {address && <div><dt>Delivering to</dt><dd>{address.city}, {address.state} {address.pin}</dd></div>}
       </dl>
-      <Link to="/orders" className="btn primary" onClick={onClose}>{many ? "View orders" : "View order"}</Link>
-      <button type="button" className="btn secondary" onClick={onClose}>Continue shopping</button>
+      <Link to="/orders" className="btn btn-primary" onClick={onClose}>{many ? "View orders" : "View order"}</Link>
+      <button type="button" className="btn btn-secondary" onClick={onClose}>Continue shopping</button>
     </div>
   );
 }
@@ -148,7 +152,7 @@ function CheckoutDialog({ user }: { user: User }) {
   return (
     <dialog
       ref={ref}
-      className="dlg dlg-wide"
+      className={DLG_WIDE}
       aria-labelledby="co-title"
       onCancel={(e) => { e.preventDefault(); close(); }}
       onClose={onClose}
@@ -156,12 +160,12 @@ function CheckoutDialog({ user }: { user: User }) {
     >
       {stage === "placed" ? <PlacedStep onClose={close} /> : (
         <>
-          <header className="dlg-head">
+          <header className={DLG_HEAD}>
             <div>
-              <h2 id="co-title">{title}</h2>
-              <ol className="co-steps" aria-label="Checkout progress">
-                <li className={stage === "address" ? "now" : "done"} aria-current={stage === "address" ? "step" : undefined}>Address</li>
-                <li className={stage === "payment" ? "now" : ""} aria-current={stage === "payment" ? "step" : undefined}>Payment</li>
+              <h2 id="co-title" className={DLG_TITLE}>{title}</h2>
+              <ol className="mt-2 flex gap-1.5 text-[13px] text-muted" aria-label="Checkout progress">
+                <li className={`${CO_STEP} ${stage === "address" ? "font-[650] text-ink" : "text-brand"}`} aria-current={stage === "address" ? "step" : undefined}>Address</li>
+                <li className={`${CO_STEP} ${stage === "payment" ? "font-[650] text-ink" : ""}`} aria-current={stage === "payment" ? "step" : undefined}>Payment</li>
               </ol>
             </div>
             <button type="button" className="dlg-x" aria-label="Close" onClick={close} disabled={busy}>×</button>

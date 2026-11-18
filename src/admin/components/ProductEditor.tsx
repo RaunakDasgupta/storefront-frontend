@@ -4,6 +4,7 @@ import type { Product } from "../../shared/lib/data";
 import { parseProductForm, toForm, type FormErrors, type ProductForm } from "../../shared/lib/productform";
 import { messageOf } from "../../shared/store/errors";
 import { Field } from "../../shared/ui";
+import { DLG, DLG_FOOT } from "../ui";
 
 /** Edit one product in a modal dialog. Esc, the backdrop and Cancel all close it without saving. */
 export function ProductEditor({ product, onClose }: { product: Product; onClose: () => void }) {
@@ -41,51 +42,51 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
   return (
     <dialog
       ref={ref}
-      className="editor"
+      className={`${DLG} w-[min(580px,calc(100vw-32px))]`}
       aria-labelledby="pe-title"
       onCancel={(e) => { e.preventDefault(); close(); }}
       onClose={onClose}
       onClick={(e) => { if (e.target === ref.current) close(); }}
     >
-      <form onSubmit={onSubmit} noValidate>
-        <header className="editor-head">
+      <form className="flex max-h-[calc(100vh-32px)] flex-col" onSubmit={onSubmit} noValidate>
+        <header className="flex items-start justify-between gap-3 border-b border-line px-[22px] pt-5 pb-3.5">
           <div>
-            <h2 id="pe-title">Edit product</h2>
-            <p className="muted">{product.sku}, the SKU, can't be changed.</p>
+            <h2 id="pe-title" className="text-xl">Edit product</h2>
+            <p className="mt-0.5 text-[13px] text-muted">{product.sku}, the SKU, can't be changed.</p>
           </div>
-          <button type="button" className="editor-x" aria-label="Close" onClick={close}>×</button>
+          <button type="button" className="dlg-x" aria-label="Close" onClick={close}>×</button>
         </header>
 
-        <div className="editor-body">
+        <div className="overflow-y-auto px-[22px] pt-[18px] pb-1">
           <Field label="Name" autoComplete="off" {...bind("name")} />
-          <div className="row2">
+          <div className="grid grid-cols-2 gap-3">
             <Field label="Size" autoComplete="off" placeholder="1 kg, Carton of 12..." {...bind("size")} />
             <Field label="Category" autoComplete="off" {...bind("category")} />
           </div>
-          <div className="field">
+          <div className="mb-4">
             <label htmlFor="pe-channel">Type</label>
             <select id="pe-channel" value={f.channel} onChange={(e) => setF({ ...f, channel: e.target.value })}>
               <option value="retail">Retail</option>
               <option value="bulk">Bulk</option>
             </select>
           </div>
-          <div className="row3">
+          <div className="grid grid-cols-3 gap-3 max-sm:grid-cols-2">
             <Field label="Price (₹)" inputMode="decimal" {...bind("price")} />
             <Field label="Compare-at (₹)" inputMode="decimal" placeholder="Optional" {...bind("was")} />
             <Field label="Stock" inputMode="numeric" {...bind("stock")} />
           </div>
-          <div className="field">
+          <div className="mb-4">
             <label htmlFor="pe-blurb">Description</label>
             <textarea id="pe-blurb" rows={3} value={f.blurb} onChange={(e) => setF({ ...f, blurb: e.target.value })} aria-invalid={errors.blurb ? true : undefined} />
-            {errors.blurb && <p className="field-error">{errors.blurb}</p>}
+            {errors.blurb && <p className="mt-1.5 text-[13px] text-danger">{errors.blurb}</p>}
           </div>
           <Field label="Logo or photo link" autoComplete="off" placeholder="https://... (blank uses the default photo)" {...bind("image")} />
         </div>
 
-        <footer className="editor-foot">
-          {saveError && <p className="error editor-error" role="alert">{saveError}</p>}
-          <button type="button" className="btn secondary inline" onClick={close} disabled={busy}>Cancel</button>
-          <button type="submit" className="btn primary inline" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
+        <footer className={DLG_FOOT}>
+          {saveError && <p className="error m-0 flex-[1_1_100%]" role="alert">{saveError}</p>}
+          <button type="button" className="btn btn-secondary btn-inline" onClick={close} disabled={busy}>Cancel</button>
+          <button type="submit" className="btn btn-primary btn-inline" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
         </footer>
       </form>
     </dialog>
