@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { Route, Routes } from "react-router-dom";
 import { AuthDialogHost, AuthRoute, RequireCustomer } from "./components/AuthDialog";
+import { CheckoutDialogHost } from "./components/CheckoutDialog";
 import { CustomerLayout } from "./components/Layout";
 import { makeCustomerStore, persistCustomer } from "./store/store";
 import { ToastHost } from "./components/Toast";
@@ -39,6 +40,7 @@ export default function CustomerApp() {
         </Routes>
         <ToastHost />
         <AuthDialogHost />
+        <CheckoutDialogHost />
       </Provider>
     </div>
   );

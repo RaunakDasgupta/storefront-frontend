@@ -251,6 +251,25 @@
   & .dlg-demo code { padding: 1px 5px; border-radius: 4px; background: var(--gray); font-size: 12px; }
   & .dlg-foot { padding: 14px 22px 20px; text-align: center; color: var(--muted); font-size: 13.5px; }
 
+  /* checkout popup: address, payment, order placed */
+  & .dlg-wide { width: min(480px, calc(100vw - 32px)); }
+  & .co-steps { display: flex; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
+  & .co-steps li + li::before { content: "›"; margin-right: 6px; }
+  & .co-steps .now { color: var(--ink); font-weight: 650; }
+  & .co-steps .done { color: var(--green); }
+  & .ship-to { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 16px; padding: 10px 12px; border-radius: 10px; background: var(--gray); font-size: 13.5px; }
+  & .ship-to > span { flex: 1; min-width: 0; }
+  & .ship-to .icon { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+  & .placed { display: flex; flex-direction: column; gap: 10px; padding-top: 28px; padding-bottom: 22px; text-align: center; align-items: stretch; }
+  & .placed h2 { margin: 0; font-size: 22px; font-weight: 750; }
+  & .placed-icon { align-self: center; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--green-tint); color: var(--green); border: 1px solid var(--green-line); }
+  & .placed-icon svg { width: 28px; height: 28px; }
+  & .receipt { margin: 6px 0; padding: 4px 14px; border: 1px solid var(--line); border-radius: 12px; text-align: left; font-size: 14px; }
+  & .receipt div { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; }
+  & .receipt div + div { border-top: 1px solid var(--line); }
+  & .receipt dt { color: var(--muted); }
+  & .receipt dd { margin: 0; font-weight: 600; text-align: right; }
+
   /* product page */
   & .crumbs { margin: 0 0 20px; color: var(--muted); }
   & .crumbs a { text-decoration: none; }

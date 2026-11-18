@@ -3,7 +3,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Field } from "../../shared/ui";
 import { DEMO_CUSTOMER, useCustomer, type User } from "../hooks/useCustomer";
 import { dialogClosed, dialogModeChanged, dialogOpened, type DialogRequest } from "../store/authDialogSlice";
-import { checkout } from "../store/checkout";
+import { checkoutOpened } from "../store/checkoutSlice";
 import { useAppDispatch, useAppSelector } from "../store/typedHooks";
 
 /** Opens the log in / create account popup from anywhere (checkout, the account menu, protected pages). */
@@ -64,7 +64,7 @@ function LoginForm({ reason, onDone }: { reason?: string; onDone: (u: User) => v
           <input id="ad-password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={error?.field === "password" || undefined} />
         </div>
         <p className="error" role="alert" hidden={!error}>{error?.message}</p>
-        <button type="submit" className="btn primary" disabled={busy}>{reason ? "Log in and place order" : "Log in"}</button>
+        <button type="submit" className="btn primary" disabled={busy}>{reason ? "Log in and continue" : "Log in"}</button>
 
         {/* sample credentials only show in `npm run dev`, never in a production build */}
         {import.meta.env.DEV && (
@@ -115,7 +115,7 @@ function SignupForm({ reason, onDone }: { reason?: string; onDone: (u: User) => 
         <Field label="Email" type="email" autoComplete="email" {...bind("email")} />
         <Field label="Password" type="password" autoComplete="new-password" {...bind("password")} />
         <p className="error" role="alert" hidden={!formError}>{formError}</p>
-        <button type="submit" className="btn primary" disabled={busy}>{reason ? "Create account and place order" : "Create account"}</button>
+        <button type="submit" className="btn primary" disabled={busy}>{reason ? "Create account and continue" : "Create account"}</button>
       </div>
     </form>
   );
@@ -130,9 +130,9 @@ function AuthDialog({ request }: { request: DialogRequest }) {
   // close through our own state instead of waiting for the dialog's "close" event, so it can always be reopened
   const onClose = () => { dispatch(dialogClosed()); };
   const close = () => { ref.current?.close(); onClose(); };
-  const done = (u: User) => {
+  const done = () => {
     close();
-    if (request.after?.kind === "checkout") dispatch(checkout(u));
+    if (request.after?.kind === "checkout") dispatch(checkoutOpened());
     else if (request.after?.kind === "navigate") navigate(request.after.to, { replace: true });
   };
   const onMode = (mode: DialogRequest["mode"]) => { dispatch(dialogModeChanged(mode)); };
@@ -152,8 +152,8 @@ function AuthDialog({ request }: { request: DialogRequest }) {
           <h2 id="ad-title">{login ? (request.reason ? `Log in to ${request.reason}` : "Log in") : "Create your account"}</h2>
           <p className="muted">
             {login
-              ? (request.reason ? "Your cart is saved. Log in and we'll place the order for you." : "Log in to place and track your orders.")
-              : (request.reason ? "Your cart is saved. Create an account and we'll place the order for you." : "Save your details to order faster.")}
+              ? (request.reason ? "Your cart is saved. Log in to enter your delivery address and pay." : "Log in to place and track your orders.")
+              : (request.reason ? "Your cart is saved. Create an account to enter your delivery address and pay." : "Save your details to order faster.")}
           </p>
         </div>
         <button type="button" className="dlg-x" aria-label="Close" onClick={close}>×</button>

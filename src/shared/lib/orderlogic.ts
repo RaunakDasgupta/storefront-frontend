@@ -11,7 +11,9 @@ export const STEP_MESSAGE = [
 
 export type Step = 0 | 1 | 2 | 3;
 export type OrderItem = { id: string; name: string; size?: string; qty: number; price: number };
-export type Order = { id: string; date: string; channel: Channel; customer: { name: string; email: string }; items: OrderItem[]; total: number; step: Step };
+/** Where an order is delivered. `line2` may be empty. */
+export type Address = { fullName: string; phone: string; line1: string; line2: string; city: string; state: string; pin: string };
+export type Order = { id: string; date: string; channel: Channel; customer: { name: string; email: string }; shipping?: Address; items: OrderItem[]; total: number; step: Step };
 
 /** Returns the list with one order moved to a new fulfilment step. Unknown ids and invalid steps leave it unchanged. */
 export const withStep = (list: Order[], id: string, step: number): Order[] =>
@@ -40,9 +42,9 @@ export function makeOrder(list: Order[], customer: Order["customer"], items: Ord
 }
 
 /** One order per channel that has items, so retail and bulk items are fulfilled separately. Ids stay sequential. */
-export function makeOrders(list: Order[], customer: Order["customer"], groups: { channel: Channel; items: OrderItem[] }[], date?: string): Order[] {
+export function makeOrders(list: Order[], customer: Order["customer"], groups: { channel: Channel; items: OrderItem[] }[], date?: string, shipping?: Address): Order[] {
   const made: Order[] = [];
-  for (const g of groups) if (g.items.length) made.push(makeOrder([...made, ...list], customer, g.items, g.channel, date));
+  for (const g of groups) if (g.items.length) made.push({ ...makeOrder([...made, ...list], customer, g.items, g.channel, date), shipping });
   return made;
 }
 

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Channel } from "../lib/data.ts";
-import { SAMPLE_ORDERS, makeOrders, withOrderAt, withStep, withoutOrder, type Order, type OrderItem } from "../lib/orderlogic.ts";
+import { SAMPLE_ORDERS, makeOrders, withOrderAt, withStep, withoutOrder, type Address, type Order, type OrderItem } from "../lib/orderlogic.ts";
 import type { SharedThunk } from "./shared.ts";
 
 /** One orders list for both apps: customers place orders in the storefront, staff manage them in the portal. */
@@ -39,8 +39,8 @@ export const ordersReducer = slice.reducer;
 export const selectOrders = (s: Root) => s.orders.items;
 
 /** Adds one new order per channel that has items, and returns them. */
-export const placeOrders = (customer: Order["customer"], groups: { channel: Channel; items: OrderItem[] }[]): SharedThunk<Order[]> => (dispatch, getState) => {
-  const made = makeOrders(selectOrders(getState()), customer, groups);
+export const placeOrders = (customer: Order["customer"], groups: { channel: Channel; items: OrderItem[] }[], shipping?: Address): SharedThunk<Order[]> => (dispatch, getState) => {
+  const made = makeOrders(selectOrders(getState()), customer, groups, undefined, shipping);
   dispatch(ordersPlaced(made));
   return made;
 };

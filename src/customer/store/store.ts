@@ -4,6 +4,7 @@ import { sharedReducers } from "../../shared/store/shared.ts";
 import { authDialogReducer } from "./authDialogSlice.ts";
 import { authReducer, type User } from "./authSlice.ts";
 import { cartReducer } from "./cartSlice.ts";
+import { checkoutReducer } from "./checkoutSlice.ts";
 import { toastReducer } from "./toastSlice.ts";
 
 export const customerReducer = combineReducers({
@@ -12,6 +13,7 @@ export const customerReducer = combineReducers({
   cart: cartReducer,
   toast: toastReducer,
   authDialog: authDialogReducer,
+  checkout: checkoutReducer,
 });
 
 export type CustomerState = ReturnType<typeof customerReducer>;

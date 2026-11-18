@@ -7,6 +7,8 @@ import { dialogClosed, dialogModeChanged, dialogOpened } from "./authDialogSlice
 import { selectUser, signIn, signUp, signedOut } from "./authSlice.ts";
 import { cartCleared, itemAdded, qtySet, selectCartCount, selectCartItems, selectCartTotal } from "./cartSlice.ts";
 import { checkout } from "./checkout.ts";
+import { checkoutOpened, addressSaved } from "./checkoutSlice.ts";
+import { EMPTY_ADDRESS, DECLINED_CARD, TEST_CARD, luhnValid, payWithCard, validateAddress, validateCard } from "./gateway.ts";
 import { makeCustomerStore } from "./store.ts";
 
 // the mock accounts live in localStorage: give the tests an empty in-memory one
@@ -39,24 +41,63 @@ test("a cart line for a product that no longer exists is left out of the items",
   assert.equal(selectCartTotal(store.getState()), 0);
 });
 
-test("checkout splits retail and bulk into two orders, empties the cart and shows a popup", () => {
+const address = { fullName: "Pat Doe", phone: "98765 43210", line1: "12 MG Road", line2: "", city: "Pune", state: "Maharashtra", pin: "411001" };
+const pat = { name: "Pat", email: "pat@example.com" };
+
+test("checkout splits retail and bulk into two orders with the address, empties the cart and shows the receipt", () => {
   const store = makeStore();
   store.dispatch(itemAdded({ id: retail.id, qty: 2 }));
   store.dispatch(itemAdded({ id: bulk.id, qty: 1 }));
-  store.dispatch(checkout({ name: "Pat", email: "pat@example.com" }));
+  store.dispatch(checkout(pat, address, "PAY_TEST"));
   const orders = selectOrders(store.getState());
   assert.deepEqual(orders.map((o) => o.channel).sort(), ["bulk", "retail"]);
   assert.equal(orders.find((o) => o.channel === "retail")?.total, retail.price * 2);
+  assert.deepEqual(orders.map((o) => o.shipping), [address, address]);
   assert.equal(selectCartCount(store.getState()), 0);
-  assert.match(store.getState().toast.current?.message ?? "", /Orders placed/);
+  const { stage, receipt } = store.getState().checkout;
+  assert.equal(stage, "placed");
+  assert.equal(receipt?.paid, retail.price * 2 + bulk.price);
+  assert.equal(receipt?.paymentRef, "PAY_TEST");
+  assert.equal(receipt?.orderIds.length, 2);
 });
 
-test("checkout with an empty cart places nothing and shows no popup", () => {
+test("checkout with an empty cart places nothing and closes the popup", () => {
   const store = makeStore();
-  store.dispatch(cartCleared());
-  store.dispatch(checkout({ name: "Pat", email: "pat@example.com" }));
+  store.dispatch(checkoutOpened());
+  store.dispatch(checkout(pat, address, "PAY_TEST"));
   assert.equal(selectOrders(store.getState()).length, 0);
-  assert.equal(store.getState().toast.current, null);
+  assert.equal(store.getState().checkout.stage, "closed");
+});
+
+test("the checkout popup moves from address to payment and keeps the address", () => {
+  const store = makeStore();
+  store.dispatch(checkoutOpened());
+  assert.equal(store.getState().checkout.stage, "address");
+  store.dispatch(addressSaved(address));
+  assert.equal(store.getState().checkout.stage, "payment");
+  assert.deepEqual(store.getState().checkout.address, address);
+});
+
+test("address and card checks catch bad input and accept good input", () => {
+  assert.deepEqual(Object.keys(validateAddress(EMPTY_ADDRESS)).sort(), ["city", "fullName", "line1", "phone", "pin", "state"]);
+  assert.deepEqual(validateAddress(address), {});
+  assert.ok(validateAddress({ ...address, pin: "01234" }).pin);
+  assert.ok(luhnValid(TEST_CARD));
+  assert.ok(!luhnValid("4242 4242 4242 4243"));
+  const good = { number: TEST_CARD, name: "Pat", expiry: "12/30", cvc: "123" };
+  const now = new Date(2026, 5, 15);
+  assert.deepEqual(validateCard(good, now), {});
+  assert.ok(validateCard({ ...good, expiry: "05/26" }, now).expiry, "an expired month is rejected");
+  assert.deepEqual(validateCard({ ...good, expiry: "06/26" }, now), {}, "the current month is still valid");
+  assert.ok(validateCard({ ...good, expiry: "13/30" }, now).expiry);
+});
+
+test("the dummy gateway approves the test card and declines the decline card", async () => {
+  const card = { number: TEST_CARD, name: "Pat", expiry: "12/30", cvc: "123" };
+  const ok = await payWithCard(card, 0);
+  assert.ok(ok.ok && /^PAY_[0-9A-F]{8}$/.test(ok.ref));
+  const declined = await payWithCard({ ...card, number: DECLINED_CARD }, 0);
+  assert.ok(!declined.ok && /declined/.test(declined.message));
 });
 
 test("signing in works for the demo account and fails with a message otherwise", async () => {

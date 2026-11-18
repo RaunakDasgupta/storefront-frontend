@@ -6,7 +6,7 @@ import { STEPS } from "../../shared/lib/orderlogic";
 import { Icon, ProductImage } from "../../shared/ui";
 import { useCustomer } from "../hooks/useCustomer";
 import { useCart } from "../hooks/useCart";
-import { checkout } from "../store/checkout";
+import { checkoutOpened } from "../store/checkoutSlice";
 import { useAppDispatch } from "../store/typedHooks";
 
 /** Stock line under the size: green when plentiful, amber when low, red when gone. */
@@ -90,7 +90,7 @@ export function CartPanel() {
   const mixed = items.some(({ p }) => p.channel === "bulk") && items.some(({ p }) => p.channel === "retail");
 
   // logged out: log in or sign up in a popup right here instead of sending them to another page; the order is placed afterwards
-  const placeOrder = () => (user ? dispatch(checkout(user)) : authDialog.open({ mode: "login", reason: "place your order", after: { kind: "checkout" } }));
+  const placeOrder = () => (user ? dispatch(checkoutOpened()) : authDialog.open({ mode: "login", reason: "check out", after: { kind: "checkout" } }));
 
   return (
     <aside className="cartpanel" aria-label="Your cart">
@@ -122,9 +122,9 @@ export function CartPanel() {
       )}
 
       <p className="order-total"><span>Order total</span><strong>{money(total)}</strong></p>
-      <button className="btn primary" disabled={items.length === 0} onClick={placeOrder}>Place demo order</button>
+      <button className="btn primary" disabled={items.length === 0} onClick={placeOrder}>Checkout</button>
       {mixed && <p className="demo-note"><Icon name="truck" /> Retail and bulk items are placed as two separate orders.</p>}
-      <p className="demo-note"><Icon name="info" /> Demo checkout. No payment collected.</p>
+      <p className="demo-note"><Icon name="info" /> Demo checkout. No real payment is taken.</p>
     </aside>
   );
 }
