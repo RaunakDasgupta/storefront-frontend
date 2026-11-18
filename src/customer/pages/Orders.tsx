@@ -55,6 +55,13 @@ function OrderCard({ o }: { o: Order }) {
         <p className="ord-names">{o.items.map((i) => i.name).join(", ")}</p>
       </div>
 
+      {o.shipping && (
+        <p className="ord-ship">
+          <Icon name="truck" />
+          <span>Delivering to <strong>{o.shipping.fullName}</strong>, {[o.shipping.line1, o.shipping.line2, `${o.shipping.city}, ${o.shipping.state} ${o.shipping.pin}`].filter(Boolean).join(", ")}</span>
+        </p>
+      )}
+
       <div className="ord-status">
         <Tracker step={o.step} />
         <p>{STEP_MESSAGE[o.step]}</p>

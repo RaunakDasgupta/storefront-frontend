@@ -208,6 +208,9 @@
   & .chan.bulk { background: #e8f1ff; color: #123f7a; border-color: #c6dcff; }
   & .ord-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
   & .ord-total { font-size: 22px; letter-spacing: -.02em; }
+  & .ord-ship { display: flex; align-items: flex-start; gap: 8px; margin: -6px 0 16px; font-size: 13.5px; color: var(--muted); }
+  & .ord-ship .icon { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+  & .ord-ship strong { color: var(--ink); font-weight: 600; }
   & .ord-items { display: flex; align-items: center; gap: 14px; margin: 18px 0; }
   & .ord-photos { display: flex; flex: none; }
   & .ord-photo { width: 52px; height: 52px; aspect-ratio: 1; border-radius: 12px; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); margin-left: -10px; }
