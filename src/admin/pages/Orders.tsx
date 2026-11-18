@@ -7,7 +7,8 @@ import { messageOf } from "../../shared/store/errors";
 import { Icon } from "../../shared/ui";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { OrderGrid } from "../components/OrderGrid";
-import { DATE_PRESETS, VALUE_BANDS, citiesOf, isFiltering, matchesFilters, type DatePreset, type OrderFilters, type ValueBand } from "../lib/orderfilters";
+import { OrderFilterBar, useOrderFilters } from "../components/OrderFilterBar";
+import { citiesOf, matchesFilters } from "../lib/orderfilters";
 
 const FILTERS = ["All", ...STEPS] as const;
 const CHANNELS: { id: Channel; label: string }[] = [
@@ -53,16 +54,7 @@ export function AdminOrders() {
     void attempt(async () => { const removed = await remove(target.id); if (removed) setUndo(removed); });
   }
 
-  const dateParam = params.get("date");
-  const valueParam = params.get("value");
-  const filters: OrderFilters = {
-    date: DATE_PRESETS.some((d) => d.id === dateParam) ? (dateParam as DatePreset) : "all",
-    from: params.get("from") ?? "",
-    to: params.get("to") ?? "",
-    value: VALUE_BANDS.some((b) => b.id === valueParam) ? (valueParam as ValueBand) : "all",
-    city: params.get("city") ?? "",
-  };
-  const today = new Date().toISOString().slice(0, 10);
+  const { filters, filtering, today, set, clear } = useOrderFilters();
 
   const inChannel = orders.filter((o) => o.channel === channel);
   const needle = q.trim().toLowerCase();
@@ -71,7 +63,6 @@ export function AdminOrders() {
   const rows = matching.filter((o) => status === "All" || STEPS[o.step] === status);
   const count = (s: string) => matching.filter((o) => s === "All" || STEPS[o.step] === s).length;
   const cities = citiesOf(inChannel);
-  const filtering = isFiltering(filters);
 
   return (
     <>
@@ -104,44 +95,7 @@ export function AdminOrders() {
           <input type="search" aria-label="Search orders" placeholder="Search order, customer or address" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
-      <div className="filterbar" role="group" aria-label="Filter orders">
-        <div className="field">
-          <label htmlFor="of-date">Placed</label>
-          <select id="of-date" value={filters.date} onChange={(e) => update({ date: e.target.value === "all" ? null : e.target.value, ...(e.target.value === "custom" ? {} : { from: null, to: null }) })}>
-            {DATE_PRESETS.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
-          </select>
-        </div>
-        {filters.date === "custom" && (
-          <>
-            <div className="field">
-              <label htmlFor="of-from">From</label>
-              <input id="of-from" type="date" value={filters.from} max={filters.to || undefined} onChange={(e) => update({ from: e.target.value || null })} />
-            </div>
-            <div className="field">
-              <label htmlFor="of-to">To</label>
-              <input id="of-to" type="date" value={filters.to} min={filters.from || undefined} onChange={(e) => update({ to: e.target.value || null })} />
-            </div>
-          </>
-        )}
-        <div className="field">
-          <label htmlFor="of-value">Order value</label>
-          <select id="of-value" value={filters.value} onChange={(e) => update({ value: e.target.value === "all" ? null : e.target.value })}>
-            {VALUE_BANDS.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="of-city">Delivery city</label>
-          <select id="of-city" value={filters.city} onChange={(e) => update({ city: e.target.value || null })}>
-            <option value="">Any city</option>
-            {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-            {filters.city && !cities.includes(filters.city) && <option value={filters.city}>{filters.city}</option>}
-          </select>
-        </div>
-        {(filtering || q) && (
-          <button type="button" className="linkbtn filter-clear" onClick={() => update({ date: null, from: null, to: null, value: null, city: null, q: null })}>Clear filters</button>
-        )}
-        <p className="muted filter-count" aria-live="polite">{rows.length} {rows.length === 1 ? "order" : "orders"}</p>
-      </div>
+      <OrderFilterBar filters={filters} cities={cities} count={rows.length} showClear={filtering || !!q} set={set} onClear={() => clear("q")} />
 
       {rows.length === 0 ? <p className="muted">No {channel} orders match{filtering || q || status !== "All" ? " these filters" : ""}.</p> : <OrderGrid orders={rows} onStep={(id, step) => void attempt(() => setStep(id, step))} onDelete={setDeleting} />}
 

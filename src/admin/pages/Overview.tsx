@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import { useOrders } from "../../shared/hooks/useOrders";
+import { OrderFilterBar, useOrderFilters } from "../components/OrderFilterBar";
+import { citiesOf, matchesFilters } from "../lib/orderfilters";
 import { fmtDate, money } from "../../shared/lib/data";
 import { STEPS, countByStep, revenueByDay, revenueOf } from "../../shared/lib/orderlogic";
 import { STEP_BADGE } from "../../shared/ui";
@@ -10,13 +12,17 @@ const LOW_STOCK = 10;
 
 /** The dashboard: headline numbers, revenue and fulfilment charts, the newest orders and what is running low. */
 export function Overview() {
-  const { orders } = useOrders();
+  const { orders: allOrders } = useOrders();
+  const { filters, filtering, today, set, clear } = useOrderFilters();
+  // the numbers, charts and recent orders below follow the filters; low stock is about products, so it does not
+  const orders = allOrders.filter((o) => matchesFilters(o, filters, today));
   const { products } = useCatalog();
 
   const retail = orders.filter((o) => o.channel === "retail"), bulk = orders.filter((o) => o.channel === "bulk");
   const counts = countByStep(orders);
   const open = orders.length - counts[3];
   const low = products.filter((p) => p.stock < LOW_STOCK).sort((a, b) => a.stock - b.stock);
+  const emptyText = filtering ? "No orders match these filters." : "No orders yet.";
   const kpis = [
     { label: "Revenue", value: money(revenueOf(orders)), sub: `Retail ${money(revenueOf(retail))} · Bulk ${money(revenueOf(bulk))}` },
     { label: "Orders", value: String(orders.length), sub: `Retail ${retail.length} · Bulk ${bulk.length}` },
@@ -33,6 +39,8 @@ export function Overview() {
         </div>
       </div>
 
+      <OrderFilterBar filters={filters} cities={citiesOf(allOrders)} count={orders.length} showClear={filtering} set={set} onClear={() => clear()} />
+
       <div className="kpis">
         {kpis.map((k) => (
           <section key={k.label} className="cardbox kpi" aria-label={k.label}>
@@ -45,8 +53,8 @@ export function Overview() {
 
       <div className="dash-row">
         <section className="cardbox dash-card" aria-label="Revenue by day">
-          <header className="cardhead"><h2>Revenue by day</h2><span className="muted">Last 7 days of orders</span></header>
-          <div className="dash-body">{orders.length ? <RevenueChart days={revenueByDay(orders)} /> : <p className="muted">No orders yet.</p>}</div>
+          <header className="cardhead"><h2>Revenue by day</h2><span className="muted">7 days up to the latest order</span></header>
+          <div className="dash-body">{orders.length ? <RevenueChart days={revenueByDay(orders)} /> : <p className="muted">{emptyText}</p>}</div>
         </section>
         <section className="cardbox dash-card" aria-label="Orders by status">
           <header className="cardhead"><h2>Orders by status</h2><Link to="/admin/orders" className="link">Manage</Link></header>
@@ -56,8 +64,8 @@ export function Overview() {
 
       <div className="dash-row">
         <section className="cardbox dash-card" aria-label="Recent orders">
-          <header className="cardhead"><h2>Recent orders</h2><Link to="/admin/orders" className="link">View all {orders.length}</Link></header>
-          {orders.length === 0 ? <div className="dash-body"><p className="muted">No orders yet.</p></div> : (
+          <header className="cardhead"><h2>Recent orders</h2><Link to="/admin/orders" className="link">View all orders</Link></header>
+          {orders.length === 0 ? <div className="dash-body"><p className="muted">{emptyText}</p></div> : (
             <div className="tablewrap">
               <table>
                 <thead><tr><th>Order</th><th>Customer</th><th className="hide-sm">Type</th><th>Status</th><th className="num">Total</th></tr></thead>
