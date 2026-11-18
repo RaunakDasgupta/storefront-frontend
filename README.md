@@ -179,3 +179,9 @@ With no URLs set this is a working prototype:
 - **Checkout payments are a dummy**: no money moves (see the test cards above).
 - The cart lives in the customer store's memory and resets on reload.
 - "Forgot password" and company SSO are placeholders.
+
+## Troubleshooting
+
+- **A blank page.** The app now never leaves one: while the app downloads you see "Loading…"; if something fails while drawing a screen you see **Something went wrong** with the error and two buttons (**Reload the page**, and **Clear saved data and start over** for saved data that no longer fits); if the app cannot start at all, a plain message appears after a few seconds. In `npm run dev`, a tab left open across a dev-server restart can show "Failed to fetch dynamically imported module": reload it.
+- **Browsers that refuse storage** (private mode, blocked cookies): the app falls back to memory, so it works but forgets your cart, sign-in and sample-data changes when you reload.
+- **Storefront shows "Couldn't load the store":** a URL in `.env.local` points at a server that is not running. Remove it, or start the server.

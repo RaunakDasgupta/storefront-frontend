@@ -6,7 +6,7 @@ import type { SkuRow } from "../lib/csv.ts";
 import { seedProducts, type Product } from "../lib/data.ts";
 import { SAMPLE_ORDERS, isOrder, makeOrders, withChannel, withOrderAt, withStep, withoutOrder, type Order } from "../lib/orderlogic.ts";
 import { ApiError } from "./http.ts";
-import { readJson, writeJson, type KV } from "./kv.ts";
+import { browserStorage, readJson, writeJson, type KV } from "./kv.ts";
 import { registerCustomer, signInAdmin, signInCustomer } from "./mockAccounts.ts";
 import type { Api, Card, ImportApi, OrdersApi, PaymentsApi, ProductsApi } from "./types.ts";
 
@@ -111,7 +111,7 @@ function mockImporter(delayMs: number): ImportApi {
 export type MockOptions = { paymentDelayMs?: number; connectDelayMs?: number };
 
 /** The whole API, served from `kv` (localStorage in the app, memory in tests). */
-export function createMockApi(kv: KV = localStorage, { paymentDelayMs = 1500, connectDelayMs = 1200 }: MockOptions = {}): Omit<Api, "sources"> {
+export function createMockApi(kv: KV = browserStorage("local"), { paymentDelayMs = 1500, connectDelayMs = 1200 }: MockOptions = {}): Omit<Api, "sources"> {
   return {
     products: mockProducts(kv),
     orders: mockOrders(kv),

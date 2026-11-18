@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { createApi, type CreateApiOptions } from "../../shared/api/index.ts";
+import { browserStorage } from "../../shared/api/kv.ts";
 import type { Api } from "../../shared/api/types.ts";
 import { watch } from "../../shared/store/persistence.ts";
 import { readSession, writeSession } from "../../shared/store/session.ts";
@@ -44,11 +45,11 @@ export function bootCustomerStore(options: Pick<CreateApiOptions, "env"> & Parti
     // a rejected token means the session ended: sign out so the login popup comes back
     onUnauthorized: () => { if (store?.getState().auth.token) store.dispatch(signedOut()); },
   });
-  store = makeCustomerStore(api, { auth: readSession(sessionStorage, SESSION_KEY) });
+  store = makeCustomerStore(api, { auth: readSession(browserStorage("session"), SESSION_KEY) });
   return store;
 }
 
 /** Remembers who is signed in for this tab. Returns the cleanup. */
 export function persistCustomer(store: CustomerStore) {
-  return watch(store, (s) => s.auth, (auth) => writeSession(sessionStorage, SESSION_KEY, auth));
+  return watch(store, (s) => s.auth, (auth) => writeSession(browserStorage("session"), SESSION_KEY, auth));
 }

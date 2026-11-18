@@ -7,6 +7,14 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>Everyday Market needs JavaScript. Please turn it on and reload.</noscript>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // if the app has drawn nothing after a while (a script failed to download, say), say so instead of showing a blank page
+      setTimeout(function () {
+        var root = document.getElementById("root");
+        if (root && !root.firstChild) root.innerHTML = '<p style="padding:48px 16px;text-align:center;font:16px sans-serif">The page could not start. Please <a href="">reload</a>, and check the browser console for errors if it keeps happening.</p>';
+      }, 8000);
+    </script>
   </body>
 </html>
