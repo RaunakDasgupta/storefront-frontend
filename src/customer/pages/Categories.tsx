@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "../../shared/ui";
-import { useCategories } from "../categories";
-import { CategoryCard } from "../parts";
+import { useCategories } from "../hooks/useCategories";
+import { CategoryCard } from "../components/parts";
 
 /** Every category as a card, for Retail or (with ?channel=bulk) Bulk orders. A 3 x 2 grid that scrolls sideways when there are more than 6. */
 export function Categories() {

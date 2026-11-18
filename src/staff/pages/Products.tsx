@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { useCatalog } from "../../shared/catalog";
-import type { Channel, Product } from "../../shared/data";
+import { useCatalog } from "../../shared/hooks/useCatalog";
+import type { Channel, Product } from "../../shared/lib/data";
 import { Icon } from "../../shared/ui";
-import { ConfirmDelete } from "../ConfirmDelete";
-import { ProductEditor } from "../ProductEditor";
-import { ProductGrid } from "../ProductGrid";
+import { ConfirmDelete } from "../components/ConfirmDelete";
+import { ProductEditor } from "../components/ProductEditor";
+import { ProductGrid } from "../components/ProductGrid";
 
 const CHANNELS: { id: Channel; label: string }[] = [
   { id: "retail", label: "Retail products" },

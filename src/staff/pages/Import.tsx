@@ -1,8 +1,8 @@
 import { useState, type DragEvent } from "react";
 import { Link } from "react-router-dom";
-import { useCatalog } from "../../shared/catalog";
-import { MAX_ROWS, parseSkuCsv, skuTemplate, type ParseResult } from "../../shared/csv";
-import { money } from "../../shared/data";
+import { useCatalog } from "../../shared/hooks/useCatalog";
+import { MAX_ROWS, parseSkuCsv, skuTemplate, type ParseResult } from "../../shared/lib/csv";
+import { money } from "../../shared/lib/data";
 
 const PREVIEW_ROWS = 6;
 const ISSUE_ROWS = 6;

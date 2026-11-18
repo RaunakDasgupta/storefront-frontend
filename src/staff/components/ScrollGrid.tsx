@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from "react";
-import { Icon } from "../shared/ui";
+import { Icon } from "../../shared/ui";
 
 /** A 3 x 2 grid of cards that scrolls sideways once there are more than 6 (a sliver of the next column hints at it). */
 export function ScrollGrid({ count, children, rows }: { count: number; children: ReactNode; rows?: "tall" | "taller" }) {

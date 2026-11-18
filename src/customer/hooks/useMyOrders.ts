@@ -1,5 +1,5 @@
-import { useOrders } from "../shared/orders";
-import { useCustomer } from "./auth";
+import { useOrders } from "../../shared/hooks/useOrders";
+import { useCustomer } from "./useCustomer";
 
 /** The signed-in customer's own orders, newest first (the shared store holds everyone's). */
 export function useMyOrders() {

@@ -1,5 +1,5 @@
 import type { ThunkAction, UnknownAction } from "@reduxjs/toolkit";
-import { placeOrders } from "../shared/store/ordersSlice.ts";
+import { placeOrders } from "../../shared/store/ordersSlice.ts";
 import type { User } from "./authSlice.ts";
 import { cartCleared, selectCartItems } from "./cartSlice.ts";
 import type { CustomerState } from "./store.ts";

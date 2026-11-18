@@ -2,14 +2,14 @@
 import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { Link, Route, Routes } from "react-router-dom";
-import { RequireStaff } from "./auth";
-import { StaffLayout } from "./Layout";
-import { StaffLogin } from "./Login";
+import { RequireStaff } from "./components/RequireStaff";
+import { StaffLayout } from "./components/Layout";
+import { StaffLogin } from "./pages/Login";
 import { ImportPage } from "./pages/Import";
 import { StaffOrders } from "./pages/Orders";
 import { Overview } from "./pages/Overview";
 import { StaffProducts } from "./pages/Products";
-import { makeStaffStore, persistStaff } from "./store";
+import { makeStaffStore, persistStaff } from "./store/store";
 import "./staff.css";
 
 function StaffNotFound() {

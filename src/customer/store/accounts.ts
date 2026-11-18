@@ -1,7 +1,7 @@
 // The mock customer accounts. Passwords are kept out of the Redux state on purpose: only the signed-in user goes there.
 // shortcut: plaintext passwords in localStorage. Replace with your customer auth API (POST /api/auth/login and /api/auth/register) before going live.
 import type { User } from "./authSlice.ts";
-import { readJson, writeJson } from "../shared/store/persistence.ts";
+import { readJson, writeJson } from "../../shared/store/persistence.ts";
 
 type Account = User & { password: string };
 

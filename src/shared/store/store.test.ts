@@ -2,8 +2,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { seedProducts } from "../data.ts";
-import type { SkuRow } from "../csv.ts";
+import { seedProducts } from "../lib/data.ts";
+import type { SkuRow } from "../lib/csv.ts";
 import { catalogReset, importSkus, productRestored, productUpdated, removeProduct, selectCategories, selectCustomized, selectProducts } from "./catalogSlice.ts";
 import { orderStepSet, ordersReplaced, placeOrders, removeOrder, orderRestored, selectOrders } from "./ordersSlice.ts";
 import { sharedReducers } from "./shared.ts";

@@ -1,11 +1,11 @@
 // The signed-in customer as the components use it.
 import { useMemo } from "react";
-import { asError } from "../shared/store/shared";
-import { useAppDispatch, useAppSelector } from "./hooks";
-import { selectUser, signIn, signUp, signedOut } from "./authSlice";
+import { asError } from "../../shared/store/shared";
+import { useAppDispatch, useAppSelector } from "../store/typedHooks";
+import { selectUser, signIn, signUp, signedOut } from "../store/authSlice";
 
-export { DEMO_CUSTOMER } from "./accounts";
-export type { User } from "./authSlice";
+export { DEMO_CUSTOMER } from "../store/accounts";
+export type { User } from "../store/authSlice";
 
 export function useCustomer() {
   const dispatch = useAppDispatch();

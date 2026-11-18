@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import { money, type Channel } from "../../shared/data";
-import { revenueOf } from "../../shared/orderlogic";
-import { useOrders } from "../../shared/orders";
-import { OrderGrid } from "../OrderGrid";
-import { useStaff } from "../auth";
+import { money, type Channel } from "../../shared/lib/data";
+import { revenueOf } from "../../shared/lib/orderlogic";
+import { useOrders } from "../../shared/hooks/useOrders";
+import { OrderGrid } from "../components/OrderGrid";
+import { useStaff } from "../hooks/useStaff";
 
 const CHANNELS: { id: Channel; label: string }[] = [
   { id: "retail", label: "Retail" },

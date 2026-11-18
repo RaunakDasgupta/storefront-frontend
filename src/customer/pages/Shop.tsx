@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { useCatalog } from "../../shared/catalog";
-import type { Channel, Product } from "../../shared/data";
+import { useCatalog } from "../../shared/hooks/useCatalog";
+import type { Channel, Product } from "../../shared/lib/data";
 import { Icon } from "../../shared/ui";
-import { useCategories, type CategoryInfo } from "../categories";
-import { CartPanel, ChannelBanner, ProductCard } from "../parts";
+import { useCategories, type CategoryInfo } from "../hooks/useCategories";
+import { CartPanel, ChannelBanner, ProductCard } from "../components/parts";
 
 const COPY: Record<Channel, { title: string; lede: string }> = {
   retail: { title: "Everyday essentials, ready to order", lede: "Shop individual items or choose bulk packs for your business." },

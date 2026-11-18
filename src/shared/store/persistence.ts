@@ -4,7 +4,7 @@ import type { Store } from "@reduxjs/toolkit";
 import type { SharedState } from "./shared.ts";
 import { isProduct, type CatalogState } from "./catalogSlice.ts";
 import { ordersReplaced, type OrdersState } from "./ordersSlice.ts";
-import { SAMPLE_ORDERS, isOrder, withChannel, type Order } from "../orderlogic.ts";
+import { SAMPLE_ORDERS, isOrder, withChannel, type Order } from "../lib/orderlogic.ts";
 
 const CATALOG_KEY = "everyday.catalog";
 const ORDERS_KEY = "everyday.orders";

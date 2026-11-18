@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Icon, Logo, Menu } from "../shared/ui";
-import { useStaff } from "./auth";
+import { Icon, Logo, Menu } from "../../shared/ui";
+import { useStaff } from "../hooks/useStaff";
 
 const NAV = [
   { to: "/staff", label: "Overview", icon: "home", end: true },

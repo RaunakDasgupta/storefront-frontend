@@ -1,5 +1,5 @@
-import { useCatalog } from "../shared/catalog";
-import type { Channel, Product } from "../shared/data";
+import { useCatalog } from "../../shared/hooks/useCatalog";
+import type { Channel, Product } from "../../shared/lib/data";
 
 export type CategoryInfo = { name: string; count: number; cover: Product; products: Product[]; to: string };
 

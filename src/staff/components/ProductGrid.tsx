@@ -1,5 +1,5 @@
-import { money, type Product } from "../shared/data";
-import { Icon, ProductImage } from "../shared/ui";
+import { money, type Product } from "../../shared/lib/data";
+import { Icon, ProductImage } from "../../shared/ui";
 import { ScrollGrid } from "./ScrollGrid";
 
 function Stock({ stock }: { stock: number }) {

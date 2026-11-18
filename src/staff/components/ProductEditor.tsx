@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useCatalog } from "../shared/catalog";
-import type { Product } from "../shared/data";
-import { parseProductForm, toForm, type FormErrors, type ProductForm } from "../shared/productform";
-import { Field } from "../shared/ui";
+import { useCatalog } from "../../shared/hooks/useCatalog";
+import type { Product } from "../../shared/lib/data";
+import { parseProductForm, toForm, type FormErrors, type ProductForm } from "../../shared/lib/productform";
+import { Field } from "../../shared/ui";
 
 /** Edit one product in a modal dialog. Esc, the backdrop and Cancel all close it without saving. */
 export function ProductEditor({ product, onClose }: { product: Product; onClose: () => void }) {

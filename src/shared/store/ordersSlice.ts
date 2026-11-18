@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Channel } from "../data.ts";
-import { SAMPLE_ORDERS, makeOrders, withOrderAt, withStep, withoutOrder, type Order, type OrderItem } from "../orderlogic.ts";
+import type { Channel } from "../lib/data.ts";
+import { SAMPLE_ORDERS, makeOrders, withOrderAt, withStep, withoutOrder, type Order, type OrderItem } from "../lib/orderlogic.ts";
 import type { SharedThunk } from "./shared.ts";
 
 /** One orders list for both apps: customers place orders in the storefront, staff manage them in the portal. */

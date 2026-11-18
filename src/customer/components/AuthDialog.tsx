@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Field } from "../shared/ui";
-import { DEMO_CUSTOMER, useCustomer, type User } from "./auth";
-import { dialogClosed, dialogModeChanged, dialogOpened, type DialogRequest } from "./authDialogSlice";
-import { checkout } from "./checkout";
-import { useAppDispatch, useAppSelector } from "./hooks";
+import { Field } from "../../shared/ui";
+import { DEMO_CUSTOMER, useCustomer, type User } from "../hooks/useCustomer";
+import { dialogClosed, dialogModeChanged, dialogOpened, type DialogRequest } from "../store/authDialogSlice";
+import { checkout } from "../store/checkout";
+import { useAppDispatch, useAppSelector } from "../store/typedHooks";
 
 /** Opens the log in / create account popup from anywhere (checkout, the account menu, protected pages). */
 export function useAuthDialog() {

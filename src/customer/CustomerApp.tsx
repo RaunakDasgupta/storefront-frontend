@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { Route, Routes } from "react-router-dom";
-import { AuthDialogHost, AuthRoute, RequireCustomer } from "./authDialog";
-import { CustomerLayout } from "./Layout";
-import { makeCustomerStore, persistCustomer } from "./store";
-import { ToastHost } from "./toast";
+import { AuthDialogHost, AuthRoute, RequireCustomer } from "./components/AuthDialog";
+import { CustomerLayout } from "./components/Layout";
+import { makeCustomerStore, persistCustomer } from "./store/store";
+import { ToastHost } from "./components/Toast";
 import { Account } from "./pages/Account";
 import { CartPage } from "./pages/Cart";
 import { Categories } from "./pages/Categories";

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "./hooks";
-import { cartCleared, itemAdded, qtySet, selectCartCount, selectCartItems, selectCartLines, selectCartTotal } from "./cartSlice";
+import { useAppDispatch, useAppSelector } from "../store/typedHooks";
+import { cartCleared, itemAdded, qtySet, selectCartCount, selectCartItems, selectCartLines, selectCartTotal } from "../store/cartSlice";
 
 export function useCart() {
   const dispatch = useAppDispatch();

@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Icon } from "../shared/ui";
-import { useAppDispatch, useAppSelector } from "./hooks";
-import { toastDismissed, toastShown, type ToastInput } from "./toastSlice";
+import { Icon } from "../../shared/ui";
+import { useAppDispatch, useAppSelector } from "../store/typedHooks";
+import { toastDismissed, toastShown, type ToastInput } from "../store/toastSlice";
 
 const SHOW_MS = 7000;
 

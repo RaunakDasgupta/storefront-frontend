@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useCustomer } from "../auth";
+import { useCustomer } from "../hooks/useCustomer";
 
 export function Account() {
   const { user, signOut } = useCustomer();

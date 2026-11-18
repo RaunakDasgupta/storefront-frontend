@@ -1,10 +1,10 @@
 // The catalog as the components use it: Redux state read through selectors, changes sent as actions.
 import { useMemo } from "react";
-import type { SkuRow } from "./csv";
-import type { ProductEdit } from "./productform";
-import type { Product } from "./data";
-import { useSharedDispatch, useSharedSelector } from "./store/hooks";
-import { catalogReset, importSkus, productRestored, productUpdated, removeProduct, selectCategories, selectCustomized, selectProducts } from "./store/catalogSlice";
+import type { SkuRow } from "../lib/csv";
+import type { ProductEdit } from "../lib/productform";
+import type { Product } from "../lib/data";
+import { useSharedDispatch, useSharedSelector } from "../store/typedHooks";
+import { catalogReset, importSkus, productRestored, productUpdated, removeProduct, selectCategories, selectCustomized, selectProducts } from "../store/catalogSlice";
 
 export function useCatalog() {
   const dispatch = useSharedDispatch();

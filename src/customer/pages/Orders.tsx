@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useCatalog } from "../../shared/catalog";
-import { money } from "../../shared/data";
-import { STEPS, STEP_MESSAGE, itemCount, type Order } from "../../shared/orderlogic";
+import { useCatalog } from "../../shared/hooks/useCatalog";
+import { money } from "../../shared/lib/data";
+import { STEPS, STEP_MESSAGE, itemCount, type Order } from "../../shared/lib/orderlogic";
 import { Icon, ProductImage, STEP_BADGE } from "../../shared/ui";
-import { useCart } from "../cart";
-import { useMyOrders } from "../myOrders";
-import { Tracker } from "../parts";
-import { useToast } from "../toast";
+import { useCart } from "../hooks/useCart";
+import { useMyOrders } from "../hooks/useMyOrders";
+import { Tracker } from "../components/parts";
+import { useToast } from "../components/Toast";
 
 const FILTERS = [
   { id: "all", label: "All" },

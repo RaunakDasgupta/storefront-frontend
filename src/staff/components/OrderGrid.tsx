@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { fmtDate, money } from "../shared/data";
-import { STEPS, itemCount, type Order } from "../shared/orderlogic";
-import { Icon, STEP_BADGE, itemsText } from "../shared/ui";
+import { fmtDate, money } from "../../shared/lib/data";
+import { STEPS, itemCount, type Order } from "../../shared/lib/orderlogic";
+import { Icon, STEP_BADGE, itemsText } from "../../shared/ui";
 import { ScrollGrid } from "./ScrollGrid";
 
 function Body({ o }: { o: Order }) {

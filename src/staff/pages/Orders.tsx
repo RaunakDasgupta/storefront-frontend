@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { money, type Channel } from "../../shared/data";
-import { STEPS, type Order } from "../../shared/orderlogic";
-import { useOrders } from "../../shared/orders";
+import { money, type Channel } from "../../shared/lib/data";
+import { STEPS, type Order } from "../../shared/lib/orderlogic";
+import { useOrders } from "../../shared/hooks/useOrders";
 import { Icon } from "../../shared/ui";
-import { ConfirmDelete } from "../ConfirmDelete";
-import { OrderGrid } from "../OrderGrid";
+import { ConfirmDelete } from "../components/ConfirmDelete";
+import { OrderGrid } from "../components/OrderGrid";
 
 const FILTERS = ["All", ...STEPS] as const;
 const CHANNELS: { id: Channel; label: string }[] = [

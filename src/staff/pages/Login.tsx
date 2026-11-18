@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Logo } from "../shared/ui";
-import { DEMO_STAFF, useStaff } from "./auth";
+import { Logo } from "../../shared/ui";
+import { DEMO_STAFF, useStaff } from "../hooks/useStaff";
 
 export function StaffLogin() {
   const { user, signIn } = useStaff();

@@ -5,11 +5,11 @@ Two independent apps in one **React 19 + TypeScript + Vite + Redux Toolkit** pro
 - **Customer storefront ("Everyday Market")** at `/`: retail and bulk shopping, a cart with a simulated checkout, and order-progress tracking.
 - **Staff portal ("Everyday Market Staff")** at `/staff`: dashboard, orders, products and CSV SKU import.
 
-The two apps have their own log in pages, sessions, route guards, layouts and stylesheets. Neither links to the other, being signed in to one never signs you in to the other, and each is built and loaded as a separate bundle.
+The two apps have their own logins, sessions, route guards, layouts and stylesheets. Neither links to the other, being signed in to one never signs you in to the other, and each is built and loaded as a separate bundle.
 
 ## Getting started
 
-Requires Node.js 20+.
+Requires Node.js 22.18+ (the tests run TypeScript directly).
 
 ```bash
 npm install
@@ -99,22 +99,23 @@ The photos are free stock images from [Unsplash](https://unsplash.com), used und
 ## Project layout
 
 ```
-src/main.tsx            Router entry
-src/App.tsx             Loads the customer or staff app by URL (/staff/* is staff)
-src/shared/             Only what both apps genuinely share
-  data.ts               Sample products and orders, money formatting
-  catalog.ts, orders.ts Hooks the components use for the catalog and orders (selectors plus dispatch)
-  store/                Redux slices both apps share
-    catalogSlice.ts       Products: edit, delete, undo, CSV import, selectors
-    ordersSlice.ts        Orders: place, change status, delete, undo, selectors
-    persistence.ts        localStorage loading and saving, cross-tab order sync (the mock backend)
-    shared.ts, hooks.ts   Shared reducers and state types, typed hooks
-  orderlogic.ts         Order types, sample orders and pure helpers
-  csv.ts, csv.test.ts   CSV parser and validation, with tests (also covers the order helpers)
-  ui.tsx                Icon, Logo, ProductImage, Field, Menu
-  base.css              Colour tokens and primitives (buttons, forms, tables)
-src/customer/           The storefront: its own store (store.ts), slices (auth, cart, toast, login popup), checkout thunk, layout, pages, customer.css
-src/staff/              The staff portal: its own store (store.ts), auth slice, layout, pages, staff.css
+src/main.tsx             Router entry
+src/App.tsx              Loads the customer or staff app by URL (/staff/* is staff)
+src/shared/              Only what both apps genuinely share
+  lib/                   Pure code with no React: data.ts, csv.ts, orderlogic.ts, productform.ts (tests in lib.test.ts)
+  store/                 Redux slices for the catalog and orders, persistence.ts (the mock backend), typed hooks, store.test.ts
+  hooks/                 useCatalog and useOrders: selectors plus dispatch for the components
+  ui/                    Icon, Logo, ProductImage, Field, Menu (index.tsx) and base.css (colour tokens and primitives)
+src/customer/            The storefront (its styles are scoped to .cx)
+  store/                 Its own store, slices (auth, cart, toast, authDialog), checkout thunk, mock accounts, store.test.ts
+  hooks/                 useCustomer, useCart, useMyOrders, useCategories
+  components/            Layout, AuthDialog, Toast, parts (ProductCard, CartPanel and the other pieces)
+  pages/                 Shop, Product, Categories, Cart, Orders, Account, NotFound
+src/staff/               The staff portal (its styles are scoped to .sx)
+  store/                 Its own store, auth slice and mock account
+  hooks/                 useStaff
+  components/            Layout, RequireStaff, OrderGrid, ProductGrid, ProductEditor, ConfirmDelete, ScrollGrid
+  pages/                 Login, Overview, Orders, Products, Import
 ```
 
 ## State management
@@ -130,7 +131,7 @@ State lives in [Redux Toolkit](https://redux-toolkit.js.org). Each app creates *
 - Actions that need a result or several steps are thunks (`placeOrders`, `removeProduct`, `importSkus`, `checkout`). Sign in and sign up are `createAsyncThunk`s.
 - State stays serializable. The login popup keeps *what to do after logging in* as data (`{ kind: "checkout" }` or `{ kind: "navigate", to }`), not a callback, and passwords never enter the store.
 - `persistence.ts` saves the catalog and orders to `localStorage` and each login to its own `sessionStorage` key whenever they change, and picks up orders changed in another tab.
-- The slices have no React in them, so they are tested with `node --test` (`src/shared/store/store.test.ts`, `src/customer/store.test.ts`).
+- The slices have no React in them, so they are tested with `node --test` (`src/shared/store/store.test.ts`, `src/customer/store/store.test.ts`).
 
 Each app's stylesheet is scoped to its own root (`.cx` for the customer app, `.sx` for staff), so styles cannot leak between them. The only data the apps share is the product catalog: SKUs imported by staff show up in the storefront.
 
@@ -138,7 +139,7 @@ Each app's stylesheet is scoped to its own root (`.cx` for the customer app, `.s
 
 There is no backend yet, so this is a working prototype:
 
-- **Accounts are mocked in the browser.** The demo accounts and any customer sign-ups (plaintext passwords in `localStorage`) are checked in `src/customer/accounts.ts` and `src/staff/accounts.ts`, and each session lives in its own `sessionStorage` key. Do not deploy as is: replace the `signIn` and `signUp` thunks with calls to your auth API.
-- **Products and the staff orders are sample data** in `src/shared/data.ts`. Imported SKUs and all orders persist in `localStorage` only. The customer and staff apps read and write the same orders store, so an order placed in the storefront shows up in the staff portal (even in another open tab).
+- **Accounts are mocked in the browser.** The demo accounts and any customer sign-ups (plaintext passwords in `localStorage`) are checked in `src/customer/store/accounts.ts` and `src/staff/store/accounts.ts`, and each session lives in its own `sessionStorage` key. Do not deploy as is: replace the `signIn` and `signUp` thunks with calls to your auth API.
+- **Products and the staff orders are sample data** in `src/shared/lib/data.ts`. Imported SKUs and all orders persist in `localStorage` only. The customer and staff apps read and write the same orders store, so an order placed in the storefront shows up in the staff portal (even in another open tab).
 - **Checkout is a demo**: no payment is collected. The cart lives in the customer store's memory and resets on reload.
 - "Forgot password" and company SSO are placeholders.

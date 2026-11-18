@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
-import { useAuthDialog } from "./authDialog";
-import { useCatalog } from "../shared/catalog";
-import { money, type Product } from "../shared/data";
-import { STEPS } from "../shared/orderlogic";
-import { Icon, ProductImage } from "../shared/ui";
-import { useCustomer } from "./auth";
-import { useCart } from "./cart";
-import { checkout } from "./checkout";
-import { useAppDispatch } from "./hooks";
+import { useAuthDialog } from "./AuthDialog";
+import { useCatalog } from "../../shared/hooks/useCatalog";
+import { money, type Product } from "../../shared/lib/data";
+import { STEPS } from "../../shared/lib/orderlogic";
+import { Icon, ProductImage } from "../../shared/ui";
+import { useCustomer } from "../hooks/useCustomer";
+import { useCart } from "../hooks/useCart";
+import { checkout } from "../store/checkout";
+import { useAppDispatch } from "../store/typedHooks";
 
 /** Stock line under the size: green when plentiful, amber when low, red when gone. */
 export function StockNote({ stock }: { stock: number }) {

@@ -1,9 +1,9 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Icon, Logo, Menu } from "../shared/ui";
-import { useCustomer } from "./auth";
-import { useAuthDialog } from "./authDialog";
-import { useCart } from "./cart";
-import { useCategories } from "./categories";
+import { Icon, Logo, Menu } from "../../shared/ui";
+import { useCustomer } from "../hooks/useCustomer";
+import { useAuthDialog } from "./AuthDialog";
+import { useCart } from "../hooks/useCart";
+import { useCategories } from "../hooks/useCategories";
 import { CategoryCard } from "./parts";
 
 function AccountMenu() {

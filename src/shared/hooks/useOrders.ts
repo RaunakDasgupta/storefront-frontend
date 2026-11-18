@@ -1,9 +1,9 @@
 // The orders as the components use them: Redux state read through selectors, changes sent as actions.
 import { useMemo } from "react";
-import type { Channel } from "./data";
-import type { Order, OrderItem } from "./orderlogic";
-import { useSharedDispatch, useSharedSelector } from "./store/hooks";
-import { orderRestored, orderStepSet, placeOrders, removeOrder, selectOrders } from "./store/ordersSlice";
+import type { Channel } from "../lib/data";
+import type { Order, OrderItem } from "../lib/orderlogic";
+import { useSharedDispatch, useSharedSelector } from "../store/typedHooks";
+import { orderRestored, orderStepSet, placeOrders, removeOrder, selectOrders } from "../store/ordersSlice";
 
 export function useOrders() {
   const dispatch = useSharedDispatch();

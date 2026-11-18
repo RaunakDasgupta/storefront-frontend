@@ -1,8 +1,8 @@
 // The customer store: cart, checkout, auth and the login popup.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { seedProducts } from "../shared/data.ts";
-import { selectOrders } from "../shared/store/ordersSlice.ts";
+import { seedProducts } from "../../shared/lib/data.ts";
+import { selectOrders } from "../../shared/store/ordersSlice.ts";
 import { dialogClosed, dialogModeChanged, dialogOpened } from "./authDialogSlice.ts";
 import { selectUser, signIn, signUp, signedOut } from "./authSlice.ts";
 import { cartCleared, itemAdded, qtySet, selectCartCount, selectCartItems, selectCartTotal } from "./cartSlice.ts";

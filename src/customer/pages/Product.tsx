@@ -1,9 +1,9 @@
 import { Link, useParams } from "react-router-dom";
-import { useCatalog } from "../../shared/catalog";
-import { money } from "../../shared/data";
+import { useCatalog } from "../../shared/hooks/useCatalog";
+import { money } from "../../shared/lib/data";
 import { ProductImage } from "../../shared/ui";
-import { useCart } from "../cart";
-import { StockNote } from "../parts";
+import { useCart } from "../hooks/useCart";
+import { StockNote } from "../components/parts";
 import { NotFound } from "./NotFound";
 
 export function ProductPage() {

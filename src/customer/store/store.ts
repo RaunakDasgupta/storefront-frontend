@@ -1,6 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { loadSharedState, persistShared, readJson, watch, writeJson } from "../shared/store/persistence.ts";
-import { sharedReducers } from "../shared/store/shared.ts";
+import { loadSharedState, persistShared, readJson, watch, writeJson } from "../../shared/store/persistence.ts";
+import { sharedReducers } from "../../shared/store/shared.ts";
 import { authDialogReducer } from "./authDialogSlice.ts";
 import { authReducer, type User } from "./authSlice.ts";
 import { cartReducer } from "./cartSlice.ts";

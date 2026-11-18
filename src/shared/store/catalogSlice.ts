@@ -1,7 +1,7 @@
 import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SkuRow } from "../csv.ts";
-import { seedProducts, type Product } from "../data.ts";
-import { isSafeImage, type ProductEdit } from "../productform.ts";
+import type { SkuRow } from "../lib/csv.ts";
+import { seedProducts, type Product } from "../lib/data.ts";
+import { isSafeImage, type ProductEdit } from "../lib/productform.ts";
 import type { SharedThunk } from "./shared.ts";
 
 /** `saved` is null until staff change the catalog; shoppers then see the built-in products. */

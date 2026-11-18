@@ -1,8 +1,8 @@
 // Small building blocks used by both the customer and the staff app. No routes, no auth, no app state.
 import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { imageSrc, money, type Product } from "./data";
-import type { Order } from "./orderlogic";
+import { imageSrc, money, type Product } from "../lib/data";
+import type { Order } from "../lib/orderlogic";
 
 const ICONS = {
   bag: <><path d="M5 8h14l-1 12H6L5 8z" /><path d="M9 8a3 3 0 016 0" /></>,
