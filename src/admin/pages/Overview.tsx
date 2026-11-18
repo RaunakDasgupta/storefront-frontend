@@ -5,13 +5,11 @@ import { fmtDate, money } from "../../shared/lib/data";
 import { STEPS, countByStep, revenueByDay, revenueOf } from "../../shared/lib/orderlogic";
 import { STEP_BADGE } from "../../shared/ui";
 import { RevenueChart, StatusBars } from "../components/Charts";
-import { useAdmin } from "../hooks/useAdmin";
 
 const LOW_STOCK = 10;
 
 /** The dashboard: headline numbers, revenue and fulfilment charts, the newest orders and what is running low. */
 export function Overview() {
-  const { user } = useAdmin();
   const { orders } = useOrders();
   const { products } = useCatalog();
 
@@ -30,8 +28,8 @@ export function Overview() {
     <>
       <div className="page-head">
         <div>
-          <h1>Welcome back, {user?.name.split(" ")[0]}</h1>
-          <p className="muted">Here is how the store is doing. Orders placed in the storefront show up here straight away.</p>
+          <h1>Overview</h1>
+          <p className="muted">How the store is doing. Orders placed in the storefront show up here straight away.</p>
         </div>
       </div>
 

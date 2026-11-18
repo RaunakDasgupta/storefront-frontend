@@ -25,7 +25,6 @@ export function AdminLayout() {
     <div className="admin">
       <aside className="sidebar">
         <Logo to="/admin" label="Everyday Market" />
-        <span className="pill">Admin portal</span>
         <nav aria-label="Admin">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to} end={"end" in n}><Icon name={n.icon} /><span>{n.label}</span></NavLink>
