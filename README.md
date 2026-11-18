@@ -107,7 +107,7 @@ src/shared/              Only what both apps genuinely share
   hooks/                 useCatalog and useOrders: selectors plus dispatch for the components
   ui/                    Icon, Logo, ProductImage, Field, Menu (index.tsx) and base.css (colour tokens and primitives)
 src/customer/            The storefront (its styles are scoped to .cx)
-  store/                 Its own store, slices (auth, cart, toast, authDialog), checkout thunk, mock accounts, store.test.ts
+  store/                 Its own store, slices (auth, cart, toast, authDialog, checkout), checkout thunk, dummy payment gateway (gateway.ts), mock accounts, store.test.ts
   hooks/                 useCustomer, useCart, useMyOrders, useCategories
   components/            Layout, AuthDialog, CheckoutDialog (address, dummy payment, order placed), Toast, parts (ProductCard, CartPanel and the other pieces)
   pages/                 Shop, Product, Categories, Cart, Orders, Account, NotFound
