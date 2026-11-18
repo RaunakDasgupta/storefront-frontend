@@ -29,7 +29,7 @@ export function ProductGrid({ products, onEdit, onDelete }: { products: Product[
           </span>
           <span className="flex gap-2">
             <button className={`${PC_BTN} hover:border-brand hover:bg-brand-tint hover:text-brand`} aria-label={`Edit ${p.name} (${p.sku})`} onClick={() => onEdit(p)}><Icon name="edit" className="size-[15px]" /> Edit</button>
-            <button className={`${PC_BTN} hover:border-danger hover:bg-[#fff4f4] hover:text-danger`} aria-label={`Delete ${p.name} (${p.sku})`} onClick={() => onDelete(p)}><Icon name="trash" className="size-[15px]" /> Delete</button>
+            <button className={`${PC_BTN} hover:border-danger hover:bg-danger-tint hover:text-danger`} aria-label={`Delete ${p.name} (${p.sku})`} onClick={() => onDelete(p)}><Icon name="trash" className="size-[15px]" /> Delete</button>
           </span>
         </article>
       ))}

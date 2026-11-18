@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { SAMPLE_ORDERS, isOrder, makeOrder, makeOrders, nextOrderId, orderTotal, revenueOf, withChannel, withOrderAt, withStep, withoutOrder, type Order } from "./orderlogic.ts";
 import { parseCsv, parseSkuCsv } from "./csv.ts";
-import { isSafeImage, parseProductForm, toForm } from "./productform.ts";
+import { emptyForm, isSafeImage, parseNewProduct, parseProductForm, toForm } from "./productform.ts";
 import { seedProducts } from "./data.ts";
 
 test("parseCsv handles quotes, escaped quotes, newlines in cells, CRLF and a BOM", () => {
@@ -137,4 +137,18 @@ test("deleting an order and undoing it restores the same list", () => {
   assert.deepEqual(back.map((o) => o.id), SAMPLE_ORDERS.map((o) => o.id));
   assert.equal(withOrderAt(back, SAMPLE_ORDERS[index], index), back, "an order that is already there is not added twice");
   assert.equal(withoutOrder(SAMPLE_ORDERS, "ORD_9999").length, SAMPLE_ORDERS.length);
+});
+
+test("a new product needs a valid SKU on top of the usual fields", () => {
+  const form = { ...emptyForm(), sku: " DET-002 ", name: "Detergent Pro", category: "Home care", price: "299", stock: "10" };
+  const ok = parseNewProduct(form);
+  assert.deepEqual(ok.errors, {});
+  assert.equal(ok.value?.sku, "DET-002");
+  assert.equal(ok.value?.channel, "retail");
+  assert.ok(parseNewProduct({ ...form, sku: " " }).errors.sku);
+  assert.ok(parseNewProduct({ ...form, sku: "has space" }).errors.sku);
+  assert.ok(parseNewProduct({ ...form, sku: "x".repeat(41) }).errors.sku);
+  const blank = parseNewProduct(emptyForm());
+  assert.deepEqual(Object.keys(blank.errors).sort(), ["category", "name", "price", "sku", "stock"]);
+  assert.equal(blank.value, undefined);
 });

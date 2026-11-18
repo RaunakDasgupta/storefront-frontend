@@ -1,7 +1,7 @@
 // The built-in sample data, behind the same interfaces as the real API. It keeps the catalog, orders and sign-ups in
 // this browser's localStorage, so the app works with no server. Each resource switches to your API on its own (see ./index.ts).
 // shortcut: no real payments, no real database connections, and no per-customer order filtering (the store does that).
-import { isProduct, mergeRows } from "../lib/catalog.ts";
+import { isProduct, mergeRows, uniqueId } from "../lib/catalog.ts";
 import type { SkuRow } from "../lib/csv.ts";
 import { seedProducts, type Product } from "../lib/data.ts";
 import { SAMPLE_ORDERS, isOrder, makeOrders, withChannel, withOrderAt, withStep, withoutOrder, type Order } from "../lib/orderlogic.ts";
@@ -29,6 +29,13 @@ function mockProducts(kv: KV): ProductsApi {
   const write = (list: Product[]) => writeJson(kv, CATALOG_KEY, list);
   return {
     async list() { return read(); },
+    async create(input) {
+      const list = read();
+      if (list.some((p) => p.sku.toLowerCase() === input.sku.toLowerCase())) throw new ApiError(`A product with the SKU ${input.sku} already exists.`, 409);
+      const product: Product = { id: uniqueId(list, input.sku), ...input };
+      write([...list, product]);
+      return product;
+    },
     async update(id, edit) {
       const list = read();
       const found = list.find((p) => p.id === id);

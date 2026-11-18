@@ -11,7 +11,7 @@ import { useAppDispatch } from "../store/typedHooks";
 
 /** Stock line under the size: green when plentiful, amber when low, red when gone. */
 export function StockNote({ stock, className = "mt-2 mb-0.5" }: { stock: number; className?: string }) {
-  const tone = stock === 0 ? "text-danger" : stock < 10 ? "text-[#b26a00]" : "text-brand";
+  const tone = stock === 0 ? "text-danger" : stock < 10 ? "text-warn" : "text-brand";
   return (
     <p className={`flex items-center gap-1.5 text-[12.5px] font-[550] ${tone} ${className}`}>
       <i className="size-2 rounded-full bg-current" />{stock === 0 ? "Out of stock" : stock < 10 ? `Only ${stock} left` : "In stock"}
@@ -23,10 +23,10 @@ export function StockNote({ stock, className = "mt-2 mb-0.5" }: { stock: number;
 export function Stepper({ name, qty, onChange, wide }: { name: string; qty: number; onChange: (qty: number) => void; wide?: boolean }) {
   const button = wide ? "h-[38px] w-11 text-lg text-forest" : "h-[30px] w-7 text-base";
   return (
-    <div className={`inline-flex items-center rounded-lg border ${wide ? "w-full justify-between border-brand bg-brand-tint" : "border-[#c9c9c9]"}`}>
-      <button className={`grid ${button} place-items-center border-0 bg-transparent p-0 ${wide ? "hover:bg-white/50" : "hover:bg-soft"}`} aria-label={`Decrease ${name}`} onClick={() => onChange(qty - 1)}>−</button>
+    <div className={`inline-flex items-center rounded-lg border ${wide ? "w-full justify-between border-brand bg-brand-tint" : "border-edge-soft"}`}>
+      <button className={`grid ${button} place-items-center border-0 bg-transparent p-0 ${wide ? "hover:bg-surface/50" : "hover:bg-soft"}`} aria-label={`Decrease ${name}`} onClick={() => onChange(qty - 1)}>−</button>
       <span className={`min-w-[22px] text-center ${wide ? "font-bold text-forest" : "font-semibold"}`} aria-live="polite">{qty}</span>
-      <button className={`grid ${button} place-items-center border-0 bg-transparent p-0 ${wide ? "hover:bg-white/50" : "hover:bg-soft"}`} aria-label={`Increase ${name}`} onClick={() => onChange(qty + 1)}>+</button>
+      <button className={`grid ${button} place-items-center border-0 bg-transparent p-0 ${wide ? "hover:bg-surface/50" : "hover:bg-soft"}`} aria-label={`Increase ${name}`} onClick={() => onChange(qty + 1)}>+</button>
     </div>
   );
 }
@@ -84,7 +84,7 @@ export function ChannelBanner({ channel }: { channel: "retail" | "bulk" }) {
     : { to: "/", tag: "Retail", icon: "bag", title: "Need single packs?", text: "Shop individual items for your home.", cta: `Browse ${count} retail products`, image: "/products/tissue-box.jpg" } as const;
   return (
     <section
-      className="relative isolate mb-8 flex min-h-[148px] items-center justify-between gap-6 overflow-hidden rounded-[18px] bg-[linear-gradient(100deg,var(--color-forest)_0%,var(--color-brand)_60%,#3fa82c_100%)] px-8 py-7 text-white shadow-[0_12px_30px_rgba(43,138,30,.3)] max-sm:flex-col max-sm:items-start max-sm:gap-4 max-sm:px-5 max-sm:py-[22px]"
+      className="relative isolate mb-8 flex min-h-[148px] items-center justify-between gap-6 overflow-hidden rounded-[18px] bg-[linear-gradient(100deg,#1f5c17_0%,#2b8a1e_60%,#3fa82c_100%)] px-8 py-7 text-white shadow-[0_12px_30px_rgba(43,138,30,.3)] max-sm:flex-col max-sm:items-start max-sm:gap-4 max-sm:px-5 max-sm:py-[22px]"
       aria-labelledby="banner-title"
     >
       <img
@@ -96,7 +96,7 @@ export function ChannelBanner({ channel }: { channel: "retail" | "bulk" }) {
         <h2 id="banner-title" className="text-[32px] font-extrabold tracking-[-0.02em] text-white max-sm:text-[26px]">{c.title}</h2>
         <p className="mt-1 text-base text-white/90">{c.text}</p>
       </div>
-      <Link to={c.to} className="btn btn-light btn-inline shrink-0 px-[26px] py-[13px] text-[15px] text-forest shadow-[0_4px_14px_rgba(0,0,0,.2)] hover:-translate-y-px hover:bg-white max-sm:w-full">{c.cta}</Link>
+      <Link to={c.to} className="btn btn-light btn-inline shrink-0 bg-white px-[26px] py-[13px] text-[15px] text-[#1f5c17] shadow-[0_4px_14px_rgba(0,0,0,.2)] hover:-translate-y-px hover:bg-white max-sm:w-full">{c.cta}</Link>
     </section>
   );
 }
@@ -113,14 +113,14 @@ export function CartPanel() {
   const placeOrder = () => (user ? dispatch(checkoutOpened()) : authDialog.open({ mode: "login", reason: "check out", after: { kind: "checkout" } }));
 
   return (
-    <aside className="rounded-[18px] border border-line bg-white p-5 shadow-[0_6px_22px_rgba(0,0,0,.05)] max-sm:p-4" aria-label="Your cart">
+    <aside className="rounded-[18px] border border-line bg-surface p-5 shadow-[0_6px_22px_rgba(0,0,0,.05)] max-sm:p-4" aria-label="Your cart">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-[22px] font-[750]">Your cart</h2>
         <span className="rounded-full bg-brand-tint px-2.5 py-[3px] text-[12.5px] font-[650] text-forest">{count} {count === 1 ? "item" : "items"}</span>
       </div>
 
       {items.length === 0 ? (
-        <div className="mb-2 flex flex-col items-center gap-0.5 rounded-xl border border-dashed border-brand-line bg-[#fafdf9] px-3 py-6 text-center text-muted">
+        <div className="mb-2 flex flex-col items-center gap-0.5 rounded-xl border border-dashed border-brand-line bg-brand-tint/40 px-3 py-6 text-center text-muted">
           <span className="mb-2 grid size-11 place-items-center rounded-full bg-brand-tint text-brand"><Icon name="bag" /></span>
           <strong className="text-ink">Your cart is empty</strong>
           <span>Add items to get started.</span>

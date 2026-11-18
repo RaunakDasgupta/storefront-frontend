@@ -7,7 +7,7 @@ import { testApi } from "../api/testing.ts";
 import { seedProducts } from "../lib/data.ts";
 import type { SkuRow } from "../lib/csv.ts";
 import { SAMPLE_ORDERS, countByStep, revenueByDay } from "../lib/orderlogic.ts";
-import { importSkus, loadCatalog, removeProduct, resetCatalog, restoreProduct, saveProduct, selectCatalogStatus, selectCategories, selectProducts } from "./catalogSlice.ts";
+import { addProduct, importSkus, loadCatalog, removeProduct, resetCatalog, restoreProduct, saveProduct, selectCatalogStatus, selectCategories, selectProducts } from "./catalogSlice.ts";
 import { loadOrders, placeOrders, removeOrder, restoreOrder, selectOrders, selectOrdersStatus, setOrderStep } from "./ordersSlice.ts";
 import { sharedReducers } from "./shared.ts";
 
@@ -165,4 +165,14 @@ test("dashboard helpers count orders per step and total revenue per day", () => 
   assert.deepEqual(days.map((d) => d.date), ["2026-11-13", "2026-11-14", "2026-11-15", "2026-11-16"]);
   assert.deepEqual(days.map((d) => d.revenue), [0, 25, 0, 150]);
   assert.deepEqual(revenueByDay([]), []);
+});
+
+test("adding a product puts it at the end with an id made from its SKU, and refuses a SKU that is taken", async () => {
+  const store = await loadedStore();
+  const input = { sku: "NEW-001", name: "Fresh thing", category: "Snacks", channel: "retail" as const, price: 49, stock: 12, blurb: "" };
+  const created = await store.dispatch(addProduct(input));
+  assert.equal(created.id, "new-001");
+  assert.equal(selectProducts(store.getState()).at(-1)?.sku, "NEW-001");
+  await assert.rejects(store.dispatch(addProduct({ ...input, sku: "new-001" })), /already exists/);
+  assert.equal(selectProducts(store.getState()).length, seedProducts.length + 1);
 });

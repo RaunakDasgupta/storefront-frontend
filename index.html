@@ -4,6 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Everyday Market</title>
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // pick light or dark before the page is drawn, so a dark-mode visitor never sees a white flash
+      try {
+        var saved = localStorage.getItem("storefront.theme");
+        var dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (dark) document.documentElement.classList.add("dark");
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

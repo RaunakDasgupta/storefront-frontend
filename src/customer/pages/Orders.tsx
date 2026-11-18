@@ -36,11 +36,11 @@ function OrderCard({ o }: { o: Order }) {
   }
 
   return (
-    <article className="rounded-[18px] border border-line bg-white p-[22px] shadow-[0_4px_18px_rgba(0,0,0,.05)] transition-shadow hover:shadow-[0_10px_28px_rgba(0,0,0,.09)] max-sm:p-4">
+    <article className="rounded-[18px] border border-line bg-surface p-[22px] shadow-[0_4px_18px_rgba(0,0,0,.05)] transition-shadow hover:shadow-[0_10px_28px_rgba(0,0,0,.09)] max-sm:p-4">
       <header className="flex flex-wrap items-start justify-between gap-x-5 gap-y-3">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
           <h2 className="text-xl font-[750] tracking-[-0.01em]">{o.id}</h2>
-          <span className={`rounded-full border px-2.5 py-0.5 text-xs font-[650] ${o.channel === "bulk" ? "border-[#c6dcff] bg-[#e8f1ff] text-[#123f7a]" : "border-brand-line bg-brand-tint text-forest"}`}>{o.channel === "bulk" ? "Bulk" : "Retail"}</span>
+          <span className={`rounded-full border px-2.5 py-0.5 text-xs font-[650] ${o.channel === "bulk" ? "border-[#c6dcff] bg-[#e8f1ff] text-[#123f7a] dark:border-[#2c4a78] dark:bg-[#15263f] dark:text-[#a8c8f5]" : "border-brand-line bg-brand-tint text-forest"}`}>{o.channel === "bulk" ? "Bulk" : "Retail"}</span>
           <span className="basis-full text-[13px] text-muted">Placed {when(o.date)} · {itemCount(o)} {itemCount(o) === 1 ? "item" : "items"}</span>
         </div>
         <div className="flex flex-col items-end gap-1.5 max-sm:flex-row max-sm:items-center max-sm:gap-2.5">
@@ -51,8 +51,8 @@ function OrderCard({ o }: { o: Order }) {
 
       <div className="my-[18px] flex items-center gap-3.5">
         <div className="flex shrink-0" aria-hidden="true">
-          {photos.map((p) => <ProductImage key={p.id} p={p} small className="-ml-2.5 size-[52px] rounded-xl border-2 border-white shadow-[0_0_0_1px_var(--color-line)] first:ml-0" />)}
-          {extra > 0 && <span className="-ml-2.5 grid size-[52px] place-items-center rounded-xl border-2 border-white bg-soft text-[13px] font-[650] shadow-[0_0_0_1px_var(--color-line)]">+{extra}</span>}
+          {photos.map((p) => <ProductImage key={p.id} p={p} small className="-ml-2.5 size-[52px] rounded-xl border-2 border-surface shadow-[0_0_0_1px_var(--color-line)] first:ml-0" />)}
+          {extra > 0 && <span className="-ml-2.5 grid size-[52px] place-items-center rounded-xl border-2 border-surface bg-soft text-[13px] font-[650] shadow-[0_0_0_1px_var(--color-line)]">+{extra}</span>}
         </div>
         <p className="line-clamp-2 text-muted">{o.items.map((i) => i.name).join(", ")}</p>
       </div>
@@ -102,7 +102,7 @@ function OrdersList() {
           <p className="text-muted">{orders.length === 0 ? "Track everything you order here." : `${orders.length} ${orders.length === 1 ? "order" : "orders"} · ${active} in progress`}</p>
         </div>
         {orders.length > 0 && (
-          <div className="inline-flex gap-1 rounded-full border border-line bg-white p-1" role="group" aria-label="Filter orders">
+          <div className="inline-flex gap-1 rounded-full border border-line bg-surface p-1" role="group" aria-label="Filter orders">
             {FILTERS.map((f) => (
               <button key={f.id} className="rounded-full border-0 bg-transparent px-4 py-[7px] font-[650] text-muted transition-colors hover:text-ink aria-pressed:bg-brand aria-pressed:text-white aria-pressed:hover:text-white" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)}>
                 {f.label} <span className="ml-[3px] font-medium opacity-75">{f.id === "all" ? orders.length : orders.filter((o) => o.channel === f.id).length}</span>

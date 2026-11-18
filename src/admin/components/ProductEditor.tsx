@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import type { Product } from "../../shared/lib/data";
-import { parseProductForm, toForm, type FormErrors, type ProductForm } from "../../shared/lib/productform";
+import type { NewProduct } from "../../shared/lib/productform";
+import { emptyForm, parseNewProduct, parseProductForm, toForm, type FormErrors, type ProductForm } from "../../shared/lib/productform";
 import { messageOf } from "../../shared/store/errors";
 import { Field } from "../../shared/ui";
 import { DLG, DLG_FOOT } from "../ui";
 
-/** Edit one product in a modal dialog. Esc, the backdrop and Cancel all close it without saving. */
-export function ProductEditor({ product, onClose }: { product: Product; onClose: () => void }) {
-  const { update } = useCatalog();
+/** Add a product (no `product`) or edit one, in a modal dialog. Esc, the backdrop and Cancel all close it without saving. */
+export function ProductEditor({ product, onClose }: { product?: Product; onClose: () => void }) {
+  const { add, update } = useCatalog();
+  const creating = !product;
   const ref = useRef<HTMLDialogElement>(null);
-  const [f, setF] = useState<ProductForm>(() => toForm(product));
+  const [f, setF] = useState<ProductForm>(() => (product ? toForm(product) : emptyForm()));
   const [errors, setErrors] = useState<FormErrors>({});
   const [saveError, setSaveError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -24,14 +26,15 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const { value, errors: found } = parseProductForm(f);
+    const { value, errors: found } = creating ? parseNewProduct(f) : parseProductForm(f);
     setErrors(found);
     const firstBad = Object.keys(found)[0];
     if (!value) return document.getElementById(`pe-${firstBad}`)?.focus();
     setSaveError("");
     setBusy(true);
     try {
-      await update(product.id, value);
+      if (creating) await add(value as NewProduct);
+      else await update(product.id, value);
       close();
     } catch (err) {
       setSaveError(messageOf(err));
@@ -51,13 +54,14 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
       <form className="flex max-h-[calc(100vh-32px)] flex-col" onSubmit={onSubmit} noValidate>
         <header className="flex items-start justify-between gap-3 border-b border-line px-[22px] pt-5 pb-3.5">
           <div>
-            <h2 id="pe-title" className="text-xl">Edit product</h2>
-            <p className="mt-0.5 text-[13px] text-muted">{product.sku}, the SKU, can't be changed.</p>
+            <h2 id="pe-title" className="text-xl">{creating ? "Add product" : "Edit product"}</h2>
+            <p className="mt-0.5 text-[13px] text-muted">{creating ? "The SKU can't be changed once the product is added." : `${product.sku}, the SKU, can't be changed.`}</p>
           </div>
           <button type="button" className="dlg-x" aria-label="Close" onClick={close}>×</button>
         </header>
 
         <div className="overflow-y-auto px-[22px] pt-[18px] pb-1">
+          {creating && <Field label="SKU" autoComplete="off" placeholder="DET-002" {...bind("sku")} autoFocus />}
           <Field label="Name" autoComplete="off" {...bind("name")} />
           <div className="grid grid-cols-2 gap-3">
             <Field label="Size" autoComplete="off" placeholder="1 kg, Carton of 12..." {...bind("size")} />
@@ -86,7 +90,7 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
         <footer className={DLG_FOOT}>
           {saveError && <p className="error m-0 flex-[1_1_100%]" role="alert">{saveError}</p>}
           <button type="button" className="btn btn-secondary btn-inline" onClick={close} disabled={busy}>Cancel</button>
-          <button type="submit" className="btn btn-primary btn-inline" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
+          <button type="submit" className="btn btn-primary btn-inline" disabled={busy}>{busy ? "Saving…" : creating ? "Add product" : "Save changes"}</button>
         </footer>
       </form>
     </dialog>

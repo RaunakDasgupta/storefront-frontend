@@ -2,9 +2,9 @@
 import { useCallback, useEffect, useMemo } from "react";
 import type { SkuRow } from "../lib/csv";
 import type { Product } from "../lib/data";
-import type { ProductEdit } from "../lib/productform";
+import type { NewProduct, ProductEdit } from "../lib/productform";
 import { useSharedDispatch, useSharedSelector } from "../store/typedHooks";
-import { importSkus, loadCatalog, removeProduct, resetCatalog, restoreProduct, saveProduct, selectCatalogError, selectCatalogStatus, selectCategories, selectProducts } from "../store/catalogSlice";
+import { addProduct, importSkus, loadCatalog, removeProduct, resetCatalog, restoreProduct, saveProduct, selectCatalogError, selectCatalogStatus, selectCategories, selectProducts } from "../store/catalogSlice";
 
 export function useCatalog() {
   const dispatch = useSharedDispatch();
@@ -27,6 +27,7 @@ export function useCatalog() {
     canReset: sampleProducts,
     byId: (id: string) => products.find((p) => p.id === id),
     // The changes below go to the API first and reject with its message if it refuses.
+    add: (input: NewProduct) => dispatch(addProduct(input)),
     update: (id: string, edit: ProductEdit) => dispatch(saveProduct(id, edit)),
     /** Returns the product with its position, so the delete can be undone. */
     remove: (id: string) => dispatch(removeProduct(id)),

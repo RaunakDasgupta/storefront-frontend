@@ -4,7 +4,7 @@
 import type { SkuRow } from "../lib/csv.ts";
 import type { Channel, Product } from "../lib/data.ts";
 import type { Address, Order, OrderItem } from "../lib/orderlogic.ts";
-import type { ProductEdit } from "../lib/productform.ts";
+import type { NewProduct, ProductEdit } from "../lib/productform.ts";
 
 export type User = { name: string; email: string };
 /** What signing in returns. `token` is sent as `Authorization: Bearer <token>` on later requests; mock sign-ins have none. */
@@ -24,6 +24,8 @@ export type NewOrders = {
 
 export interface ProductsApi {
   list(): Promise<Product[]>;
+  /** Adds one product and returns it with its id. Rejects if the SKU is already taken. */
+  create(input: NewProduct): Promise<Product>;
   /** Returns the saved product (the SKU stays fixed). */
   update(id: string, edit: ProductEdit): Promise<Product>;
   remove(id: string): Promise<void>;

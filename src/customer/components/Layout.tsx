@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useLoadCatalog } from "../../shared/hooks/useCatalog";
-import { Avatar, Icon, LoadGate, Logo, Menu } from "../../shared/ui";
+import { Avatar, Icon, LoadGate, Logo, Menu, ThemeToggle } from "../../shared/ui";
 import { WRAP } from "../ui";
 import { useAppSelector } from "../store/typedHooks";
 import { useCustomer } from "../hooks/useCustomer";
@@ -76,7 +76,7 @@ function HeaderSearch() {
       <Icon name="search" className="pointer-events-none absolute top-[9px] left-3 size-5 text-muted" />
       <input
         type="search"
-        className="rounded-full border-[#cfcfcf] pl-[38px]"
+        className="rounded-full border-edge-soft pl-[38px]"
         aria-label="Search products"
         placeholder="Search products"
         value={q}
@@ -92,7 +92,7 @@ export function CustomerLayout() {
   const sampleData = useAppSelector((s) => Object.values(s.meta.sources).includes("mock"));
   return (
     <>
-      <header className="sticky top-0 z-10 flex items-center gap-7 border-b border-line bg-white/[.97] px-7 py-3 backdrop-blur-sm max-[1000px]:relative max-[1000px]:flex-wrap max-[1000px]:gap-x-5 max-[1000px]:gap-y-3 max-sm:px-4 max-sm:py-2.5">
+      <header className="sticky top-0 z-10 flex items-center gap-7 border-b border-line bg-surface/[.97] px-7 py-3 backdrop-blur-sm max-[1000px]:relative max-[1000px]:flex-wrap max-[1000px]:gap-x-5 max-[1000px]:gap-y-3 max-sm:px-4 max-sm:py-2.5">
         <Logo to="/" label="Everyday Market" />
         <HeaderSearch />
         <nav className="flex items-center gap-[22px] max-[1000px]:order-4 max-[1000px]:flex-none max-sm:flex-[1_1_100%] max-sm:overflow-x-auto max-sm:border-t max-sm:border-line max-sm:pt-1 max-sm:[scrollbar-width:none]" aria-label="Main">
@@ -105,6 +105,7 @@ export function CustomerLayout() {
             <Icon name="bag" className="text-brand" />
             <span><span className="max-sm:hidden">Cart </span>({count})</span>
           </Link>
+          <ThemeToggle />
           <AccountMenu />
         </div>
       </header>

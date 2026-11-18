@@ -3,17 +3,17 @@ import { Link } from "react-router-dom";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import { MAX_ROWS, parseSkuCsv, skuTemplate, type CsvIssue, type SkuRow } from "../../shared/lib/csv";
 import { messageOf } from "../../shared/store/errors";
-import { ConnectorForm } from "../components/ConnectorForm";
-import { ImportPreview } from "../components/ImportPreview";
+import { ConnectorForm } from "./ConnectorForm";
+import { ImportPreview } from "./ImportPreview";
 import { CONNECTORS } from "../lib/connectors";
-import { CARD, H1, PAGE_HEAD } from "../ui";
+import { CARD } from "../ui";
 
 const MAX_BYTES = 1_000_000;
 const SOURCES = [{ id: "csv", label: "CSV file", badge: "CSV", description: "Upload a file from your computer" }, ...CONNECTORS];
 type Preview = { label: string; rows: SkuRow[]; issues: CsvIssue[] };
 
-/** Pick where the SKUs come from (a CSV file, a database or a cloud service), review what will change, then import it into the catalog. */
-export function ImportPage() {
+/** The Import tab of Product management: pick where the SKUs come from (a CSV file, a database or a cloud service), review what will change, then import it into the catalog. */
+export function ImportPanel() {
   const { importRows } = useCatalog();
   const [source, setSource] = useState("csv");
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -49,11 +49,8 @@ export function ImportPage() {
 
   return (
     <>
-      <div className={PAGE_HEAD}>
-        <div>
-          <h1 className={H1}>Import SKUs</h1>
-          <p className="mt-1 text-muted">Add or update products from a CSV file, a database or a cloud service.</p>
-        </div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <p className="text-muted">Add or update products from a CSV file, a database or a cloud service.</p>
         <a className="btn btn-secondary btn-inline px-[18px] py-[9px]" download="sku-template.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(skuTemplate(window.location.origin))}`}>
           Download CSV template
         </a>
@@ -61,8 +58,8 @@ export function ImportPage() {
 
       <div className="mb-4 grid grid-cols-5 gap-3 max-[1100px]:grid-cols-3 max-sm:grid-cols-2" role="radiogroup" aria-label="Data source">
         {SOURCES.map((s) => (
-          <button key={s.id} type="button" role="radio" aria-checked={source === s.id} className="group flex flex-col items-start gap-1 rounded-xl border border-line bg-white p-3.5 text-left text-ink transition duration-150 hover:border-[#b5b5b5] aria-checked:border-brand aria-checked:bg-brand-tint aria-checked:shadow-[0_0_0_1px_var(--color-brand)]" onClick={() => pick(s.id)}>
-            <span className="mb-1.5 inline-grid h-7 min-w-9 place-items-center rounded-lg bg-ink px-2 text-[11.5px] font-bold tracking-[0.02em] text-white group-aria-checked:bg-brand" aria-hidden="true">{s.badge}</span>
+          <button key={s.id} type="button" role="radio" aria-checked={source === s.id} className="group flex flex-col items-start gap-1 rounded-xl border border-line bg-surface p-3.5 text-left text-ink transition duration-150 hover:border-edge aria-checked:border-brand aria-checked:bg-brand-tint aria-checked:shadow-[0_0_0_1px_var(--color-brand)]" onClick={() => pick(s.id)}>
+            <span className="mb-1.5 inline-grid h-7 min-w-9 place-items-center rounded-lg bg-ink px-2 text-[11.5px] font-bold tracking-[0.02em] text-surface group-aria-checked:bg-brand" aria-hidden="true">{s.badge}</span>
             <strong>{s.label}</strong>
             <span className="text-[12.5px] leading-[1.35] text-muted">{s.description}</span>
           </button>

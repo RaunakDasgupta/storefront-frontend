@@ -5,6 +5,13 @@ import { isSafeImage } from "./productform.ts";
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "sku";
 
+/** A product id made from its SKU ("DET-002" becomes "det-002"), numbered if that id is taken. */
+export function uniqueId(products: readonly Product[], sku: string): string {
+  let id = slug(sku), n = 2;
+  while (products.some((p) => p.id === id)) id = `${slug(sku)}-${n++}`;
+  return id;
+}
+
 /** Guards what comes back from an API or from localStorage, which anything on this origin could have edited. */
 export function isProduct(p: unknown): p is Product {
   const x = p as Product;
@@ -24,9 +31,7 @@ export function mergeRows(products: readonly Product[], rows: readonly SkuRow[])
       next[i] = { ...next[i], name: r.name, size: r.size ?? next[i].size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb || next[i].blurb, image: r.image ?? next[i].image };
       updated++;
     } else {
-      let id = slug(r.sku), n = 2;
-      while (next.some((p) => p.id === id)) id = `${slug(r.sku)}-${n++}`;
-      next.push({ id, sku: r.sku, name: r.name, size: r.size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb, image: r.image });
+      next.push({ id: uniqueId(next, r.sku), sku: r.sku, name: r.name, size: r.size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb, image: r.image });
       added++;
     }
   }

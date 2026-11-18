@@ -2,7 +2,7 @@ import { createAsyncThunk, createSelector, createSlice, type PayloadAction } fro
 import type { ThunkExtra } from "../api/types.ts";
 import type { SkuRow } from "../lib/csv.ts";
 import type { Product } from "../lib/data.ts";
-import type { ProductEdit } from "../lib/productform.ts";
+import type { NewProduct, ProductEdit } from "../lib/productform.ts";
 import { messageOf } from "./errors.ts";
 import type { SharedThunk } from "./shared.ts";
 
@@ -23,6 +23,8 @@ const slice = createSlice({
   name: "catalog",
   initialState: { items: [], status: "idle", error: null } as CatalogState,
   reducers: {
+    /** A product the server just created goes at the end. */
+    productAdded(state, a: PayloadAction<Product>) { state.items.push(a.payload); },
     /** The server's version of one product after an edit. */
     productReplaced(state, a: PayloadAction<Product>) {
       state.items = state.items.map((p) => (p.id === a.payload.id ? a.payload : p));
@@ -47,7 +49,7 @@ const slice = createSlice({
   },
 });
 
-export const { productReplaced, productRemoved, productRestored } = slice.actions;
+export const { productAdded, productReplaced, productRemoved, productRestored } = slice.actions;
 export const catalogReducer = slice.reducer;
 
 export const selectProducts = (s: Root): readonly Product[] => s.catalog.items;
@@ -57,6 +59,13 @@ export const selectCategories = createSelector([selectProducts], (products) => [
 
 // The thunks below call the API first and only then change the store, so the screen never shows a change the server refused.
 // They throw the API's error for the caller to show.
+
+/** Adds a product and returns it. Throws the API's error, for example when the SKU already exists. */
+export const addProduct = (input: NewProduct): SharedThunk<Promise<Product>> => async (dispatch, _getState, { api }) => {
+  const created = await api.products.create(input);
+  dispatch(productAdded(created));
+  return created;
+};
 
 /** Saves an edit and returns the saved product. */
 export const saveProduct = (id: string, edit: ProductEdit): SharedThunk<Promise<Product>> => async (dispatch, _getState, { api }) => {

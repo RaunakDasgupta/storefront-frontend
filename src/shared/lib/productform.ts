@@ -1,8 +1,10 @@
-// Validation for the admin "edit product" form. No React here so the tests can run under `node --test`.
+// Validation for the admin "add product" and "edit product" form. No React here so the tests can run under `node --test`.
 import type { Channel, Product } from "./data";
 
-export type ProductForm = { name: string; size: string; category: string; channel: string; price: string; was: string; stock: string; blurb: string; image: string };
+export type ProductForm = { sku: string; name: string; size: string; category: string; channel: string; price: string; was: string; stock: string; blurb: string; image: string };
 export type ProductEdit = Pick<Product, "name" | "size" | "category" | "channel" | "price" | "was" | "stock" | "blurb" | "image">;
+/** What the form needs to add a product: the edit fields plus its SKU. */
+export type NewProduct = ProductEdit & { sku: string };
 export type FormErrors = Partial<Record<keyof ProductForm, string>>;
 
 /** An http(s) link, or a file bundled under /products/. Nothing else (no javascript:, data: or other schemes). */
@@ -13,10 +15,14 @@ export function isSafeImage(v: unknown): boolean {
 }
 
 export const toForm = (p: Product): ProductForm => ({
-  name: p.name, size: p.size ?? "", category: p.category, channel: p.channel,
+  sku: p.sku, name: p.name, size: p.size ?? "", category: p.category, channel: p.channel,
   price: String(p.price), was: p.was === undefined ? "" : String(p.was), stock: String(p.stock), blurb: p.blurb, image: p.image ?? "",
 });
 
+/** A blank form, for adding a product. */
+export const emptyForm = (): ProductForm => ({ sku: "", name: "", size: "", category: "", channel: "retail", price: "", was: "", stock: "", blurb: "", image: "" });
+
+const SKU_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const num = (raw: string) => Number(raw.replace(/[₹,\s]/g, ""));
 
 /** Checks the form. A blank logo/photo field means "use the default photo". */
@@ -47,4 +53,14 @@ export function parseProductForm(f: ProductForm): { value?: ProductEdit; errors:
 
   if (Object.keys(errors).length) return { errors };
   return { errors, value: { name, size: size || undefined, category, channel: f.channel as Channel, price, was, stock, blurb, image: image || undefined } };
+}
+
+/** Checks the form for a new product: everything an edit needs, plus a SKU (letters, numbers, dots, dashes and underscores). */
+export function parseNewProduct(f: ProductForm): { value?: NewProduct; errors: FormErrors } {
+  const { value, errors } = parseProductForm(f);
+  const sku = f.sku.trim();
+  if (!sku) errors.sku = "Enter a SKU, like DET-002.";
+  else if (sku.length > 40) errors.sku = "Use 40 characters or fewer.";
+  else if (!SKU_PATTERN.test(sku)) errors.sku = "Use letters, numbers, dots, dashes and underscores.";
+  return value && !errors.sku ? { errors, value: { ...value, sku } } : { errors };
 }

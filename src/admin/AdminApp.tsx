@@ -1,11 +1,10 @@
 // The admin portal. Shares only data (catalog) and UI primitives with the customer app.
 import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
-import { Link, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Route, Routes } from "react-router-dom";
 import { RequireAdmin } from "./components/RequireAdmin";
 import { AdminLayout } from "./components/Layout";
 import { AdminLogin } from "./pages/Login";
-import { ImportPage } from "./pages/Import";
 import { AdminOrders } from "./pages/Orders";
 import { Overview } from "./pages/Overview";
 import { AdminProducts } from "./pages/Products";
@@ -34,7 +33,8 @@ export default function AdminApp() {
             <Route index element={<Overview />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="products" element={<AdminProducts />} />
-            <Route path="import" element={<ImportPage />} />
+            {/* import is a tab of product management now; keep old links working */}
+            <Route path="import" element={<Navigate to="/admin/products?tab=import" replace />} />
             <Route path="*" element={<AdminNotFound />} />
           </Route>
         </Routes>

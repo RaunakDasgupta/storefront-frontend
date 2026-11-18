@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode }
 import { Link } from "react-router-dom";
 import { imageSrc, money, type Product } from "../lib/data";
 import type { Order } from "../lib/orderlogic";
+import { useTheme } from "../theme";
 
 const ICONS = {
   bag: <><path d="M5 8h14l-1 12H6L5 8z" /><path d="M9 8a3 3 0 016 0" /></>,
@@ -21,6 +22,8 @@ const ICONS = {
   trash: <><path d="M4 7h16M10 7V5h4v2" /><path d="M6.5 7l1 12h9l1-12M10 11v5M14 11v5" /></>,
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8v.01" /></>,
+  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4" /></>,
+  moon: <path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" />,
   lock: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>,
 };
 
@@ -42,7 +45,7 @@ export function Logo({ to, label, className = "" }: { to: string; label: string;
 /** The round letter button for the signed-in person; blank (grey) when nobody is signed in. */
 export function Avatar({ letter }: { letter?: string }) {
   return (
-    <span className={`grid size-[30px] place-items-center rounded-full text-[13px] leading-none font-bold ${letter ? "bg-brand text-white" : "bg-[#e3e3e3] shadow-[inset_0_0_0_1px_#cfcfcf]"}`}>{letter}</span>
+    <span className={`grid size-[30px] place-items-center rounded-full text-[13px] leading-none font-bold ${letter ? "bg-brand text-white" : "bg-line shadow-[inset_0_0_0_1px_var(--color-edge-soft)]"}`}>{letter}</span>
   );
 }
 
@@ -136,4 +139,15 @@ export function LoadGate({ status, error, what, onRetry, children }: { status: "
     );
   }
   return <p className="px-4 py-14 text-center text-muted" role="status">Loading {what}…</p>;
+}
+
+/** The sun / moon button that switches light and dark mode. */
+export function ThemeToggle() {
+  const [theme, toggle] = useTheme();
+  const dark = theme === "dark";
+  return (
+    <button type="button" className={ICON_BUTTON} aria-label="Dark mode" aria-pressed={dark} title={dark ? "Switch to light mode" : "Switch to dark mode"} onClick={toggle}>
+      <Icon name={dark ? "sun" : "moon"} />
+    </button>
+  );
 }

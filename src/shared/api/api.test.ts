@@ -111,3 +111,12 @@ test("the mock API serves the whole interface from storage and never needs the n
   // the new SKUs come with a logo that points at a bundled photo, so the preview and the shop show pictures
   assert.ok(rows.slice(0, 4).every((r) => r.image && isSafeImage(r.image)));
 });
+
+test("adding a product posts it to the products URL and returns what the server saved", async () => {
+  const input = { sku: "NEW-001", name: "Fresh thing", category: "Snacks", channel: "retail" as const, price: 49, stock: 12, blurb: "" };
+  const { calls, fetchImpl } = fakeFetch({ body: { id: "new-001", ...input } });
+  const api = createApi({ env: { VITE_API_URL: "https://api.example.com" }, fetchImpl, mockStorage: memoryKV() });
+  assert.equal((await api.products.create(input)).id, "new-001");
+  assert.equal(`${calls[0].method} ${calls[0].url}`, "POST https://api.example.com/products");
+  assert.deepEqual(JSON.parse(calls[0].body!), input);
+});

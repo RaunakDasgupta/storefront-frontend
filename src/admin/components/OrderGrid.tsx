@@ -28,7 +28,7 @@ export function OrderGrid({ orders, onStep, onDelete }: { orders: Order[]; onSte
           </span>
           <span className="mt-auto flex items-baseline justify-between gap-2 text-[12.5px]"><span className="text-muted">{fmtDate(o.date)} · {itemCount(o)} {itemCount(o) === 1 ? "item" : "items"}</span><strong className="text-base">{money(o.total)}</strong></span>
           <span className="flex gap-2">
-            <button className={`${PC_BTN} hover:border-danger hover:bg-[#fff4f4] hover:text-danger`} aria-label={`Delete ${o.id}`} onClick={() => onDelete(o)}><Icon name="trash" className="size-[15px]" /> Delete</button>
+            <button className={`${PC_BTN} hover:border-danger hover:bg-danger-tint hover:text-danger`} aria-label={`Delete ${o.id}`} onClick={() => onDelete(o)}><Icon name="trash" className="size-[15px]" /> Delete</button>
           </span>
         </article>
       ))}

@@ -42,7 +42,7 @@ export function ImportPreview({ label, rows, issues, onImport, onCancel }: { lab
       {rows.length > PREVIEW_ROWS && <p className="-mt-1 text-muted">and {rows.length - PREVIEW_ROWS} more rows</p>}
 
       {issues.length > 0 && (
-        <ul className="flex list-disc flex-col gap-1 rounded-lg bg-[#fff4f4] py-3 pr-4 pl-8 text-[#8a1f2d]">
+        <ul className="flex list-disc flex-col gap-1 rounded-lg bg-danger-tint py-3 pr-4 pl-8 text-danger">
           {issues.slice(0, ISSUE_ROWS).map((i) => <li key={`${i.line}-${i.message}`}><strong>Row {i.line}</strong> {i.message}</li>)}
           {issues.length > ISSUE_ROWS && <li className="text-muted">and {issues.length - ISSUE_ROWS} more</li>}
         </ul>

@@ -44,7 +44,7 @@ function Section({ title, items, to }: { title: string; items: Product[]; to: st
         <div className="-mx-1 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-1 pt-1 pb-3.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" ref={track}>
           {shown.map((p) => <div className="flex-[0_0_188px] snap-start max-sm:min-w-[150px] max-sm:basis-[calc(50%-8px)]" key={p.id}><ProductCard p={p} /></div>)}
           {more > 0 && (
-            <Link to={to} className="flex flex-[0_0_150px] snap-start flex-col items-center justify-center gap-1.5 rounded-2xl border-[1.5px] border-dashed border-brand-line bg-brand-tint p-4 text-center text-forest no-underline transition duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-[#e2f2de] max-sm:basis-[130px]">
+            <Link to={to} className="flex flex-[0_0_150px] snap-start flex-col items-center justify-center gap-1.5 rounded-2xl border-[1.5px] border-dashed border-brand-line bg-brand-tint p-4 text-center text-forest no-underline transition duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-brand-line max-sm:basis-[130px]">
               <span className="grid size-11 place-items-center rounded-full bg-brand text-white"><Icon name="arrow" /></span>
               <strong className="text-base">See more</strong>
               <span className="text-[12.5px] text-muted">{more} more {more === 1 ? "product" : "products"}</span>
@@ -81,7 +81,7 @@ function CategoryBrowser({ categories }: { categories: CategoryInfo[] }) {
             key={c.name}
             id={`browse-tab-${c.name}`}
             role="tab"
-            className="group inline-flex flex-none items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 font-semibold text-ink transition duration-200 hover:border-brand aria-selected:border-brand aria-selected:bg-brand aria-selected:text-white"
+            className="group inline-flex flex-none items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2 font-semibold text-ink transition duration-200 hover:border-brand aria-selected:border-brand aria-selected:bg-brand aria-selected:text-white"
             aria-selected={c.name === current.name}
             aria-controls="browse-panel"
             tabIndex={c.name === current.name ? 0 : -1}
@@ -127,13 +127,13 @@ export function Shop({ channel }: { channel: Channel }) {
 
   return (
     <>
-      <section className="border-b border-brand-line bg-gradient-to-b from-brand-tint to-white pt-10 pb-9 max-sm:pt-7 max-sm:pb-6">
+      <section className="border-b border-brand-line bg-gradient-to-b from-brand-tint to-surface pt-10 pb-9 max-sm:pt-7 max-sm:pb-6">
         <div className={WRAP}>
           <h1 className="mb-2 text-[clamp(30px,4vw,42px)] leading-[1.15] font-[750] tracking-[-0.025em]">{COPY[channel].title}</h1>
           <p className="max-w-[560px] text-[17px] text-muted">{COPY[channel].lede}</p>
           <ul className="mt-[22px] flex flex-wrap gap-2.5">
             {FEATURES[channel].map((f) => (
-              <li key={f.text} className="inline-flex items-center gap-2 rounded-full border border-brand-line bg-white py-[7px] pr-3.5 pl-2.5 text-[13.5px] font-[550] shadow-[0_1px_2px_rgba(0,0,0,.04)] max-sm:py-1.5 max-sm:pr-3 max-sm:pl-2 max-sm:text-[12.5px]">
+              <li key={f.text} className="inline-flex items-center gap-2 rounded-full border border-brand-line bg-surface py-[7px] pr-3.5 pl-2.5 text-[13.5px] font-[550] shadow-[0_1px_2px_rgba(0,0,0,.04)] max-sm:py-1.5 max-sm:pr-3 max-sm:pl-2 max-sm:text-[12.5px]">
                 <Icon name={f.icon} className="size-[18px] text-brand" />{f.text}
               </li>
             ))}

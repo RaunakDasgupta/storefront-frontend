@@ -57,7 +57,7 @@ function Filter({ id, label, children }: { id: string; label: string; children: 
     </div>
   );
 }
-const CONTROL = "h-9 border-[#cfcfcf]";
+const CONTROL = "h-9 border-edge-soft";
 
 export function OrderFilterBar({ filters, states, cities, statuses, status = "", count, showClear, set, onClear }: Props) {
   return (

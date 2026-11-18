@@ -25,6 +25,7 @@ export const httpProducts = (http: Http, url: string): ProductsApi => ({
     if (!Array.isArray(data) || !data.every(isProduct)) throw unexpected("products");
     return data;
   },
+  async create(input) { return asProduct(await http(url, { method: "POST", body: input })); },
   async update(id, edit) { return asProduct(await http(at(url, id), { method: "PATCH", body: edit })); },
   async remove(id) { await http(at(url, id), { method: "DELETE" }); },
   async restore(product) { return asProduct(await http(at(url, product.id, "restore"), { method: "POST" })); },

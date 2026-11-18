@@ -55,7 +55,7 @@ export function AdminLogin() {
 
         {/* sample credentials only show in `npm run dev`, and only while sign-in is the built-in mock, never in a production build */}
         {import.meta.env.DEV && mockAuth && (
-          <aside className="mt-5 rounded-[10px] border border-dashed border-[#b5b5b5] bg-[#fafafa] px-4 py-3.5 text-[13px]" aria-label="Demo account">
+          <aside className="mt-5 rounded-[10px] border border-dashed border-edge-soft bg-hover px-4 py-3.5 text-[13px]" aria-label="Demo account">
             <strong>Demo admin account</strong>
             <dl className="my-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 [&_dd]:m-0 [&_dd]:font-mono [&_dd]:[overflow-wrap:anywhere] [&_dt]:text-muted"><dt>Email or ID</dt><dd>{DEMO_ADMIN.email} or {DEMO_ADMIN.employeeId}</dd><dt>Password</dt><dd>{DEMO_ADMIN.password}</dd></dl>
             <button type="button" className="linkbtn" onClick={() => { setIdentity(DEMO_ADMIN.email); setPassword(DEMO_ADMIN.password); setError(null); }}>
