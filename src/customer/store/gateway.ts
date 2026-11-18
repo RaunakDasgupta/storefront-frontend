@@ -1,22 +1,13 @@
-// A dummy payment gateway: checks the form fields and pretends to charge a card. No network, no real money.
-// Plain functions with no React, so the tests can run under `node --test`.
+// Checks for the address and card forms, before anything is sent. Plain functions with no React, so the tests can run under `node --test`.
+import type { Card } from "../../shared/api/types.ts";
 import type { Address } from "../../shared/lib/orderlogic.ts";
 
 export type { Address };
 export type AddressErrors = Partial<Record<keyof Address, string>>;
-export type Card = { number: string; name: string; expiry: string; cvc: string };
+export type { Card };
 export type CardErrors = Partial<Record<keyof Card, string>>;
-export type PaymentResult = { ok: true; ref: string } | { ok: false; message: string };
 
 export const EMPTY_ADDRESS: Address = { fullName: "", phone: "", line1: "", line2: "", city: "", state: "", pin: "" };
-
-/** Test cards for the demo: the first is approved, the second is declined on purpose. */
-export const TEST_CARD = "4242 4242 4242 4242";
-export const DECLINED_CARD = "4000 0000 0000 0002";
-const DECLINES: Record<string, string> = {
-  "4000000000000002": "Your card was declined. Try a different card.",
-  "4000000000009995": "Your card has insufficient funds. Try a different card.",
-};
 
 const digits = (s: string) => s.replace(/\D/g, "");
 
@@ -62,10 +53,3 @@ export function validateCard(c: Card, now = new Date()): CardErrors {
 export const formatCardNumber = (s: string) => digits(s).slice(0, 19).replace(/(\d{4})(?=\d)/g, "$1 ");
 /** "1228" becomes "12/28" while typing. */
 export const formatExpiry = (s: string) => { const d = digits(s).slice(0, 4); return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d; };
-
-/** Pretends to charge the card. Takes a moment, like a real gateway, then approves or declines. */
-export async function payWithCard(card: Card, delayMs = 1500): Promise<PaymentResult> {
-  await new Promise((resolve) => setTimeout(resolve, delayMs));
-  const declined = DECLINES[digits(card.number)];
-  return declined ? { ok: false, message: declined } : { ok: true, ref: `PAY_${crypto.randomUUID().slice(0, 8).toUpperCase()}` };
-}

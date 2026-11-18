@@ -5,10 +5,12 @@ import type { Address } from "../../shared/lib/orderlogic";
 import { Icon, Field } from "../../shared/ui";
 import { useCart } from "../hooks/useCart";
 import { useCustomer, type User } from "../hooks/useCustomer";
-import { checkout } from "../store/checkout";
+import { TEST_CARD, DECLINED_CARD } from "../../shared/api/mock";
+import { messageOf } from "../../shared/store/errors";
+import { payAndCheckout } from "../store/checkout";
 import { addressEditing, addressSaved, checkoutClosed } from "../store/checkoutSlice";
 import {
-  DECLINED_CARD, EMPTY_ADDRESS, TEST_CARD, formatCardNumber, formatExpiry, payWithCard, validateAddress, validateCard,
+  EMPTY_ADDRESS, formatCardNumber, formatExpiry, validateAddress, validateCard,
   type AddressErrors, type Card, type CardErrors,
 } from "../store/gateway";
 import { useAppDispatch, useAppSelector } from "../store/typedHooks";
@@ -52,8 +54,8 @@ function AddressStep({ initial, onDone }: { initial: Address; onDone: (a: Addres
   );
 }
 
-function PaymentStep({ total, busy, onPay, onBack, address }: {
-  total: number; busy: boolean; address: Address; onBack: () => void; onPay: (card: Card) => Promise<string | null>;
+function PaymentStep({ total, busy, onPay, onBack, address, demoGateway }: {
+  total: number; busy: boolean; address: Address; onBack: () => void; onPay: (card: Card) => Promise<string | null>; demoGateway: boolean;
 }) {
   const [card, setCard] = useState<Card>({ number: "", name: "", expiry: "", cvc: "" });
   const [errors, setErrors] = useState<CardErrors>({});
@@ -88,11 +90,13 @@ function PaymentStep({ total, busy, onPay, onBack, address }: {
         </div>
         <p className="error" role="alert" hidden={!failure}>{failure}</p>
         <button type="submit" className="btn primary" disabled={busy}>{busy ? "Processing payment…" : `Pay ${money(total)}`}</button>
-        <p className="dlg-demo">
-          Dummy gateway, no real payment. Use <code>{TEST_CARD}</code>, any future expiry and any code.
-          Use <code>{DECLINED_CARD}</code> to see a declined payment.{" "}
-          <button type="button" className="linkbtn" disabled={busy} onClick={() => setCard({ number: TEST_CARD, name: card.name || "Test Customer", expiry: "12/39", cvc: "123" })}>Fill in test card</button>
-        </p>
+        {demoGateway && (
+          <p className="dlg-demo">
+            Dummy gateway, no real payment. Use <code>{TEST_CARD}</code>, any future expiry and any code.
+            Use <code>{DECLINED_CARD}</code> to see a declined payment.{" "}
+            <button type="button" className="linkbtn" disabled={busy} onClick={() => setCard({ number: TEST_CARD, name: card.name || "Test Customer", expiry: "12/39", cvc: "123" })}>Fill in test card</button>
+          </p>
+        )}
       </div>
     </form>
   );
@@ -123,6 +127,7 @@ function PlacedStep({ onClose }: { onClose: () => void }) {
 function CheckoutDialog({ user }: { user: User }) {
   const dispatch = useAppDispatch();
   const { total } = useCart();
+  const demoGateway = useAppSelector((s) => s.meta.sources.payments === "mock");
   const stage = useAppSelector((s) => s.checkout.stage);
   const address = useAppSelector((s) => s.checkout.address);
   const ref = useRef<HTMLDialogElement>(null);
@@ -136,11 +141,7 @@ function CheckoutDialog({ user }: { user: User }) {
   /** Returns an error message to show, or null once the payment went through and the order is placed. */
   async function pay(card: Card) {
     setBusy(true);
-    const result = await payWithCard(card);
-    setBusy(false);
-    if (!result.ok) return result.message;
-    dispatch(checkout(user, address!, result.ref));
-    return null;
+    try { return await dispatch(payAndCheckout(user, address!, card)); } catch (e) { return messageOf(e); } finally { setBusy(false); }
   }
 
   const title = stage === "address" ? "Delivery address" : "Payment";
@@ -167,7 +168,7 @@ function CheckoutDialog({ user }: { user: User }) {
           </header>
           {stage === "address"
             ? <AddressStep initial={address ?? { ...EMPTY_ADDRESS, fullName: user.name }} onDone={(a) => { dispatch(addressSaved(a)); }} />
-            : address && <PaymentStep total={total} busy={busy} address={address} onBack={() => { dispatch(addressEditing()); }} onPay={pay} />}
+            : address && <PaymentStep total={total} busy={busy} address={address} onBack={() => { dispatch(addressEditing()); }} onPay={pay} demoGateway={demoGateway} />}
         </>
       )}
     </dialog>

@@ -1,10 +1,10 @@
 // The signed-in admin user as the components use it.
 import { useMemo } from "react";
-import { asError } from "../../shared/store/shared";
+import { asError } from "../../shared/store/errors";
 import { useAppDispatch, useAppSelector } from "../store/typedHooks";
 import { selectUser, signIn, signedOut } from "../store/authSlice";
 
-export { DEMO_ADMIN } from "../store/accounts";
+export { DEMO_ADMIN } from "../../shared/api/mockAccounts";
 
 export function useAdmin() {
   const dispatch = useAppDispatch();

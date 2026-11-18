@@ -1,37 +1,35 @@
-// Customer sign-in. Completely separate from the admin session: its own store, storage key and accounts.
+// Customer sign-in. Completely separate from the admin session: its own store, storage key and API.
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { registerAccount, signInAccount } from "./accounts.ts";
+import type { Session, ThunkExtra, User } from "../../shared/api/types.ts";
+import { messageOf } from "../../shared/store/errors.ts";
 
-export type User = { name: string; email: string };
-export type AuthState = { user: User | null };
-
-const messageOf = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong.");
+export type { User };
+export type AuthState = { user: User | null; token: string | null };
 
 /** Both thunks reject with the message to show under the form. */
-export const signIn = createAsyncThunk<User, { email: string; password: string }, { rejectValue: string }>(
+export const signIn = createAsyncThunk<Session, { email: string; password: string }, { extra: ThunkExtra; rejectValue: string }>(
   "customerAuth/signIn",
-  async ({ email, password }, { rejectWithValue }) => {
-    try { return signInAccount(email, password); } catch (e) { return rejectWithValue(messageOf(e)); }
+  async (credentials, { extra, rejectWithValue }) => {
+    try { return await extra.api.customerAuth.signIn(credentials); } catch (e) { return rejectWithValue(messageOf(e)); }
   },
 );
 
-export const signUp = createAsyncThunk<User, { name: string; email: string; password: string }, { rejectValue: string }>(
+export const signUp = createAsyncThunk<Session, { name: string; email: string; password: string }, { extra: ThunkExtra; rejectValue: string }>(
   "customerAuth/signUp",
-  async ({ name, email, password }, { rejectWithValue }) => {
-    try { return registerAccount(name, email, password); } catch (e) { return rejectWithValue(messageOf(e)); }
+  async (details, { extra, rejectWithValue }) => {
+    try { return await extra.api.customerAuth.signUp(details); } catch (e) { return rejectWithValue(messageOf(e)); }
   },
 );
 
 const slice = createSlice({
   name: "customerAuth",
-  initialState: { user: null } as AuthState,
+  initialState: { user: null, token: null } as AuthState,
   reducers: {
-    signedOut(state) { state.user = null; },
+    signedOut(state) { state.user = null; state.token = null; },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(signIn.fulfilled, (state, a) => { state.user = a.payload; })
-      .addCase(signUp.fulfilled, (state, a) => { state.user = a.payload; });
+    const signedIn = (state: AuthState, a: { payload: Session }) => { state.user = a.payload.user; state.token = a.payload.token ?? null; };
+    builder.addCase(signIn.fulfilled, signedIn).addCase(signUp.fulfilled, signedIn);
   },
 });
 

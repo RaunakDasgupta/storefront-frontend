@@ -1,93 +1,94 @@
-import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { ThunkExtra } from "../api/types.ts";
 import type { SkuRow } from "../lib/csv.ts";
-import { seedProducts, type Product } from "../lib/data.ts";
-import { isSafeImage, type ProductEdit } from "../lib/productform.ts";
+import type { Product } from "../lib/data.ts";
+import type { ProductEdit } from "../lib/productform.ts";
+import { messageOf } from "./errors.ts";
 import type { SharedThunk } from "./shared.ts";
 
-/** `saved` is null until admins change the catalog; shoppers then see the built-in products. */
-export type CatalogState = { saved: Product[] | null };
+/** "idle" until the first load starts. A refresh of already loaded data never goes back to "loading". */
+export type LoadStatus = "idle" | "loading" | "ready" | "failed";
+export type CatalogState = { items: Product[]; status: LoadStatus; error: string | null };
 type Root = { catalog: CatalogState };
 
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "sku";
-
-/** Guards what comes back from localStorage, which anything on this origin could have edited. */
-export function isProduct(p: unknown): p is Product {
-  const x = p as Product;
-  return !!x && typeof x.id === "string" && typeof x.sku === "string" && typeof x.name === "string" &&
-    Number.isFinite(x.price) && Number.isFinite(x.stock) && typeof x.category === "string" && typeof x.blurb === "string" &&
-    (x.image === undefined || isSafeImage(x.image)) && (x.channel === "retail" || x.channel === "bulk") && (x.size === undefined || typeof x.size === "string") && (x.was === undefined || Number.isFinite(x.was));
-}
-
-/** Adds new SKUs and updates existing ones (matched by SKU). A CSV import never deletes. */
-export function mergeRows(products: readonly Product[], rows: readonly SkuRow[]) {
-  const next = [...products];
-  let added = 0, updated = 0;
-  for (const r of rows) {
-    const i = next.findIndex((p) => p.sku.toLowerCase() === r.sku.toLowerCase());
-    if (i >= 0) {
-      // blank description / logo columns keep what is already there
-      next[i] = { ...next[i], name: r.name, size: r.size ?? next[i].size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb || next[i].blurb, image: r.image ?? next[i].image };
-      updated++;
-    } else {
-      let id = slug(r.sku), n = 2;
-      while (next.some((p) => p.id === id)) id = `${slug(r.sku)}-${n++}`;
-      next.push({ id, sku: r.sku, name: r.name, size: r.size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb, image: r.image });
-      added++;
-    }
-  }
-  return { products: next, added, updated };
-}
-
-const current = (state: CatalogState): readonly Product[] => state.saved ?? seedProducts;
+/** Fetches the products from the API. Rejects with the message to show. */
+export const loadCatalog = createAsyncThunk<Product[], void, { extra: ThunkExtra; rejectValue: string }>(
+  "catalog/load",
+  async (_, { extra, rejectWithValue }) => {
+    try { return await extra.api.products.list(); } catch (e) { return rejectWithValue(messageOf(e)); }
+  },
+);
 
 const slice = createSlice({
   name: "catalog",
-  initialState: { saved: null } as CatalogState,
+  initialState: { items: [], status: "idle", error: null } as CatalogState,
   reducers: {
-    /** Admins edit one product's details (the SKU stays fixed). */
-    productUpdated(state, a: PayloadAction<{ id: string; edit: ProductEdit }>) {
-      state.saved = current(state).map((p) => (p.id === a.payload.id ? { ...p, ...a.payload.edit } : p));
+    /** The server's version of one product after an edit. */
+    productReplaced(state, a: PayloadAction<Product>) {
+      state.items = state.items.map((p) => (p.id === a.payload.id ? a.payload : p));
     },
     /** Existing orders keep their items. */
     productRemoved(state, a: PayloadAction<string>) {
-      state.saved = current(state).filter((p) => p.id !== a.payload);
+      state.items = state.items.filter((p) => p.id !== a.payload);
     },
     /** Puts a deleted product back where it was. */
     productRestored(state, a: PayloadAction<{ product: Product; index: number }>) {
       const { product, index } = a.payload;
-      if (current(state).some((p) => p.id === product.id)) return;
-      const next = [...current(state)];
-      next.splice(Math.min(index, next.length), 0, product);
-      state.saved = next;
+      if (state.items.some((p) => p.id === product.id)) return;
+      state.items.splice(Math.min(index, state.items.length), 0, product);
     },
-    skusImported(state, a: PayloadAction<SkuRow[]>) {
-      state.saved = mergeRows(current(state), a.payload).products;
-    },
-    catalogReset(state) {
-      state.saved = null;
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loadCatalog.pending, (state) => { if (state.status !== "ready") { state.status = "loading"; state.error = null; } })
+      .addCase(loadCatalog.fulfilled, (state, a) => { state.items = a.payload; state.status = "ready"; state.error = null; })
+      // a failed refresh keeps showing what is already there
+      .addCase(loadCatalog.rejected, (state, a) => { if (state.status !== "ready") { state.status = "failed"; state.error = a.payload ?? "Couldn't load the products."; } });
   },
 });
 
-export const { productUpdated, productRemoved, productRestored, skusImported, catalogReset } = slice.actions;
+export const { productReplaced, productRemoved, productRestored } = slice.actions;
 export const catalogReducer = slice.reducer;
 
-export const selectProducts = (s: Root): readonly Product[] => current(s.catalog);
-export const selectCustomized = (s: Root) => s.catalog.saved !== null;
+export const selectProducts = (s: Root): readonly Product[] => s.catalog.items;
+export const selectCatalogStatus = (s: Root) => s.catalog.status;
+export const selectCatalogError = (s: Root) => s.catalog.error;
 export const selectCategories = createSelector([selectProducts], (products) => [...new Set(products.map((p) => p.category))]);
 
+// The thunks below call the API first and only then change the store, so the screen never shows a change the server refused.
+// They throw the API's error for the caller to show.
+
+/** Saves an edit and returns the saved product. */
+export const saveProduct = (id: string, edit: ProductEdit): SharedThunk<Promise<Product>> => async (dispatch, _getState, { api }) => {
+  const saved = await api.products.update(id, edit);
+  dispatch(productReplaced(saved));
+  return saved;
+};
+
 /** Deletes a product and returns it with its position, so the delete can be undone. */
-export const removeProduct = (id: string): SharedThunk<{ product: Product; index: number } | undefined> => (dispatch, getState) => {
+export const removeProduct = (id: string): SharedThunk<Promise<{ product: Product; index: number } | undefined>> => async (dispatch, getState, { api }) => {
   const products = selectProducts(getState());
   const index = products.findIndex((p) => p.id === id);
   if (index < 0) return undefined;
+  await api.products.remove(id);
   dispatch(productRemoved(id));
   return { product: products[index], index };
 };
 
-/** Imports CSV rows and says how many SKUs were added and updated. */
-export const importSkus = (rows: SkuRow[]): SharedThunk<{ added: number; updated: number }> => (dispatch, getState) => {
-  const { added, updated } = mergeRows(selectProducts(getState()), rows);
-  dispatch(skusImported(rows));
-  return { added, updated };
+export const restoreProduct = (product: Product, index: number): SharedThunk<Promise<void>> => async (dispatch, _getState, { api }) => {
+  dispatch(productRestored({ product: await api.products.restore(product, index), index }));
+};
+
+/** Imports rows, reloads the catalog and says how many SKUs were added and updated. */
+export const importSkus = (rows: SkuRow[]): SharedThunk<Promise<{ added: number; updated: number }>> => async (dispatch, _getState, { api }) => {
+  const result = await api.products.importRows(rows);
+  await dispatch(loadCatalog());
+  return result;
+};
+
+/** Back to the sample products. Only when the products come from the built-in sample data. */
+export const resetCatalog = (): SharedThunk<Promise<void>> => async (dispatch, _getState, { api }) => {
+  if (!api.products.reset) throw new Error("Resetting is only available with the sample data.");
+  await api.products.reset();
+  await dispatch(loadCatalog());
 };

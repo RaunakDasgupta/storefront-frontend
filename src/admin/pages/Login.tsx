@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "../../shared/ui";
 import { DEMO_ADMIN, useAdmin } from "../hooks/useAdmin";
+import { useAppSelector } from "../store/typedHooks";
 
 export function AdminLogin() {
   const { user, signIn } = useAdmin();
@@ -11,6 +12,7 @@ export function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<{ message: string; field?: "identity" | "password" } | null>(null);
   const [busy, setBusy] = useState(false);
+  const mockAuth = useAppSelector((s) => s.meta.sources.adminAuth === "mock");
 
   if (user) return <Navigate to={from ?? "/admin"} replace />;
 
@@ -51,8 +53,8 @@ export function AdminLogin() {
           <button type="button" className="btn secondary" onClick={() => setError({ message: "Single sign-on isn't set up yet." })}>Continue with company SSO</button>
         </form>
 
-        {/* sample credentials only show in `npm run dev`, never in a production build */}
-        {import.meta.env.DEV && (
+        {/* sample credentials only show in `npm run dev`, and only while sign-in is the built-in mock, never in a production build */}
+        {import.meta.env.DEV && mockAuth && (
           <aside className="demo" aria-label="Demo account">
             <strong>Demo admin account</strong>
             <dl><dt>Email or ID</dt><dd>{DEMO_ADMIN.email} or {DEMO_ADMIN.employeeId}</dd><dt>Password</dt><dd>{DEMO_ADMIN.password}</dd></dl>

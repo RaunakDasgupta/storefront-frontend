@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { CONNECTORS, fetchRows, initialValues, validateConnection } from "./connectors.ts";
+import { CONNECTORS, initialValues, sourceLabel, validateConnection } from "./connectors.ts";
 
 const postgres = CONNECTORS.find((c) => c.id === "postgres")!;
 const service = postgres.services[0];
@@ -19,10 +19,8 @@ test("every connector has at least one service with a field for each required se
   for (const c of CONNECTORS) for (const s of c.services) assert.ok(s.fields.length > 0, `${c.id}/${s.id}`);
 });
 
-test("connecting returns sample rows labelled with the source", async () => {
+test("a source is named after its service and what it reads", () => {
   const aws = CONNECTORS.find((c) => c.id === "aws")!;
-  const { label, rows } = await fetchRows(aws, aws.services[0], { key: "skus/latest.csv" }, 0);
-  assert.match(label, /Amazon Web Services S3 bucket/);
-  assert.equal(rows.length, 5);
-  assert.ok(rows.every((r) => r.price > 0 && r.sku));
+  assert.match(sourceLabel(aws, aws.services[0], { key: "skus/latest.csv" }), /Amazon Web Services S3 bucket.*skus\/latest\.csv/);
+  assert.equal(sourceLabel(postgres, service, { table: "products" }), "PostgreSQL · products");
 });

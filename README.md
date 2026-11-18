@@ -106,19 +106,20 @@ The photos are free stock images from [Unsplash](https://unsplash.com), used und
 src/main.tsx             Router entry
 src/App.tsx              Loads the customer or admin app by URL (/admin/* is admin)
 src/shared/              Only what both apps genuinely share
-  lib/                   Pure code with no React: data.ts, csv.ts, orderlogic.ts, productform.ts (tests in lib.test.ts)
-  store/                 Redux slices for the catalog and orders, persistence.ts (the mock backend), typed hooks, store.test.ts
-  hooks/                 useCatalog and useOrders: selectors plus dispatch for the components
-  ui/                    Icon, Logo, ProductImage, Field, Menu (index.tsx) and base.css (colour tokens and primitives)
+  api/                   The data layer: types.ts (the interfaces), http.ts + httpApi.ts (your server), mock.ts + mockAccounts.ts (sample data), config.ts (env URLs), index.ts (createApi), api.test.ts
+  lib/                   Pure code with no React: data.ts, csv.ts, catalog.ts, orderlogic.ts, productform.ts (tests in lib.test.ts)
+  store/                 Redux slices for the catalog, orders and meta (loading status, API thunks), session and typed-hook helpers, store.test.ts
+  hooks/                 useCatalog and useOrders (plus useLoadCatalog / useLoadOrders): selectors plus dispatch for the components
+  ui/                    Icon, Logo, ProductImage, Field, Menu, LoadGate (index.tsx) and base.css (colour tokens and primitives)
 src/customer/            The storefront (its styles are scoped to .cx)
-  store/                 Its own store, slices (auth, cart, toast, authDialog, checkout), checkout thunk, dummy payment gateway (gateway.ts), mock accounts, store.test.ts
+  store/                 Its own store, slices (auth, cart, toast, authDialog, checkout), checkout thunks, form checks (gateway.ts), store.test.ts
   hooks/                 useCustomer, useCart, useMyOrders, useCategories
   components/            Layout, AuthDialog, CheckoutDialog (address, dummy payment, order placed), Toast, parts (ProductCard, CartPanel and the other pieces)
   pages/                 Shop, Product, Categories, Cart, Orders, Account, NotFound
 src/admin/               The admin portal (its styles are scoped to .ax)
-  store/                 Its own store, auth slice and mock account
+  store/                 Its own store, auth slice and the import thunk
   hooks/                 useAdmin
-  lib/                   connectors.ts: the database and cloud import sources (settings, checks, demo rows; tests in connectors.test.ts)
+  lib/                   connectors.ts: the database and cloud import sources (settings and checks; tests in connectors.test.ts)
   components/            Layout (sidebar shell), RequireAdmin, Charts, OrderGrid, ProductGrid, ProductEditor, ConfirmDelete, ScrollGrid, ImportPreview, ConnectorForm
   pages/                 Login, Overview, Orders, Products, Import
 ```
@@ -129,22 +130,52 @@ State lives in [Redux Toolkit](https://redux-toolkit.js.org). Each app creates *
 
 | Store    | Slices                                              |
 | -------- | --------------------------------------------------- |
-| Customer | `catalog`, `orders`, `auth`, `cart`, `toast`, `authDialog` |
-| Admin    | `catalog`, `orders`, `auth`                         |
+| Customer | `catalog`, `orders`, `meta`, `auth`, `cart`, `toast`, `authDialog`, `checkout` |
+| Admin    | `catalog`, `orders`, `meta`, `auth`                 |
 
 - Components read state through selectors (`createSelector` for derived data such as the cart total) and change it by dispatching actions, through small hooks such as `useCatalog()`, `useOrders()`, `useCart()` and `useCustomer()`.
-- Actions that need a result or several steps are thunks (`placeOrders`, `removeProduct`, `importSkus`, `checkout`). Sign in and sign up are `createAsyncThunk`s.
+- Anything that talks to the data layer is a thunk. Loads (`loadCatalog`, `loadOrders`) and sign in / sign up are `createAsyncThunk`s that track `idle` / `loading` / `ready` / `failed`; changes (`saveProduct`, `removeProduct`, `placeOrders`, `setOrderStep`, `importSkus`, `payAndCheckout`...) call the API first and update the store only once it agrees, and throw the API's message for the screen to show. Every thunk reaches the API through RTK's `extraArgument`, never by importing it, so tests can hand them a different one.
 - State stays serializable. The login popup keeps *what to do after logging in* as data (`{ kind: "checkout" }` or `{ kind: "navigate", to }`), not a callback, and passwords never enter the store.
-- `persistence.ts` saves the catalog and orders to `localStorage` and each login to its own `sessionStorage` key whenever they change, and picks up orders changed in another tab.
-- The slices have no React in them, so they are tested with `node --test` (`src/shared/store/store.test.ts`, `src/customer/store/store.test.ts`).
+- Each login (user and token) is kept in its own `sessionStorage` key for the tab. The catalog and orders are no longer saved by the store: where they live is the data layer's business (below).
+- The slices have no React in them, so they are tested with `node --test` against the mock API (`src/shared/store/store.test.ts`, `src/customer/store/store.test.ts`); `src/shared/api/api.test.ts` tests the HTTP side with a fake `fetch`.
 
 Each app's stylesheet is scoped to its own root (`.cx` for the customer app, `.ax` for admin), so styles cannot leak between them. The only data the apps share is the product catalog: SKUs imported by admins show up in the storefront.
 
-## Status: mock backend
+## Connecting a real API
 
-There is no backend yet, so this is a working prototype:
+All data goes through one layer, `src/shared/api/`, so swapping the sample data for your server is configuration, not a rewrite. Screens and slices only know the interfaces in `types.ts` (`ProductsApi`, `OrdersApi`, `CustomerAuthApi`, `AdminAuthApi`, `PaymentsApi`, `ImportApi`). Each has two implementations: `mock.ts` (the sample data, kept in this browser) and `httpApi.ts` (your server). `createApi` in `index.ts` picks one **per resource**, so you can connect them one at a time.
 
-- **Accounts are mocked in the browser.** The demo accounts and any customer sign-ups (plaintext passwords in `localStorage`) are checked in `src/customer/store/accounts.ts` and `src/admin/store/accounts.ts`, and each session lives in its own `sessionStorage` key. Do not deploy as is: replace the `signIn` and `signUp` thunks with calls to your auth API.
-- **Products and the admin orders are sample data** in `src/shared/lib/data.ts`. Imported SKUs and all orders persist in `localStorage` only. The customer and admin apps read and write the same orders store, so an order placed in the storefront shows up in the admin portal (even in another open tab).
-- **Checkout is a demo**: no payment is collected. The cart lives in the customer store's memory and resets on reload.
+1. Copy `.env.example` to `.env.local` and set `VITE_API_URL` (every resource then defaults to a path under it), or set a resource's own URL, which wins. Restart `npm run dev`.
+2. A resource with no URL keeps using the sample data. When any resource is still on samples, the storefront footer and the admin sidebar say so; the sign-in hints, the dummy card hint and **Reset catalog** only appear for the resource that is on the mock.
+3. Everything the server sends back is checked (`isProduct`, `isOrder`, ...) before the app uses it; anything unexpected shows as "the server sent ... in a format this app does not understand".
+
+| Resource | Variable (default path)          | Requests                                                                                                  |
+| -------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Products | `VITE_PRODUCTS_URL` (`/products`) | `GET` the list (array of products) · `PATCH /:id` with the edited fields → the product · `DELETE /:id` · `POST /:id/restore` → the product (the Undo after a delete, so delete should be a soft delete) · `POST /import` with `{ rows }` → `{ added, updated }` |
+| Orders   | `VITE_ORDERS_URL` (`/orders`)     | `GET` the list (a customer's token returns their own, an admin's returns everyone's) · `POST` with `{ customer, shipping, paymentRef, groups }` → the created orders, one per group, ids assigned by the server · `PATCH /:id` with `{ step }` (0 to 3) → the order · `DELETE /:id` · `POST /:id/restore` → the order |
+| Customer sign-in | `VITE_CUSTOMER_AUTH_URL` (`/auth`) | `POST /login` with `{ email, password }` and `POST /register` with `{ name, email, password }`, both → `{ user: { name, email }, token }` |
+| Admin sign-in | `VITE_ADMIN_AUTH_URL` (`/admin/auth`) | `POST /login` with `{ identity, password }` (work email or employee ID) → `{ user: { name, email }, token }` |
+| Payments | `VITE_PAYMENTS_URL` (`/payments`) | `POST` with `{ amount, currency, card }` → `{ ref }`. Answer `402` (or `422`) with `{ message }` for a declined card |
+| Import   | `VITE_IMPORT_URL` (`/import`)     | `POST /connect` with `{ connector, service, settings }` (the Import page's connection form) → `{ rows }` of SKU rows |
+
+The product, order and row shapes are the `Product`, `Order` and `SkuRow` types in `src/shared/lib/` (`data.ts`, `orderlogic.ts`, `csv.ts`); an order's optional `shipping` is the delivery address. Errors are plain HTTP errors: the body's `message` (or `error`) is shown to the person, and a `401` signs them out. After sign-in the token is sent as `Authorization: Bearer <token>`.
+
+Things a real server must do that this front end cannot:
+
+- **Own the money and the stock.** The amount the browser sends and the prices in `groups` are what the customer saw; recompute them from your own catalog, check stock, and check `paymentRef` belongs to a successful payment for that amount.
+- **Scope orders by token** (customers see only theirs) and enforce admin-only routes. The front end hides admin screens, it does not secure them.
+- **Cards:** the dummy `PaymentsApi` sends card details to your endpoint. Before taking real payments, tokenize the card in the browser with your gateway's hosted fields and send the token instead (`httpPayments`, marked `shortcut:`).
+- **Tokens** live in `sessionStorage` for the tab. If you prefer an httpOnly cookie, have the server set it and change `createHttp` to send `credentials: "include"`.
+- If the card is charged and then the order call fails, the customer is told the payment reference and not to pay again; a server that makes the charge and the order one call avoids that.
+
+Screens show "Loading...", then the data, or the API's error with a **Try again** button (`LoadGate`). Orders reload when the tab regains focus, so a status change made elsewhere appears without a reload. Revenue, the status counts and the dashboard chart are worked out in the browser from the orders list; with a large order history, serve them from an endpoint instead.
+
+## Status: sample data by default
+
+With no URLs set this is a working prototype:
+
+- **Accounts are mocked in the browser** (`src/shared/api/mockAccounts.ts`: plaintext passwords in `localStorage`, one hard-coded admin). Do not deploy that: set the auth URLs.
+- **Products and orders are sample data** in `src/shared/lib/data.ts` and `orderlogic.ts`, kept in `localStorage` by `mock.ts`. The customer and admin apps read and write the same storage, so an order placed in the storefront shows up in the admin portal.
+- **Checkout payments are a dummy**: no money moves (see the test cards above).
+- The cart lives in the customer store's memory and resets on reload.
 - "Forgot password" and company SSO are placeholders.

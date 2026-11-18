@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import type { Channel, Product } from "../../shared/lib/data";
+import { messageOf } from "../../shared/store/errors";
 import { Icon } from "../../shared/ui";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { ProductEditor } from "../components/ProductEditor";
@@ -14,11 +15,14 @@ const CHANNELS: { id: Channel; label: string }[] = [
 
 /** Products as editable, deletable cards, with Retail and Bulk on separate tabs (`?type=bulk`), a low-stock filter and search. */
 export function AdminProducts() {
-  const { products, customized, reset, remove, restore } = useCatalog();
+  const { products, canReset, reset, remove, restore } = useCatalog();
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState<Product | null>(null);
   const [undo, setUndo] = useState<{ product: Product; index: number } | null>(null);
+  const [failure, setFailure] = useState("");
+  /** Runs a change against the API and shows its error, if it refuses. */
+  const attempt = async (change: () => Promise<void>) => { setFailure(""); try { await change(); } catch (e) { setFailure(messageOf(e)); } };
 
   // the undo notice fades away after a while
   useEffect(() => {
@@ -29,9 +33,9 @@ export function AdminProducts() {
 
   function confirmDelete() {
     if (!deleting) return;
-    const removed = remove(deleting.id);
+    const target = deleting;
     setDeleting(null);
-    if (removed) setUndo(removed);
+    void attempt(async () => { const removed = await remove(target.id); if (removed) setUndo(removed); });
   }
   const q = params.get("q") ?? "";
   const lowOnly = params.get("stock") === "low";
@@ -53,8 +57,8 @@ export function AdminProducts() {
       <div className="page-head">
         <h1>Products</h1>
         <div className="head-actions">
-          {customized && (
-            <button className="btn secondary inline" onClick={() => { if (window.confirm("Reset the catalog to the 28 sample products? Imported SKUs will be removed from this browser.")) reset(); }}>
+          {canReset && (
+            <button className="btn secondary inline" onClick={() => { if (window.confirm("Reset the catalog to the sample products? Imported and edited products will be removed from this browser.")) void attempt(reset); }}>
               Reset catalog
             </button>
           )}
@@ -64,9 +68,10 @@ export function AdminProducts() {
       {undo && (
         <p className="notice" role="status">
           Deleted {undo.product.name} ({undo.product.sku}).{" "}
-          <button className="linkbtn" onClick={() => { restore(undo.product, undo.index); setUndo(null); }}>Undo</button>
+          <button className="linkbtn" onClick={() => { const { product, index } = undo; setUndo(null); void attempt(() => restore(product, index)); }}>Undo</button>
         </p>
       )}
+      {failure && <p className="error" role="alert">{failure}</p>}
 
       <div className="channel-switch" role="group" aria-label="Product type">
         {CHANNELS.map((c) => (

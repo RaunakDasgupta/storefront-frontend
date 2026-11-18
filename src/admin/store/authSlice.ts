@@ -1,26 +1,27 @@
-// Admin sign-in. Completely separate from the customer session: its own store, storage key and accounts.
+// Admin sign-in. Completely separate from the customer session: its own store, storage key and API.
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { signInAdmin } from "./accounts.ts";
+import type { Session, ThunkExtra, User } from "../../shared/api/types.ts";
+import { messageOf } from "../../shared/store/errors.ts";
 
-export type User = { name: string; email: string };
-export type AuthState = { user: User | null };
+export type { User };
+export type AuthState = { user: User | null; token: string | null };
 
 /** Rejects with the message to show under the form. */
-export const signIn = createAsyncThunk<User, { identity: string; password: string }, { rejectValue: string }>(
+export const signIn = createAsyncThunk<Session, { identity: string; password: string }, { extra: ThunkExtra; rejectValue: string }>(
   "adminAuth/signIn",
-  async ({ identity, password }, { rejectWithValue }) => {
-    try { return signInAdmin(identity, password); } catch (e) { return rejectWithValue(e instanceof Error ? e.message : "Something went wrong."); }
+  async (credentials, { extra, rejectWithValue }) => {
+    try { return await extra.api.adminAuth.signIn(credentials); } catch (e) { return rejectWithValue(messageOf(e)); }
   },
 );
 
 const slice = createSlice({
   name: "adminAuth",
-  initialState: { user: null } as AuthState,
+  initialState: { user: null, token: null } as AuthState,
   reducers: {
-    signedOut(state) { state.user = null; },
+    signedOut(state) { state.user = null; state.token = null; },
   },
   extraReducers: (builder) => {
-    builder.addCase(signIn.fulfilled, (state, a) => { state.user = a.payload; });
+    builder.addCase(signIn.fulfilled, (state, a) => { state.user = a.payload.user; state.token = a.payload.token ?? null; });
   },
 });
 

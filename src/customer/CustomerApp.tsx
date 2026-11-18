@@ -5,7 +5,7 @@ import { Route, Routes } from "react-router-dom";
 import { AuthDialogHost, AuthRoute, RequireCustomer } from "./components/AuthDialog";
 import { CheckoutDialogHost } from "./components/CheckoutDialog";
 import { CustomerLayout } from "./components/Layout";
-import { makeCustomerStore, persistCustomer } from "./store/store";
+import { bootCustomerStore, persistCustomer } from "./store/store";
 import { ToastHost } from "./components/Toast";
 import { Account } from "./pages/Account";
 import { CartPage } from "./pages/Cart";
@@ -18,7 +18,7 @@ import "./customer.css";
 
 export default function CustomerApp() {
   // this app's own store: the admin portal has another one
-  const [store] = useState(makeCustomerStore);
+  const [store] = useState(() => bootCustomerStore({ env: import.meta.env }));
   useEffect(() => persistCustomer(store), [store]);
 
   return (

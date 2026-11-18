@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import { money } from "../../shared/lib/data";
 import { STEPS, STEP_MESSAGE, addressText, itemCount, type Order } from "../../shared/lib/orderlogic";
-import { Icon, ProductImage, STEP_BADGE } from "../../shared/ui";
+import { useLoadOrders } from "../../shared/hooks/useOrders";
+import { Icon, LoadGate, ProductImage, STEP_BADGE } from "../../shared/ui";
 import { useCart } from "../hooks/useCart";
 import { useMyOrders } from "../hooks/useMyOrders";
 import { Tracker } from "../components/parts";
@@ -86,7 +87,7 @@ function OrderCard({ o }: { o: Order }) {
   );
 }
 
-export function Orders() {
+function OrdersList() {
   const orders = useMyOrders();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["id"]>("all");
   const shown = orders.filter((o) => filter === "all" || o.channel === filter);
@@ -123,5 +124,14 @@ export function Orders() {
         <div className="ord-list">{shown.map((o) => <OrderCard key={o.id} o={o} />)}</div>
       )}
     </div>
+  );
+}
+
+export function Orders() {
+  const { status, error, reload } = useLoadOrders();
+  return (
+    <LoadGate status={status} error={error} what="your orders" onRetry={reload}>
+      <OrdersList />
+    </LoadGate>
   );
 }

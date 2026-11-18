@@ -1,15 +1,21 @@
 import { useState, type FormEvent } from "react";
 import type { SkuRow } from "../../shared/lib/csv";
+import { messageOf } from "../../shared/store/errors";
 import { Field } from "../../shared/ui";
-import { fetchRows, initialValues, validateConnection, type Connector, type Errors, type Values } from "../lib/connectors";
+import { initialValues, sourceLabel, validateConnection, type Connector, type Errors, type Values } from "../lib/connectors";
+import { useAppDispatch, useAppSelector } from "../store/typedHooks";
+import { connectSource } from "../store/importer";
 
-/** Connection settings for one database or cloud source. Remounted per source, so nothing typed carries over. Passwords stay here: they are never stored or sent. */
+/** Connection settings for one database or cloud source. Remounted per source, so nothing typed carries over. Nothing is stored; the settings are only sent to the import API when you connect. */
 export function ConnectorForm({ connector, onRows }: { connector: Connector; onRows: (label: string, rows: SkuRow[]) => void }) {
   const [serviceId, setServiceId] = useState(connector.services[0].id);
   const service = connector.services.find((s) => s.id === serviceId) ?? connector.services[0];
   const [values, setValues] = useState<Values>(() => initialValues(service));
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState("");
+  const dispatch = useAppDispatch();
+  const demo = useAppSelector((s) => s.meta.sources.importer === "mock");
 
   function pickService(id: string) {
     setServiceId(id);
@@ -23,18 +29,29 @@ export function ConnectorForm({ connector, onRows }: { connector: Connector; onR
     setErrors(found);
     const firstBad = Object.keys(found)[0];
     if (firstBad) return document.getElementById(`cx-${firstBad}`)?.focus();
+    setFailure("");
     setBusy(true);
-    const { label, rows } = await fetchRows(connector, service, values);
-    setBusy(false);
-    onRows(label, rows);
+    try {
+      onRows(sourceLabel(connector, service, values), await dispatch(connectSource(connector.id, service.id, values)));
+    } catch (err) {
+      setFailure(messageOf(err));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
     <form className="connector" onSubmit={onSubmit} noValidate>
-      <p className="notice demo-banner" role="note">
-        Demo connection. A browser cannot open a database connection, so nothing is contacted: <strong>Connect and preview</strong> checks the form and loads sample products
-        so you can try the import. Credentials stay in this form and are never saved or sent.
-      </p>
+      {demo ? (
+        <p className="notice demo-banner" role="note">
+          Demo connection. A browser cannot open a database connection, so nothing is contacted: <strong>Connect and preview</strong> checks the form and loads sample products
+          so you can try the import. Credentials stay in this form and are never saved or sent.
+        </p>
+      ) : (
+        <p className="notice demo-banner" role="note">
+          These settings are sent to your import service, which connects to the source for you. They are not saved in this browser.
+        </p>
+      )}
 
       {connector.services.length > 1 && (
         <div className="field">
@@ -62,6 +79,7 @@ export function ConnectorForm({ connector, onRows }: { connector: Connector; onR
         ))}
       </div>
 
+      {failure && <p className="error" role="alert">{failure}</p>}
       <div className="import-actions">
         <button type="submit" className="btn primary inline" disabled={busy}>{busy ? "Connecting…" : "Connect and preview"}</button>
       </div>

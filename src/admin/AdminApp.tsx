@@ -9,7 +9,7 @@ import { ImportPage } from "./pages/Import";
 import { AdminOrders } from "./pages/Orders";
 import { Overview } from "./pages/Overview";
 import { AdminProducts } from "./pages/Products";
-import { makeAdminStore, persistAdmin } from "./store/store";
+import { bootAdminStore, persistAdmin } from "./store/store";
 import "./admin.css";
 
 function AdminNotFound() {
@@ -23,7 +23,7 @@ function AdminNotFound() {
 
 export default function AdminApp() {
   // this app's own store: the customer storefront has another one
-  const [store] = useState(makeAdminStore);
+  const [store] = useState(() => bootAdminStore({ env: import.meta.env }));
   useEffect(() => persistAdmin(store), [store]);
 
   return (

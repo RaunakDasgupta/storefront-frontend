@@ -1,5 +1,7 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Icon, Logo, Menu } from "../../shared/ui";
+import { useLoadCatalog } from "../../shared/hooks/useCatalog";
+import { Icon, LoadGate, Logo, Menu } from "../../shared/ui";
+import { useAppSelector } from "../store/typedHooks";
 import { useCustomer } from "../hooks/useCustomer";
 import { useAuthDialog } from "./AuthDialog";
 import { useCart } from "../hooks/useCart";
@@ -75,6 +77,8 @@ function HeaderSearch() {
 
 export function CustomerLayout() {
   const { count } = useCart();
+  const catalog = useLoadCatalog();
+  const sampleData = useAppSelector((s) => Object.values(s.meta.sources).includes("mock"));
   return (
     <>
       <header className="topbar">
@@ -93,11 +97,13 @@ export function CustomerLayout() {
           <AccountMenu />
         </div>
       </header>
-      <main><Outlet /></main>
+      <main>
+        <LoadGate status={catalog.status} error={catalog.error} what="the store" onRetry={catalog.reload}><Outlet /></LoadGate>
+      </main>
       <footer className="footer">
         <div className="wrap foot-row">
           <span>© {new Date().getFullYear()} Everyday Market</span>
-          <span className="muted">Demo storefront. No real orders or payments.</span>
+          {sampleData && <span className="muted">Demo storefront. No real orders or payments.</span>}
         </div>
       </footer>
     </>

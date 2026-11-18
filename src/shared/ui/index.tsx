@@ -105,3 +105,18 @@ export function Menu({ label, trigger, children, buttonClass = "iconbtn", panelC
 export const itemsText = (o: Order) => o.items.map((i) => `${i.name}${i.size ? ` (${i.size})` : ""} × ${i.qty}`).join(", ");
 
 export const STEP_BADGE = ["pending", "paid", "packed", "fulfilled"] as const;
+
+/** Shows what a screen needs once it has loaded; until then a loading note, or the error with a Try again button. */
+export function LoadGate({ status, error, what, onRetry, children }: { status: "idle" | "loading" | "ready" | "failed"; error: string | null; what: string; onRetry: () => void; children: ReactNode }) {
+  if (status === "ready") return <>{children}</>;
+  if (status === "failed") {
+    return (
+      <div className="load-state" role="alert">
+        <h2>Couldn&apos;t load {what}</h2>
+        <p className="muted">{error}</p>
+        <button className="btn primary inline" onClick={onRetry}>Try again</button>
+      </div>
+    );
+  }
+  return <p className="load-state muted" role="status">Loading {what}…</p>;
+}

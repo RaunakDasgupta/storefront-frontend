@@ -7,6 +7,14 @@ export type ParseResult = { rows: SkuRow[]; issues: CsvIssue[]; fatal?: string }
 
 export const MAX_ROWS = 1000;
 
+/** Guards import rows that come back from an API instead of a CSV file. */
+export function isSkuRow(r: unknown): r is SkuRow {
+  const x = r as SkuRow;
+  return !!x && typeof x.sku === "string" && typeof x.name === "string" && typeof x.category === "string" && typeof x.blurb === "string" &&
+    Number.isFinite(x.price) && Number.isFinite(x.stock) && (x.channel === "retail" || x.channel === "bulk") &&
+    (x.size === undefined || typeof x.size === "string") && (x.was === undefined || Number.isFinite(x.was)) && (x.image === undefined || typeof x.image === "string");
+}
+
 /** RFC 4180-style parser: quoted fields, escaped quotes, commas and newlines inside quotes, CRLF, BOM. */
 export function parseCsv(text: string): string[][] {
   const rows: string[][] = [];

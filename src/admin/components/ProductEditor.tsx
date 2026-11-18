@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import type { Product } from "../../shared/lib/data";
 import { parseProductForm, toForm, type FormErrors, type ProductForm } from "../../shared/lib/productform";
+import { messageOf } from "../../shared/store/errors";
 import { Field } from "../../shared/ui";
 
 /** Edit one product in a modal dialog. Esc, the backdrop and Cancel all close it without saving. */
@@ -10,6 +11,8 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
   const ref = useRef<HTMLDialogElement>(null);
   const [f, setF] = useState<ProductForm>(() => toForm(product));
   const [errors, setErrors] = useState<FormErrors>({});
+  const [saveError, setSaveError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => { ref.current?.showModal(); }, []);
 
@@ -18,14 +21,21 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
 
   const bind = (k: keyof ProductForm) => ({ id: `pe-${k}`, value: f[k], error: errors[k], onChange: (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value }) });
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const { value, errors: found } = parseProductForm(f);
     setErrors(found);
     const firstBad = Object.keys(found)[0];
     if (!value) return document.getElementById(`pe-${firstBad}`)?.focus();
-    update(product.id, value);
-    close();
+    setSaveError("");
+    setBusy(true);
+    try {
+      await update(product.id, value);
+      close();
+    } catch (err) {
+      setSaveError(messageOf(err));
+      setBusy(false);
+    }
   }
 
   return (
@@ -73,8 +83,9 @@ export function ProductEditor({ product, onClose }: { product: Product; onClose:
         </div>
 
         <footer className="editor-foot">
-          <button type="button" className="btn secondary inline" onClick={close}>Cancel</button>
-          <button type="submit" className="btn primary inline">Save changes</button>
+          {saveError && <p className="error editor-error" role="alert">{saveError}</p>}
+          <button type="button" className="btn secondary inline" onClick={close} disabled={busy}>Cancel</button>
+          <button type="submit" className="btn primary inline" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
         </footer>
       </form>
     </dialog>

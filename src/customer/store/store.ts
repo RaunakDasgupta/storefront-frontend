@@ -1,8 +1,11 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { loadSharedState, persistShared, readJson, watch, writeJson } from "../../shared/store/persistence.ts";
+import { createApi, type CreateApiOptions } from "../../shared/api/index.ts";
+import type { Api } from "../../shared/api/types.ts";
+import { watch } from "../../shared/store/persistence.ts";
+import { readSession, writeSession } from "../../shared/store/session.ts";
 import { sharedReducers } from "../../shared/store/shared.ts";
 import { authDialogReducer } from "./authDialogSlice.ts";
-import { authReducer, type User } from "./authSlice.ts";
+import { authReducer, signedOut } from "./authSlice.ts";
 import { cartReducer } from "./cartSlice.ts";
 import { checkoutReducer } from "./checkoutSlice.ts";
 import { toastReducer } from "./toastSlice.ts";
@@ -18,25 +21,34 @@ export const customerReducer = combineReducers({
 
 export type CustomerState = ReturnType<typeof customerReducer>;
 
-// The signed-in customer lasts for the browser tab (sessionStorage), separate from the admin session.
 const SESSION_KEY = "storefront.customer.session";
 
-function readSession(): User | null {
-  const u = readJson(sessionStorage, SESSION_KEY) as User | null;
-  return u && typeof u.name === "string" && typeof u.email === "string" ? { name: u.name, email: u.email } : null;
-}
-
-/** Tests pass their own starting state; the app starts from what the browser has saved. */
-export function makeCustomerStore(preloadedState: Partial<CustomerState> = { ...loadSharedState(), auth: { user: readSession() } }) {
-  return configureStore({ reducer: customerReducer, preloadedState });
+/** The store, wired to `api`. Tests pass a mock API and their own starting state. */
+export function makeCustomerStore(api: Api, preloadedState: Partial<CustomerState> = {}) {
+  return configureStore({
+    reducer: customerReducer,
+    preloadedState: { meta: { sources: api.sources }, ...preloadedState },
+    middleware: (getDefault) => getDefault({ thunk: { extraArgument: { api } } }),
+  });
 }
 
 export type CustomerStore = ReturnType<typeof makeCustomerStore>;
 export type CustomerDispatch = CustomerStore["dispatch"];
 
-/** Saves the catalog, orders and session as they change. Returns the cleanup. */
+/** The app's store: the API comes from the environment, and the signed-in customer from this tab's session. */
+export function bootCustomerStore(options: Pick<CreateApiOptions, "env"> & Partial<CreateApiOptions>) {
+  let store: CustomerStore | undefined;
+  const api = createApi({
+    ...options,
+    getToken: () => store?.getState().auth.token,
+    // a rejected token means the session ended: sign out so the login popup comes back
+    onUnauthorized: () => { if (store?.getState().auth.token) store.dispatch(signedOut()); },
+  });
+  store = makeCustomerStore(api, { auth: readSession(sessionStorage, SESSION_KEY) });
+  return store;
+}
+
+/** Remembers who is signed in for this tab. Returns the cleanup. */
 export function persistCustomer(store: CustomerStore) {
-  const stopSession = watch(store, (s) => s.auth.user, (user) => writeJson(sessionStorage, SESSION_KEY, user));
-  const stopShared = persistShared(store);
-  return () => { stopSession(); stopShared(); };
+  return watch(store, (s) => s.auth, (auth) => writeSession(sessionStorage, SESSION_KEY, auth));
 }

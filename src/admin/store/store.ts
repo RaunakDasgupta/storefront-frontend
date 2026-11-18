@@ -1,30 +1,41 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { loadSharedState, persistShared, readJson, watch, writeJson } from "../../shared/store/persistence.ts";
+import { createApi, type CreateApiOptions } from "../../shared/api/index.ts";
+import type { Api } from "../../shared/api/types.ts";
+import { watch } from "../../shared/store/persistence.ts";
+import { readSession, writeSession } from "../../shared/store/session.ts";
 import { sharedReducers } from "../../shared/store/shared.ts";
-import { authReducer, type User } from "./authSlice.ts";
+import { authReducer, signedOut } from "./authSlice.ts";
 
 export const adminReducer = combineReducers({ ...sharedReducers, auth: authReducer });
 export type AdminState = ReturnType<typeof adminReducer>;
 
-// The signed-in admin user lasts for the browser tab (sessionStorage), separate from the customer session.
 const SESSION_KEY = "storefront.admin.session";
 
-function readSession(): User | null {
-  const u = readJson(sessionStorage, SESSION_KEY) as User | null;
-  return u && typeof u.name === "string" && typeof u.email === "string" ? { name: u.name, email: u.email } : null;
-}
-
-/** Tests pass their own starting state; the app starts from what the browser has saved. */
-export function makeAdminStore(preloadedState: Partial<AdminState> = { ...loadSharedState(), auth: { user: readSession() } }) {
-  return configureStore({ reducer: adminReducer, preloadedState });
+/** The store, wired to `api`. Tests pass a mock API and their own starting state. */
+export function makeAdminStore(api: Api, preloadedState: Partial<AdminState> = {}) {
+  return configureStore({
+    reducer: adminReducer,
+    preloadedState: { meta: { sources: api.sources }, ...preloadedState },
+    middleware: (getDefault) => getDefault({ thunk: { extraArgument: { api } } }),
+  });
 }
 
 export type AdminStore = ReturnType<typeof makeAdminStore>;
 export type AdminDispatch = AdminStore["dispatch"];
 
-/** Saves the catalog, orders and session as they change. Returns the cleanup. */
+/** The app's store: the API comes from the environment, and the signed-in admin from this tab's session. */
+export function bootAdminStore(options: Pick<CreateApiOptions, "env"> & Partial<CreateApiOptions>) {
+  let store: AdminStore | undefined;
+  const api = createApi({
+    ...options,
+    getToken: () => store?.getState().auth.token,
+    onUnauthorized: () => { if (store?.getState().auth.token) store.dispatch(signedOut()); },
+  });
+  store = makeAdminStore(api, { auth: readSession(sessionStorage, SESSION_KEY) });
+  return store;
+}
+
+/** Remembers who is signed in for this tab. Returns the cleanup. */
 export function persistAdmin(store: AdminStore) {
-  const stopSession = watch(store, (s) => s.auth.user, (user) => writeJson(sessionStorage, SESSION_KEY, user));
-  const stopShared = persistShared(store);
-  return () => { stopSession(); stopShared(); };
+  return watch(store, (s) => s.auth, (auth) => writeSession(sessionStorage, SESSION_KEY, auth));
 }

@@ -2,6 +2,7 @@ import { useState, type DragEvent } from "react";
 import { Link } from "react-router-dom";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import { MAX_ROWS, parseSkuCsv, skuTemplate, type CsvIssue, type SkuRow } from "../../shared/lib/csv";
+import { messageOf } from "../../shared/store/errors";
 import { ConnectorForm } from "../components/ConnectorForm";
 import { ImportPreview } from "../components/ImportPreview";
 import { CONNECTORS } from "../lib/connectors";
@@ -99,7 +100,7 @@ export function ImportPage() {
             </p>
           )}
 
-          {preview && <ImportPreview {...preview} onImport={() => { setDone(importRows(preview.rows)); setPreview(null); }} onCancel={() => setPreview(null)} />}
+          {preview && <ImportPreview {...preview} onImport={() => { setProblem(""); importRows(preview.rows).then(setDone, (e) => setProblem(messageOf(e))); setPreview(null); }} onCancel={() => setPreview(null)} />}
         </div>
       </section>
     </>

@@ -1,6 +1,9 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Icon, Logo, Menu } from "../../shared/ui";
+import { useLoadCatalog } from "../../shared/hooks/useCatalog";
+import { useLoadOrders } from "../../shared/hooks/useOrders";
+import { Icon, LoadGate, Logo, Menu } from "../../shared/ui";
 import { useAdmin } from "../hooks/useAdmin";
+import { useAppSelector } from "../store/typedHooks";
 
 const NAV = [
   { to: "/admin", label: "Overview", icon: "home", end: true },
@@ -13,6 +16,11 @@ const NAV = [
 export function AdminLayout() {
   const { user, signOut } = useAdmin();
   const navigate = useNavigate();
+  // every admin screen needs both lists, so they load together
+  const catalog = useLoadCatalog();
+  const orders = useLoadOrders();
+  const sampleData = useAppSelector((s) => Object.values(s.meta.sources).includes("mock"));
+  const status = catalog.status === "failed" || orders.status === "failed" ? "failed" : catalog.status === "ready" && orders.status === "ready" ? "ready" : "loading";
   return (
     <div className="admin">
       <aside className="sidebar">
@@ -23,6 +31,7 @@ export function AdminLayout() {
             <NavLink key={n.to} to={n.to} end={"end" in n}><Icon name={n.icon} /><span>{n.label}</span></NavLink>
           ))}
         </nav>
+        {sampleData && <p className="side-note muted">Showing sample data. Add your API URL to use real data.</p>}
       </aside>
       <div className="admin-content">
         <header className="atop">
@@ -36,7 +45,9 @@ export function AdminLayout() {
             )}
           </Menu>
         </header>
-        <main className="admin-main"><Outlet /></main>
+        <main className="admin-main">
+          <LoadGate status={status} error={catalog.error ?? orders.error} what="the dashboard data" onRetry={() => { catalog.reload(); orders.reload(); }}><Outlet /></LoadGate>
+        </main>
       </div>
     </div>
   );

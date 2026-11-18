@@ -113,3 +113,7 @@ tbody tr:hover { background: #fafafa; }
   th:first-child, td:first-child { padding-left: 16px; }
   th:last-child, td:last-child { padding-right: 16px; }
 }
+
+.load-state { padding: 56px 16px; text-align: center; margin: 0; }
+.load-state h2 { margin: 0 0 6px; font-size: 20px; }
+.load-state .btn { margin-top: 16px; }

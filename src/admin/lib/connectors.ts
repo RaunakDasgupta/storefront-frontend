@@ -1,8 +1,5 @@
-// Data sources the Import page can pull SKUs from. This is a front-end demo: a browser cannot open a database
-// connection, so "connecting" only checks the form and then loads sample rows to try the import flow with.
-// shortcut: no real connection, so a production app would send these settings to a server-side import service.
-import { seedProducts } from "../../shared/lib/data.ts";
-import type { SkuRow } from "../../shared/lib/csv.ts";
+// Data sources the Import page can pull SKUs from, and the connection settings each one asks for. A browser cannot open a
+// database connection, so the settings go to the import API (see shared/api); without one, the mock returns sample rows.
 
 export type FieldDef = {
   key: string;
@@ -84,23 +81,8 @@ export function validateConnection(s: Service, v: Values): Errors {
   return errors;
 }
 
-/** Sample products standing in for what a real source would return: four new SKUs and one change to an existing product. */
-function sampleRows(from: string): SkuRow[] {
-  const blurb = `Imported from ${from}.`;
-  const existing = seedProducts[0];
-  return [
-    { sku: "DB-101", name: "Dishwash liquid", size: "500 ml", price: 129, category: "Home care", blurb, stock: 80, channel: "retail" },
-    { sku: "DB-102", name: "Body lotion", size: "250 ml", price: 219, category: "Personal care", blurb, stock: 36, channel: "retail" },
-    { sku: "DB-103", name: "Paper napkins", size: "Pack of 100", price: 79, category: "Paper essentials", blurb, stock: 120, channel: "retail" },
-    { sku: "DB-201", name: "Dishwash liquid", size: "Carton of 12", price: 1399, category: "Home care", blurb, stock: 20, channel: "bulk" },
-    { sku: existing.sku, name: existing.name, size: existing.size, price: existing.price - 10, category: existing.category, blurb: existing.blurb, stock: existing.stock, channel: existing.channel },
-  ];
-}
-
-/** "Connects" after a short wait, like a real source would, and returns the sample rows. */
-export async function fetchRows(c: Connector, s: Service, v: Values, delayMs = 1200): Promise<{ label: string; rows: SkuRow[] }> {
-  await new Promise((resolve) => setTimeout(resolve, delayMs));
+/** How a source is named in the preview, for example "PostgreSQL · products". */
+export function sourceLabel(c: Connector, s: Service, v: Values): string {
   const where = v.table || v.object || v.key || "the source";
-  const label = `${c.id === "aws" || c.id === "gcp" ? `${c.label} ${s.label}` : c.label} · ${where}`;
-  return { label, rows: sampleRows(label) };
+  return `${c.id === "aws" || c.id === "gcp" ? `${c.label} ${s.label}` : c.label} · ${where}`;
 }

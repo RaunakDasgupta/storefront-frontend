@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { money, type Channel } from "../../shared/lib/data";
 import { STEPS, addressText, type Order } from "../../shared/lib/orderlogic";
 import { useOrders } from "../../shared/hooks/useOrders";
+import { messageOf } from "../../shared/store/errors";
 import { Icon } from "../../shared/ui";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { OrderGrid } from "../components/OrderGrid";
@@ -23,6 +24,9 @@ export function AdminOrders() {
   const [params, setParams] = useSearchParams();
   const [deleting, setDeleting] = useState<Order | null>(null);
   const [undo, setUndo] = useState<{ order: Order; index: number } | null>(null);
+  const [failure, setFailure] = useState("");
+  /** Runs a change against the API and shows its error, if it refuses. */
+  const attempt = async (change: () => Promise<void>) => { setFailure(""); try { await change(); } catch (e) { setFailure(messageOf(e)); } };
   const q = params.get("q") ?? "";
   const channel: Channel = params.get("type") === "bulk" ? "bulk" : "retail";
   const statusParam = params.get("status") ?? "All";
@@ -43,9 +47,9 @@ export function AdminOrders() {
 
   function confirmDelete() {
     if (!deleting) return;
-    const removed = remove(deleting.id);
+    const target = deleting;
     setDeleting(null);
-    if (removed) setUndo(removed);
+    void attempt(async () => { const removed = await remove(target.id); if (removed) setUndo(removed); });
   }
 
   const inChannel = orders.filter((o) => o.channel === channel);
@@ -60,9 +64,10 @@ export function AdminOrders() {
       {undo && (
         <p className="notice" role="status">
           Deleted {undo.order.id} ({undo.order.customer.name}).{" "}
-          <button className="linkbtn" onClick={() => { restore(undo.order, undo.index); setUndo(null); }}>Undo</button>
+          <button className="linkbtn" onClick={() => { const { order, index } = undo; setUndo(null); void attempt(() => restore(order, index)); }}>Undo</button>
         </p>
       )}
+      {failure && <p className="error" role="alert">{failure}</p>}
 
       <div className="channel-switch" role="group" aria-label="Order type">
         {CHANNELS.map((c) => (
@@ -83,7 +88,7 @@ export function AdminOrders() {
           <input type="search" aria-label="Search orders" placeholder="Search order, customer or address" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
-      {rows.length === 0 ? <p className="muted">No {channel} orders match.</p> : <OrderGrid orders={rows} onStep={setStep} onDelete={setDeleting} />}
+      {rows.length === 0 ? <p className="muted">No {channel} orders match.</p> : <OrderGrid orders={rows} onStep={(id, step) => void attempt(() => setStep(id, step))} onDelete={setDeleting} />}
 
       {deleting && (
         <ConfirmDelete

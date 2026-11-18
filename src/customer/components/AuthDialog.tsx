@@ -37,6 +37,7 @@ function LoginForm({ reason, onDone }: { reason?: string; onDone: (u: User) => v
   const [password, setPassword] = useState("");
   const [error, setError] = useState<{ message: string; field: "email" | "password" | "form" } | null>(null);
   const [busy, setBusy] = useState(false);
+  const mockAuth = useAppSelector((s) => s.meta.sources.customerAuth === "mock");
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -66,8 +67,8 @@ function LoginForm({ reason, onDone }: { reason?: string; onDone: (u: User) => v
         <p className="error" role="alert" hidden={!error}>{error?.message}</p>
         <button type="submit" className="btn primary" disabled={busy}>{reason ? "Log in and continue" : "Log in"}</button>
 
-        {/* sample credentials only show in `npm run dev`, never in a production build */}
-        {import.meta.env.DEV && (
+        {/* sample credentials only show in `npm run dev`, and only while sign-in is the built-in mock, never in a production build */}
+        {import.meta.env.DEV && mockAuth && (
           <p className="dlg-demo">
             Demo: <code>{DEMO_CUSTOMER.email}</code> / <code>{DEMO_CUSTOMER.password}</code>{" "}
             <button type="button" className="linkbtn" onClick={() => { setEmail(DEMO_CUSTOMER.email); setPassword(DEMO_CUSTOMER.password); setError(null); }}>Fill in</button>
