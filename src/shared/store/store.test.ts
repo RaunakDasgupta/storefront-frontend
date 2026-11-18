@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { seedProducts } from "../lib/data.ts";
 import type { SkuRow } from "../lib/csv.ts";
+import { SAMPLE_ORDERS, countByStep, revenueByDay } from "../lib/orderlogic.ts";
 import { catalogReset, importSkus, productRestored, productUpdated, removeProduct, selectCategories, selectCustomized, selectProducts } from "./catalogSlice.ts";
 import { orderStepSet, ordersReplaced, placeOrders, removeOrder, orderRestored, selectOrders } from "./ordersSlice.ts";
 import { sharedReducers } from "./shared.ts";
@@ -75,7 +76,7 @@ test("placing orders adds one order per channel, newest first, and returns them"
   assert.equal(orders[1].total, 20);
 });
 
-test("staff can change a status, delete an order and undo the delete", () => {
+test("admin can change a status, delete an order and undo the delete", () => {
   const store = makeStore();
   const [order] = store.dispatch(placeOrders(customer, [{ channel: "retail", items: [{ id: "a", name: "A", qty: 1, price: 5 }] }]));
   store.dispatch(orderStepSet({ id: order.id, step: 2 }));
@@ -97,4 +98,17 @@ test("orders from another tab replace the list", () => {
   assert.equal(selectOrders(store.getState()).length, 0);
   store.dispatch(ordersReplaced([order]));
   assert.equal(selectOrders(store.getState())[0].id, order.id);
+});
+
+test("dashboard helpers count orders per step and total revenue per day", () => {
+  const list = [
+    { ...SAMPLE_ORDERS[0], date: "2026-11-16", step: 0 as const, total: 100 },
+    { ...SAMPLE_ORDERS[1], date: "2026-11-16", step: 3 as const, total: 50 },
+    { ...SAMPLE_ORDERS[2], date: "2026-11-14", step: 3 as const, total: 25 },
+  ];
+  assert.deepEqual(countByStep(list), [1, 0, 0, 2]);
+  const days = revenueByDay(list, 4);
+  assert.deepEqual(days.map((d) => d.date), ["2026-11-13", "2026-11-14", "2026-11-15", "2026-11-16"]);
+  assert.deepEqual(days.map((d) => d.revenue), [0, 25, 0, 150]);
+  assert.deepEqual(revenueByDay([]), []);
 });

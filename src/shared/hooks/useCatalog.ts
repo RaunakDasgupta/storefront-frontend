@@ -10,7 +10,7 @@ export function useCatalog() {
   const dispatch = useSharedDispatch();
   const products = useSharedSelector(selectProducts);
   const categories = useSharedSelector(selectCategories);
-  /** True once staff have changed the catalog. */
+  /** True once admins have changed the catalog. */
   const customized = useSharedSelector(selectCustomized);
 
   return useMemo(() => ({

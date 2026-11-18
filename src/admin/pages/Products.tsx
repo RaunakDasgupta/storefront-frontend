@@ -13,7 +13,7 @@ const CHANNELS: { id: Channel; label: string }[] = [
 ];
 
 /** Products as editable, deletable cards, with Retail and Bulk on separate tabs (`?type=bulk`), a low-stock filter and search. */
-export function StaffProducts() {
+export function AdminProducts() {
   const { products, customized, reset, remove, restore } = useCatalog();
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState<Product | null>(null);
@@ -58,7 +58,7 @@ export function StaffProducts() {
               Reset catalog
             </button>
           )}
-          <Link to="/staff/import" className="btn primary inline">Import SKUs</Link>
+          <Link to="/admin/import" className="btn primary inline">Import SKUs</Link>
         </div>
       </div>
       {undo && (

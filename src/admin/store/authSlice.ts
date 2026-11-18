@@ -1,20 +1,20 @@
-// Staff sign-in. Completely separate from the customer session: its own store, storage key and accounts.
+// Admin sign-in. Completely separate from the customer session: its own store, storage key and accounts.
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { signInStaff } from "./accounts.ts";
+import { signInAdmin } from "./accounts.ts";
 
 export type User = { name: string; email: string };
 export type AuthState = { user: User | null };
 
 /** Rejects with the message to show under the form. */
 export const signIn = createAsyncThunk<User, { identity: string; password: string }, { rejectValue: string }>(
-  "staffAuth/signIn",
+  "adminAuth/signIn",
   async ({ identity, password }, { rejectWithValue }) => {
-    try { return signInStaff(identity, password); } catch (e) { return rejectWithValue(e instanceof Error ? e.message : "Something went wrong."); }
+    try { return signInAdmin(identity, password); } catch (e) { return rejectWithValue(e instanceof Error ? e.message : "Something went wrong."); }
   },
 );
 
 const slice = createSlice({
-  name: "staffAuth",
+  name: "adminAuth",
   initialState: { user: null } as AuthState,
   reducers: {
     signedOut(state) { state.user = null; },

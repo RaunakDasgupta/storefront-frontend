@@ -18,7 +18,7 @@ export const customerReducer = combineReducers({
 
 export type CustomerState = ReturnType<typeof customerReducer>;
 
-// The signed-in customer lasts for the browser tab (sessionStorage), separate from the staff session.
+// The signed-in customer lasts for the browser tab (sessionStorage), separate from the admin session.
 const SESSION_KEY = "storefront.customer.session";
 
 function readSession(): User | null {

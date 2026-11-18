@@ -1,4 +1,4 @@
-/* Customer storefront ("Everyday Market"). Everything is nested under .cx so nothing here can touch the staff app. */
+/* Customer storefront ("Everyday Market"). Everything is nested under .cx so nothing here can touch the admin app. */
 .cx {
   & .wrap { max-width: 1240px; margin: 0 auto; padding-inline: 28px; }
   & .page { padding-block: 28px 72px; }

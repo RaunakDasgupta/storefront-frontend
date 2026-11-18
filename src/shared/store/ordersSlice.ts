@@ -3,7 +3,7 @@ import type { Channel } from "../lib/data.ts";
 import { SAMPLE_ORDERS, makeOrders, withOrderAt, withStep, withoutOrder, type Address, type Order, type OrderItem } from "../lib/orderlogic.ts";
 import type { SharedThunk } from "./shared.ts";
 
-/** One orders list for both apps: customers place orders in the storefront, staff manage them in the portal. */
+/** One orders list for both apps: customers place orders in the storefront, admin manage them in the portal. */
 export type OrdersState = { items: Order[] };
 type Root = { orders: OrdersState };
 
@@ -15,7 +15,7 @@ const slice = createSlice({
     ordersPlaced(state, a: PayloadAction<Order[]>) {
       state.items = [...[...a.payload].reverse(), ...state.items];
     },
-    /** Staff move an order to a new fulfilment step; customers see it straight away. */
+    /** Admins move an order to a new fulfilment step; customers see it straight away. */
     orderStepSet(state, a: PayloadAction<{ id: string; step: number }>) {
       state.items = withStep(state.items, a.payload.id, a.payload.step);
     },

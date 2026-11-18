@@ -3,7 +3,7 @@
 Two independent apps in one **React 19 + TypeScript + Vite + Redux Toolkit** project, built around keeping each flow short and easy to navigate:
 
 - **Customer storefront ("Everyday Market")** at `/`: retail and bulk shopping, a cart with a simulated checkout, and order-progress tracking.
-- **Staff portal ("Everyday Market Staff")** at `/staff`: dashboard, orders, products and CSV SKU import.
+- **Admin portal ("Everyday Market Admin")** at `/admin`: a dashboard, orders (with each delivery address), products, and SKU import from CSV, PostgreSQL, SQLite, AWS or Google Cloud.
 
 The two apps have their own logins, sessions, route guards, layouts and stylesheets. Neither links to the other, being signed in to one never signs you in to the other, and each is built and loaded as a separate bundle.
 
@@ -16,7 +16,7 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5173 (customer) or http://localhost:5173/staff (staff).
+Then open http://localhost:5173 (customer) or http://localhost:5173/admin (admin).
 
 | Script              | What it does                          |
 | ------------------- | ------------------------------------- |
@@ -29,14 +29,14 @@ Then open http://localhost:5173 (customer) or http://localhost:5173/staff (staff
 
 ## Demo logins
 
-Each app has its own login. The customer login is a popup and the staff login is a page. Both show these (with a Fill in button) in `npm run dev`; production builds hide them.
+Each app has its own login. The customer login is a popup and the admin login is a page. Both show these (with a Fill in button) in `npm run dev`; production builds hide them.
 
 | App      | Log in at      | Email / ID                                         | Password      |
 | -------- | -------------- | -------------------------------------------------- | ------------- |
 | Customer | popup (or `/login`) | `customer@storefront.test`                         | `customer123` |
-| Staff    | `/staff/login` | `staff@storefront.test` or employee ID `EMP-1001`  | `staff1234`   |
+| Admin    | `/admin/login` | `admin@storefront.test` or employee ID `EMP-1001`  | `admin1234`   |
 
-Customer credentials do not work on the staff login, and the other way round. New customer accounts from `/signup` are kept in the browser's `localStorage`. Staff accounts are provisioned, so there is no staff sign-up.
+Customer credentials do not work on the admin login, and the other way round. New customer accounts from `/signup` are kept in the browser's `localStorage`. Admin accounts are provisioned, so there is no admin sign-up.
 
 ## Customer storefront
 
@@ -56,24 +56,28 @@ The design follows the "Everyday Market" reference: green theme, search in the h
 - **Categories dropdown:** next to Retail and Bulk orders in the header, **Categories** opens a card-based dropdown (for the channel you are on) with a photo card per category (7 so far: Home care, Personal care, Paper essentials, Kitchen essentials, Baby care, Pet care, Snacks & drinks) and a **See all categories** link. A card opens that category's full list (`/?category=Home%20care`).
 - **Landing page (Retail and Bulk orders share it):** a banner to the other channel, a Featured row of up to 5 scrollable products (arrow buttons on desktop, swipe on touch) with a **See more** tile, then **Browse by category**: a row of category tabs above one product grid. Choosing a tab swaps the products in that same grid in place (no page change, arrow keys move between tabs), with a link to that category's full list. A **See all categories** button opens `/categories`. Featured's **See all** opens the full list (`/?view=all`), and **Back to featured** returns. A search from the header also shows the full list.
 - **Search** is in the header and filters the page you are on (`/?q=soap`, `/bulk?q=carton`). A category uses `?category=`.
-- **Demo checkout:** the cart's **Checkout** button needs a log in. If you are logged out, a **login popup** opens right over the cart (no page change): log in, or switch to **Create an account** in the same popup, and the checkout popup opens next. Checkout is a short popup flow: **1. Delivery address** (name, mobile number, address, city, state, 6-digit PIN code), **2. Payment** with a **dummy payment gateway**, then an **Order placed** popup showing the order number(s), the amount paid, a payment reference and where it is going, with **View order** and **Continue shopping** buttons. No real payment is taken and no network call is made: use the test card `4242 4242 4242 4242` with any future expiry and any security code (the **Fill in test card** button does this), or `4000 0000 0000 0002` to see a declined payment. Card numbers are checked (Luhn), and card details are never stored: they stay in the payment form. The delivery address is saved on each order and shown on the **Orders** page (orders placed before this existed have none). Paying creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. A cart with both retail and bulk items becomes **two orders** (one per channel), because they are fulfilled separately, paid in one payment. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the staff portal. Orders only move forward when staff change their status (see below).
+- **Demo checkout:** the cart's **Checkout** button needs a log in. If you are logged out, a **login popup** opens right over the cart (no page change): log in, or switch to **Create an account** in the same popup, and the checkout popup opens next. Checkout is a short popup flow: **1. Delivery address** (name, mobile number, address, city, state, 6-digit PIN code), **2. Payment** with a **dummy payment gateway**, then an **Order placed** popup showing the order number(s), the amount paid, a payment reference and where it is going, with **View order** and **Continue shopping** buttons. No real payment is taken and no network call is made: use the test card `4242 4242 4242 4242` with any future expiry and any security code (the **Fill in test card** button does this), or `4000 0000 0000 0002` to see a declined payment. Card numbers are checked (Luhn), and card details are never stored: they stay in the payment form. The delivery address is saved on each order and shown on the **Orders** page (orders placed before this existed have none). Paying creates an order (`ORD_1002`, ...) at **Confirmed** and clears the cart. A cart with both retail and bulk items becomes **two orders** (one per channel), because they are fulfilled separately, paid in one payment. The demo customer's sample order, `ORD_1001`, is at **Preparing**. Customers only see their own orders. The same orders appear in the admin portal. Orders only move forward when admins change their status (see below).
 - **Log in and sign up are popups, not pages.** The profile avatar is blank when logged out and its menu opens the same popup in Log in or Create account mode (with a link to switch between them), as do checkout and protected pages such as My orders (a logged-out visitor lands on the landing page with the popup open and returns to the page after logging in). The old `/login` and `/signup` addresses still work: they open the popup over the landing page. Once you are logged in it shows your initial and the menu lists **My orders**, **My account** and **Log out**. There is no My orders tab in the header.
 
-## Staff portal
+## Admin portal
 
 | Route             | What it does                                                                               |
 | ----------------- | ------------------------------------------------------------------------------------------ |
-| `/staff`          | Overview: a Retail and a Bulk summary (revenue and order count each), then recent retail and recent bulk orders as cards in a 3 x 2 grid that scrolls sideways. A card opens that order in the Orders list. |
-| `/staff/orders`   | Every order placed in the storefront as cards in a 3 x 2 grid that scrolls sideways, with **Retail orders** and **Bulk orders** on separate tabs (`?type=bulk`), status tabs (All, Confirmed, Preparing, Packed, Ready for dispatch) and search. **Staff change an order's status from the dropdown on its card**, and the customer's tracker updates (live if the storefront is open in another tab). **Delete** asks first, removes the order from the portal and from the customer's My orders, and a notice offers **Undo** for 10 seconds. |
-| `/staff/products` | Products as **editable, deletable cards** in the same 3 x 2 grid that scrolls sideways (photo, name and size, SKU and category, stock, price), with **Retail products** and **Bulk products** on separate tabs (`?type=bulk`), a low-stock filter and search. **Edit** opens a dialog for the name, size, category, type, price, compare-at price, stock, description and photo link (the SKU stays fixed). **Delete** asks first, removes the product from the storefront, and a notice offers **Undo** for 10 seconds. Orders that already include a deleted product keep their items. **Reset catalog** brings back the samples. |
-| `/staff/import`   | Import SKUs from CSV                                                                       |
-| `/staff/login`    | Staff log in                                                                               |
+| `/admin`          | **Dashboard**: revenue, orders, average order and orders still to fulfil; a **Revenue by day** bar chart (hover a day for its numbers); **Orders by status**; the 8 newest orders in a table (each links to that order in the Orders list); and the products running low on stock. |
+| `/admin/orders`   | Every order placed in the storefront (with the **delivery address** and phone number the customer entered at checkout, which search also matches; orders from before checkout asked for one say so) as cards in a 3 x 2 grid that scrolls sideways, with **Retail orders** and **Bulk orders** on separate tabs (`?type=bulk`), status tabs (All, Confirmed, Preparing, Packed, Ready for dispatch) and search. **Admins change an order's status from the dropdown on its card**, and the customer's tracker updates (live if the storefront is open in another tab). **Delete** asks first, removes the order from the portal and from the customer's My orders, and a notice offers **Undo** for 10 seconds. |
+| `/admin/products` | Products as **editable, deletable cards** in the same 3 x 2 grid that scrolls sideways (photo, name and size, SKU and category, stock, price), with **Retail products** and **Bulk products** on separate tabs (`?type=bulk`), a low-stock filter and search. **Edit** opens a dialog for the name, size, category, type, price, compare-at price, stock, description and photo link (the SKU stays fixed). **Delete** asks first, removes the product from the storefront, and a notice offers **Undo** for 10 seconds. Orders that already include a deleted product keep their items. **Reset catalog** brings back the samples. |
+| `/admin/import`   | Import SKUs from a CSV file, PostgreSQL, SQLite, AWS (S3 or RDS) or Google Cloud (Cloud Storage, Cloud SQL or BigQuery). |
+| `/admin/login`    | Admin log in                                                                               |
 
-The staff portal uses the same look as the storefront (white, green, rounded, underline tabs). The navigation is always a row of tabs at the top, on phones too, so the four sections are one tap away.
+The admin portal is a dashboard: a **sidebar** with the four sections (Overview, Orders, Products, Import) and a top bar with a **View storefront** link and the account menu. It shares the storefront's colours and rounded style. On phones the sidebar becomes a row of sections at the top. The portal used to live at `/staff`; old `/staff` links redirect to `/admin`.
 
-### Importing SKUs from CSV
+### Importing SKUs
 
-On `/staff/import`, drop in a `.csv` file with one SKU per row. You see a preview (with the logos, and whether each row is new or an update) and a list of problem rows before anything changes. **Download template** gives a working example.
+On `/admin/import`, pick where the SKUs come from: **CSV file**, **PostgreSQL**, **SQLite**, **Amazon Web Services** (S3 bucket or RDS) or **Google Cloud** (Cloud Storage, Cloud SQL or BigQuery). Every source ends in the same preview and import. The database and cloud sources are **demos**: a browser cannot open a database connection, so **Connect and preview** only checks the form (required fields, port range) and loads sample products (four new SKUs and one update) so you can try the flow. Credentials stay in the form and are never saved or sent. A real connection needs a server-side import service; the connector settings in `src/admin/lib/connectors.ts` show what each source would need.
+
+#### From a CSV file
+
+Drop in a `.csv` file with one SKU per row. You see a preview (with the logos, and whether each row is new or an update) and a list of problem rows before anything changes. **Download CSV template** gives a working example.
 
 | Column             | Required | Notes                                                         |
 | ------------------ | -------- | ------------------------------------------------------------- |
@@ -100,7 +104,7 @@ The photos are free stock images from [Unsplash](https://unsplash.com), used und
 
 ```
 src/main.tsx             Router entry
-src/App.tsx              Loads the customer or staff app by URL (/staff/* is staff)
+src/App.tsx              Loads the customer or admin app by URL (/admin/* is admin)
 src/shared/              Only what both apps genuinely share
   lib/                   Pure code with no React: data.ts, csv.ts, orderlogic.ts, productform.ts (tests in lib.test.ts)
   store/                 Redux slices for the catalog and orders, persistence.ts (the mock backend), typed hooks, store.test.ts
@@ -111,21 +115,22 @@ src/customer/            The storefront (its styles are scoped to .cx)
   hooks/                 useCustomer, useCart, useMyOrders, useCategories
   components/            Layout, AuthDialog, CheckoutDialog (address, dummy payment, order placed), Toast, parts (ProductCard, CartPanel and the other pieces)
   pages/                 Shop, Product, Categories, Cart, Orders, Account, NotFound
-src/staff/               The staff portal (its styles are scoped to .sx)
+src/admin/               The admin portal (its styles are scoped to .ax)
   store/                 Its own store, auth slice and mock account
-  hooks/                 useStaff
-  components/            Layout, RequireStaff, OrderGrid, ProductGrid, ProductEditor, ConfirmDelete, ScrollGrid
+  hooks/                 useAdmin
+  lib/                   connectors.ts: the database and cloud import sources (settings, checks, demo rows; tests in connectors.test.ts)
+  components/            Layout (sidebar shell), RequireAdmin, Charts, OrderGrid, ProductGrid, ProductEditor, ConfirmDelete, ScrollGrid, ImportPreview, ConnectorForm
   pages/                 Login, Overview, Orders, Products, Import
 ```
 
 ## State management
 
-State lives in [Redux Toolkit](https://redux-toolkit.js.org). Each app creates **its own store** (`makeCustomerStore`, `makeStaffStore`) and mounts it with `<Provider>`, so the two apps stay independent. Both stores include the shared `catalog` and `orders` slices; everything else belongs to one app:
+State lives in [Redux Toolkit](https://redux-toolkit.js.org). Each app creates **its own store** (`makeCustomerStore`, `makeAdminStore`) and mounts it with `<Provider>`, so the two apps stay independent. Both stores include the shared `catalog` and `orders` slices; everything else belongs to one app:
 
 | Store    | Slices                                              |
 | -------- | --------------------------------------------------- |
 | Customer | `catalog`, `orders`, `auth`, `cart`, `toast`, `authDialog` |
-| Staff    | `catalog`, `orders`, `auth`                         |
+| Admin    | `catalog`, `orders`, `auth`                         |
 
 - Components read state through selectors (`createSelector` for derived data such as the cart total) and change it by dispatching actions, through small hooks such as `useCatalog()`, `useOrders()`, `useCart()` and `useCustomer()`.
 - Actions that need a result or several steps are thunks (`placeOrders`, `removeProduct`, `importSkus`, `checkout`). Sign in and sign up are `createAsyncThunk`s.
@@ -133,13 +138,13 @@ State lives in [Redux Toolkit](https://redux-toolkit.js.org). Each app creates *
 - `persistence.ts` saves the catalog and orders to `localStorage` and each login to its own `sessionStorage` key whenever they change, and picks up orders changed in another tab.
 - The slices have no React in them, so they are tested with `node --test` (`src/shared/store/store.test.ts`, `src/customer/store/store.test.ts`).
 
-Each app's stylesheet is scoped to its own root (`.cx` for the customer app, `.sx` for staff), so styles cannot leak between them. The only data the apps share is the product catalog: SKUs imported by staff show up in the storefront.
+Each app's stylesheet is scoped to its own root (`.cx` for the customer app, `.ax` for admin), so styles cannot leak between them. The only data the apps share is the product catalog: SKUs imported by admins show up in the storefront.
 
 ## Status: mock backend
 
 There is no backend yet, so this is a working prototype:
 
-- **Accounts are mocked in the browser.** The demo accounts and any customer sign-ups (plaintext passwords in `localStorage`) are checked in `src/customer/store/accounts.ts` and `src/staff/store/accounts.ts`, and each session lives in its own `sessionStorage` key. Do not deploy as is: replace the `signIn` and `signUp` thunks with calls to your auth API.
-- **Products and the staff orders are sample data** in `src/shared/lib/data.ts`. Imported SKUs and all orders persist in `localStorage` only. The customer and staff apps read and write the same orders store, so an order placed in the storefront shows up in the staff portal (even in another open tab).
+- **Accounts are mocked in the browser.** The demo accounts and any customer sign-ups (plaintext passwords in `localStorage`) are checked in `src/customer/store/accounts.ts` and `src/admin/store/accounts.ts`, and each session lives in its own `sessionStorage` key. Do not deploy as is: replace the `signIn` and `signUp` thunks with calls to your auth API.
+- **Products and the admin orders are sample data** in `src/shared/lib/data.ts`. Imported SKUs and all orders persist in `localStorage` only. The customer and admin apps read and write the same orders store, so an order placed in the storefront shows up in the admin portal (even in another open tab).
 - **Checkout is a demo**: no payment is collected. The cart lives in the customer store's memory and resets on reload.
 - "Forgot password" and company SSO are placeholders.

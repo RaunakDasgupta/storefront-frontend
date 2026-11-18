@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "../../shared/ui";
-import { DEMO_STAFF, useStaff } from "../hooks/useStaff";
+import { DEMO_ADMIN, useAdmin } from "../hooks/useAdmin";
 
-export function StaffLogin() {
-  const { user, signIn } = useStaff();
+export function AdminLogin() {
+  const { user, signIn } = useAdmin();
   const navigate = useNavigate();
   const from = (useLocation().state as { from?: string } | null)?.from;
   const [identity, setIdentity] = useState("");
@@ -12,7 +12,7 @@ export function StaffLogin() {
   const [error, setError] = useState<{ message: string; field?: "identity" | "password" } | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (user) return <Navigate to={from ?? "/staff"} replace />;
+  if (user) return <Navigate to={from ?? "/admin"} replace />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -22,7 +22,7 @@ export function StaffLogin() {
     setBusy(true);
     try {
       await signIn(identity, password);
-      navigate(from ?? "/staff", { replace: true });
+      navigate(from ?? "/admin", { replace: true });
     } catch (err) {
       setError({ message: err instanceof Error ? err.message : "Something went wrong." });
     } finally {
@@ -32,10 +32,10 @@ export function StaffLogin() {
 
   return (
     <main className="login">
-      <Logo to="/staff/login" label="Everyday Market" />
+      <Logo to="/admin/login" label="Everyday Market" />
       <section className="card">
-        <h1>Staff log in</h1>
-        <p className="sub">Use your work account to open the staff portal.</p>
+        <h1>Admin log in</h1>
+        <p className="sub">Use your work account to open the admin portal.</p>
         <form onSubmit={onSubmit} noValidate>
           <div className="field">
             <label htmlFor="identity">Work email or employee ID</label>
@@ -54,9 +54,9 @@ export function StaffLogin() {
         {/* sample credentials only show in `npm run dev`, never in a production build */}
         {import.meta.env.DEV && (
           <aside className="demo" aria-label="Demo account">
-            <strong>Demo staff account</strong>
-            <dl><dt>Email or ID</dt><dd>{DEMO_STAFF.email} or {DEMO_STAFF.employeeId}</dd><dt>Password</dt><dd>{DEMO_STAFF.password}</dd></dl>
-            <button type="button" className="linkbtn" onClick={() => { setIdentity(DEMO_STAFF.email); setPassword(DEMO_STAFF.password); setError(null); }}>
+            <strong>Demo admin account</strong>
+            <dl><dt>Email or ID</dt><dd>{DEMO_ADMIN.email} or {DEMO_ADMIN.employeeId}</dd><dt>Password</dt><dd>{DEMO_ADMIN.password}</dd></dl>
+            <button type="button" className="linkbtn" onClick={() => { setIdentity(DEMO_ADMIN.email); setPassword(DEMO_ADMIN.password); setError(null); }}>
               Fill in these details
             </button>
           </aside>

@@ -1,4 +1,4 @@
-/* Shared tokens and primitives. Each app (customer, staff) layers its own stylesheet on top, scoped to its root. */
+/* Shared tokens and primitives. Each app (customer, admin) layers its own stylesheet on top, scoped to its root. */
 :root {
   --ink: #1a1a1a;
   --ink-2: #303030;

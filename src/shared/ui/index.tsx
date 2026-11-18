@@ -1,4 +1,4 @@
-// Small building blocks used by both the customer and the staff app. No routes, no auth, no app state.
+// Small building blocks used by both the customer and the admin app. No routes, no auth, no app state.
 import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { imageSrc, money, type Product } from "../lib/data";

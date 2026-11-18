@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { money, type Channel } from "../../shared/lib/data";
-import { STEPS, type Order } from "../../shared/lib/orderlogic";
+import { STEPS, addressText, type Order } from "../../shared/lib/orderlogic";
 import { useOrders } from "../../shared/hooks/useOrders";
 import { Icon } from "../../shared/ui";
 import { ConfirmDelete } from "../components/ConfirmDelete";
@@ -15,10 +15,10 @@ const CHANNELS: { id: Channel; label: string }[] = [
 
 /**
  * Orders placed in the storefront, with retail and bulk orders on separate tabs.
- * Staff change an order's status or delete it here, and customers see it in My orders.
+ * Admins change an order's status or delete it here, and customers see it in My orders.
  * The channel, status filter and search live in the URL, so the overview can link straight to a list.
  */
-export function StaffOrders() {
+export function AdminOrders() {
   const { orders, setStep, remove, restore } = useOrders();
   const [params, setParams] = useSearchParams();
   const [deleting, setDeleting] = useState<Order | null>(null);
@@ -50,7 +50,7 @@ export function StaffOrders() {
 
   const inChannel = orders.filter((o) => o.channel === channel);
   const needle = q.trim().toLowerCase();
-  const rows = inChannel.filter((o) => (status === "All" || STEPS[o.step] === status) && (!needle || `${o.id} ${o.customer.name} ${o.customer.email}`.toLowerCase().includes(needle)));
+  const rows = inChannel.filter((o) => (status === "All" || STEPS[o.step] === status) && (!needle || `${o.id} ${o.customer.name} ${o.customer.email} ${o.shipping ? `${o.shipping.phone} ${addressText(o.shipping)}` : ""}`.toLowerCase().includes(needle)));
   const count = (s: string) => inChannel.filter((o) => s === "All" || STEPS[o.step] === s).length;
 
   return (
@@ -80,7 +80,7 @@ export function StaffOrders() {
         </div>
         <div className="search">
           <Icon name="search" />
-          <input type="search" aria-label="Search orders" placeholder="Search order or customer" value={q} onChange={(e) => update({ q: e.target.value || null })} />
+          <input type="search" aria-label="Search orders" placeholder="Search order, customer or address" value={q} onChange={(e) => update({ q: e.target.value || null })} />
         </div>
       </div>
       {rows.length === 0 ? <p className="muted">No {channel} orders match.</p> : <OrderGrid orders={rows} onStep={setStep} onDelete={setDeleting} />}

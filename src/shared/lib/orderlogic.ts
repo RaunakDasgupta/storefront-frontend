@@ -30,6 +30,24 @@ export function withOrderAt(list: Order[], order: Order, index: number): Order[]
   return next;
 }
 
+/** "12 MG Road, Pune, Maharashtra 411001" (the optional second line is left out when empty). */
+export const addressText = (a: Address) => [a.line1, a.line2, `${a.city}, ${a.state} ${a.pin}`].filter(Boolean).join(", ");
+
+/** Orders at each fulfilment step, indexed by step (0 to 3). */
+export const countByStep = (list: Order[]) => STEPS.map((_, i) => list.filter((o) => o.step === i).length);
+
+/** Revenue and order count per day for the `days` days ending at the newest order, oldest first. Empty list gives no days. */
+export function revenueByDay(list: Order[], days = 7): { date: string; revenue: number; orders: number }[] {
+  if (list.length === 0) return [];
+  const last = list.reduce((max, o) => (o.date > max ? o.date : max), list[0].date);
+  const end = new Date(`${last}T00:00:00Z`).getTime();
+  return Array.from({ length: days }, (_, i) => {
+    const date = new Date(end - (days - 1 - i) * 86_400_000).toISOString().slice(0, 10);
+    const day = list.filter((o) => o.date === date);
+    return { date, revenue: revenueOf(day), orders: day.length };
+  });
+}
+
 export const itemCount = (o: Order) => o.items.reduce((n, i) => n + i.qty, 0);
 export const orderTotal = (items: OrderItem[]) => items.reduce((s, i) => s + i.qty * i.price, 0);
 export const revenueOf = (list: Order[]) => list.reduce((s, o) => s + o.total, 0);

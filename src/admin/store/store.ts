@@ -3,11 +3,11 @@ import { loadSharedState, persistShared, readJson, watch, writeJson } from "../.
 import { sharedReducers } from "../../shared/store/shared.ts";
 import { authReducer, type User } from "./authSlice.ts";
 
-export const staffReducer = combineReducers({ ...sharedReducers, auth: authReducer });
-export type StaffState = ReturnType<typeof staffReducer>;
+export const adminReducer = combineReducers({ ...sharedReducers, auth: authReducer });
+export type AdminState = ReturnType<typeof adminReducer>;
 
-// The signed-in staff member lasts for the browser tab (sessionStorage), separate from the customer session.
-const SESSION_KEY = "storefront.staff.session";
+// The signed-in admin user lasts for the browser tab (sessionStorage), separate from the customer session.
+const SESSION_KEY = "storefront.admin.session";
 
 function readSession(): User | null {
   const u = readJson(sessionStorage, SESSION_KEY) as User | null;
@@ -15,15 +15,15 @@ function readSession(): User | null {
 }
 
 /** Tests pass their own starting state; the app starts from what the browser has saved. */
-export function makeStaffStore(preloadedState: Partial<StaffState> = { ...loadSharedState(), auth: { user: readSession() } }) {
-  return configureStore({ reducer: staffReducer, preloadedState });
+export function makeAdminStore(preloadedState: Partial<AdminState> = { ...loadSharedState(), auth: { user: readSession() } }) {
+  return configureStore({ reducer: adminReducer, preloadedState });
 }
 
-export type StaffStore = ReturnType<typeof makeStaffStore>;
-export type StaffDispatch = StaffStore["dispatch"];
+export type AdminStore = ReturnType<typeof makeAdminStore>;
+export type AdminDispatch = AdminStore["dispatch"];
 
 /** Saves the catalog, orders and session as they change. Returns the cleanup. */
-export function persistStaff(store: StaffStore) {
+export function persistAdmin(store: AdminStore) {
   const stopSession = watch(store, (s) => s.auth.user, (user) => writeJson(sessionStorage, SESSION_KEY, user));
   const stopShared = persistShared(store);
   return () => { stopSession(); stopShared(); };

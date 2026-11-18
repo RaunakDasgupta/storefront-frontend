@@ -4,7 +4,7 @@ import { seedProducts, type Product } from "../lib/data.ts";
 import { isSafeImage, type ProductEdit } from "../lib/productform.ts";
 import type { SharedThunk } from "./shared.ts";
 
-/** `saved` is null until staff change the catalog; shoppers then see the built-in products. */
+/** `saved` is null until admins change the catalog; shoppers then see the built-in products. */
 export type CatalogState = { saved: Product[] | null };
 type Root = { catalog: CatalogState };
 
@@ -44,7 +44,7 @@ const slice = createSlice({
   name: "catalog",
   initialState: { saved: null } as CatalogState,
   reducers: {
-    /** Staff edit one product's details (the SKU stays fixed). */
+    /** Admins edit one product's details (the SKU stays fixed). */
     productUpdated(state, a: PayloadAction<{ id: string; edit: ProductEdit }>) {
       state.saved = current(state).map((p) => (p.id === a.payload.id ? { ...p, ...a.payload.edit } : p));
     },

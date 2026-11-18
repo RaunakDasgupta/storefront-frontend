@@ -1,4 +1,4 @@
-// Validation for the staff "edit product" form. No React here so the tests can run under `node --test`.
+// Validation for the admin "edit product" form. No React here so the tests can run under `node --test`.
 import type { Channel, Product } from "./data";
 
 export type ProductForm = { name: string; size: string; category: string; channel: string; price: string; was: string; stock: string; blurb: string; image: string };

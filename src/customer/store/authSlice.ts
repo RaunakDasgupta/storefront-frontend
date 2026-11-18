@@ -1,4 +1,4 @@
-// Customer sign-in. Completely separate from the staff session: its own store, storage key and accounts.
+// Customer sign-in. Completely separate from the admin session: its own store, storage key and accounts.
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { registerAccount, signInAccount } from "./accounts.ts";
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCatalog } from "../../shared/hooks/useCatalog";
 import { money } from "../../shared/lib/data";
-import { STEPS, STEP_MESSAGE, itemCount, type Order } from "../../shared/lib/orderlogic";
+import { STEPS, STEP_MESSAGE, addressText, itemCount, type Order } from "../../shared/lib/orderlogic";
 import { Icon, ProductImage, STEP_BADGE } from "../../shared/ui";
 import { useCart } from "../hooks/useCart";
 import { useMyOrders } from "../hooks/useMyOrders";
@@ -58,7 +58,7 @@ function OrderCard({ o }: { o: Order }) {
       {o.shipping && (
         <p className="ord-ship">
           <Icon name="truck" />
-          <span>Delivering to <strong>{o.shipping.fullName}</strong>, {[o.shipping.line1, o.shipping.line2, `${o.shipping.city}, ${o.shipping.state} ${o.shipping.pin}`].filter(Boolean).join(", ")}</span>
+          <span>Delivering to <strong>{o.shipping.fullName}</strong>, {addressText(o.shipping)}</span>
         </p>
       )}
 

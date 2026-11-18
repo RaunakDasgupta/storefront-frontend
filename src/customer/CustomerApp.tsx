@@ -1,4 +1,4 @@
-// The customer storefront ("Everyday Market"). Shares only data (catalog) and UI primitives with the staff app.
+// The customer storefront ("Everyday Market"). Shares only data (catalog) and UI primitives with the admin app.
 import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { Route, Routes } from "react-router-dom";
@@ -17,7 +17,7 @@ import { Shop } from "./pages/Shop";
 import "./customer.css";
 
 export default function CustomerApp() {
-  // this app's own store: the staff portal has another one
+  // this app's own store: the admin portal has another one
   const [store] = useState(makeCustomerStore);
   useEffect(() => persistCustomer(store), [store]);
 
