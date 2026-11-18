@@ -68,13 +68,14 @@ export function Overview() {
           {orders.length === 0 ? <div className="dash-body"><p className="muted">{emptyText}</p></div> : (
             <div className="tablewrap">
               <table>
-                <thead><tr><th>Order</th><th>Customer</th><th className="hide-sm">Type</th><th>Status</th><th className="num">Total</th></tr></thead>
+                <thead><tr><th>Order</th><th>Customer</th><th className="hide-sm">Type</th><th className="hide-sm">Delivers to</th><th>Status</th><th className="num">Total</th></tr></thead>
                 <tbody>
                   {orders.slice(0, 8).map((o) => (
                     <tr key={o.id}>
                       <td><Link to={`/admin/orders?type=${o.channel}&q=${o.id}`} className="link"><strong>{o.id}</strong></Link><span className="muted"> {fmtDate(o.date)}</span></td>
                       <td>{o.customer.name}</td>
                       <td className="hide-sm">{o.channel === "bulk" ? "Bulk" : "Retail"}</td>
+                      <td className="hide-sm">{o.shipping ? `${o.shipping.city}, ${o.shipping.state}` : <span className="muted">No address</span>}</td>
                       <td><span className={`badge ${STEP_BADGE[o.step]}`}>{STEPS[o.step]}</span></td>
                       <td className="num">{money(o.total)}</td>
                     </tr>

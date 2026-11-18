@@ -85,23 +85,23 @@ const line = (id: string, qty: number): OrderItem => {
   const p = seedProducts.find((s) => s.id === id)!;
   return { id, name: p.name, size: p.size, qty, price: p.price };
 };
-const sample = (n: number, name: string, email: string, date: string, step: Step, lines: [string, number][]): Order => {
+const sample = (n: number, name: string, email: string, date: string, step: Step, lines: [string, number][], place: [line1: string, city: string, state: string, pin: string]): Order => {
   const items = lines.map(([id, q]) => line(id, q));
   const channel = seedProducts.find((p) => p.id === lines[0][0])?.channel ?? "retail";
-  return { id: `ORD_${String(n).padStart(4, "0")}`, date, channel, customer: { name, email }, items, total: orderTotal(items), step };
+  return { id: `ORD_${String(n).padStart(4, "0")}`, date, channel, customer: { name, email }, shipping: { fullName: name, phone: `98200${String(10000 + n).slice(-5)}`, line1: place[0], line2: "", city: place[1], state: place[2], pin: place[3] }, items, total: orderTotal(items), step };
 };
 
 export const SAMPLE_ORDERS: Order[] = [
-  sample(1001, "Alex Morgan", "customer@storefront.test", "2026-11-16", 1, [["detergent", 3], ["shampoo", 2]]),
-  sample(1000, "Liam Chen", "liam.chen@example.com", "2026-11-16", 0, [["tissue-box", 4], ["hand-wash", 2]]),
-  sample(999, "Sofia Rossi", "sofia.rossi@example.com", "2026-11-15", 3, [["detergent-carton", 1], ["tissue-carton", 1]]),
-  sample(998, "Noah Williams", "noah.williams@example.com", "2026-11-15", 2, [["surface-cleaner", 2], ["glass-cleaner", 2]]),
-  sample(997, "Mia Johnson", "mia.johnson@example.com", "2026-11-14", 3, [["toilet-paper", 3]]),
-  sample(996, "Ethan Brown", "ethan.brown@example.com", "2026-11-14", 3, [["kitchen-towel", 6], ["tissue-box", 2]]),
-  sample(995, "Isha Rao", "isha.rao@example.com", "2026-11-13", 3, [["shampoo-carton", 1]]),
-  sample(994, "Arjun Mehta", "arjun.mehta@example.com", "2026-11-13", 2, [["detergent", 5], ["surface-cleaner", 3]]),
-  sample(993, "Kavya Nair", "kavya.nair@example.com", "2026-11-12", 3, [["toilet-paper-carton", 1]]),
-  sample(992, "Rohan Das", "rohan.das@example.com", "2026-11-12", 3, [["hand-wash", 4], ["shampoo", 4]]),
-  sample(991, "Neha Gupta", "neha.gupta@example.com", "2026-11-11", 3, [["glass-cleaner", 6]]),
-  sample(990, "Vikram Singh", "vikram.singh@example.com", "2026-11-11", 3, [["tissue-box", 10]]),
+  sample(1001, "Alex Morgan", "customer@storefront.test", "2026-11-16", 1, [["detergent", 3], ["shampoo", 2]], ["12 MG Road", "Pune", "Maharashtra", "411001"]),
+  sample(1000, "Liam Chen", "liam.chen@example.com", "2026-11-16", 0, [["tissue-box", 4], ["hand-wash", 2]], ["48 Linking Road, Bandra West", "Mumbai", "Maharashtra", "400050"]),
+  sample(999, "Sofia Rossi", "sofia.rossi@example.com", "2026-11-15", 3, [["detergent-carton", 1], ["tissue-carton", 1]], ["Plot 7, Peenya Industrial Area", "Bengaluru", "Karnataka", "560058"]),
+  sample(998, "Noah Williams", "noah.williams@example.com", "2026-11-15", 2, [["surface-cleaner", 2], ["glass-cleaner", 2]], ["21 Connaught Place", "Delhi", "Delhi", "110001"]),
+  sample(997, "Mia Johnson", "mia.johnson@example.com", "2026-11-14", 3, [["toilet-paper", 3]], ["5 Banjara Hills Road No. 3", "Hyderabad", "Telangana", "500034"]),
+  sample(996, "Ethan Brown", "ethan.brown@example.com", "2026-11-14", 3, [["kitchen-towel", 6], ["tissue-box", 2]], ["33 Anna Salai", "Chennai", "Tamil Nadu", "600002"]),
+  sample(995, "Isha Rao", "isha.rao@example.com", "2026-11-13", 3, [["shampoo-carton", 1]], ["Unit 4, Sector V, Salt Lake", "Kolkata", "West Bengal", "700091"]),
+  sample(994, "Arjun Mehta", "arjun.mehta@example.com", "2026-11-13", 2, [["detergent", 5], ["surface-cleaner", 3]], ["9 CG Road", "Ahmedabad", "Gujarat", "380009"]),
+  sample(993, "Kavya Nair", "kavya.nair@example.com", "2026-11-12", 3, [["toilet-paper-carton", 1]], ["17 MI Road", "Jaipur", "Rajasthan", "302001"]),
+  sample(992, "Rohan Das", "rohan.das@example.com", "2026-11-12", 3, [["hand-wash", 4], ["shampoo", 4]], ["102 Koramangala 5th Block", "Bengaluru", "Karnataka", "560095"]),
+  sample(991, "Neha Gupta", "neha.gupta@example.com", "2026-11-11", 3, [["glass-cleaner", 6]], ["8 Park Street", "Kolkata", "West Bengal", "700016"]),
+  sample(990, "Vikram Singh", "vikram.singh@example.com", "2026-11-11", 3, [["tissue-box", 10]], ["14 FC Road", "Pune", "Maharashtra", "411004"]),
 ];
