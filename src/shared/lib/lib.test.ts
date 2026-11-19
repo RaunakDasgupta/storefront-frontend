@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { SAMPLE_ORDERS, isOrder, makeOrder, makeOrders, nextOrderId, orderTotal, revenueOf, withChannel, withOrderAt, withStep, withoutOrder, type Order } from "./orderlogic.ts";
-import { parseCsv, parseSkuCsv } from "./csv.ts";
+import { deriveNameAndSize, parseCsv, parseSkuCsv, skuTemplate } from "./csv.ts";
 import { emptyForm, isSafeImage, parseNewProduct, parseProductForm, toForm } from "./productform.ts";
 import { seedProducts } from "./data.ts";
 
@@ -33,7 +33,9 @@ test("parseSkuCsv reads size and channel and rejects an unknown channel", () => 
 });
 
 test("parseSkuCsv reports a missing required column", () => {
-  assert.match(parseSkuCsv("sku,name\nA,B").fatal ?? "", /price/);
+  assert.equal(parseSkuCsv("sku,name\nA,B").fatal, "Missing required column: Current Sales Price.");
+  assert.equal(parseSkuCsv("PID,Brand\n1,Dove").fatal, "Missing required columns: SKU, Current Sales Price.");
+  assert.equal(parseSkuCsv("").fatal, "The file is empty.");
 });
 
 test("parseSkuCsv flags bad rows with their line number and keeps the good ones", () => {
@@ -151,4 +153,55 @@ test("a new product needs a valid SKU on top of the usual fields", () => {
   const blank = parseNewProduct(emptyForm());
   assert.deepEqual(Object.keys(blank.errors).sort(), ["category", "name", "price", "sku", "stock"]);
   assert.equal(blank.value, undefined);
+});
+
+const SHEET_HEADER = "PID,Country,Business Group,Category,Brand,SubBrand,Segment,Form,SKU,Current Sales Price,system_id,location_id,quantity,uom,status";
+
+test("the catalog sheet is read: name and size from the SKU, descriptive columns, stock locations", () => {
+  const dove = "10001-Dove Intense Repair Shampoo 180ml";
+  const { rows, issues, fatal } = parseSkuCsv([
+    SHEET_HEADER,
+    `${dove},India,Beauty & Well being,SHAMPOO,Dove,Intense Repair,ALL OTHER,Liquid,${dove},230,AUTOSTORE,AS_BIN_A,100,EA,AVAILABLE`,
+    `${dove},India,Beauty & Well being,SHAMPOO,Dove,Intense Repair,ALL OTHER,Liquid,${dove},230,AUTOSTORE,AS_BIN_B,30,EA,BLOCKED`,
+    "10014-Bru Gold Coffee 100g,India,Nutrition,INSTANT COFFEE,Bru,Gold,BEVERAGES - SPL,Coffee,10014-Bru Gold Coffee 100g,343,,,,,",
+  ].join("\n"));
+  assert.equal(fatal, undefined);
+  assert.deepEqual(issues, []);
+  assert.equal(rows.length, 2);
+  const [d, b] = rows;
+  assert.deepEqual([d.name, d.size, d.price, d.brand, d.subBrand, d.businessGroup, d.segment, d.form, d.country], ["Dove Intense Repair Shampoo", "180ml", 230, "Dove", "Intense Repair", "Beauty & Well being", "ALL OTHER", "Liquid", "India"]);
+  assert.equal(d.stock, 100, "the blocked pallet does not count as sellable stock");
+  assert.deepEqual(d.locations?.map((l) => l.status), ["AVAILABLE", "BLOCKED"]);
+  assert.equal(b.stock, 0);
+  assert.equal(b.locations, undefined);
+});
+
+test("the catalog sheet reports bad stock columns and repeated locations with their line numbers", () => {
+  const { rows, issues } = parseSkuCsv([
+    "SKU,Current Sales Price,system_id,location_id,quantity,status",
+    "A-1,10,S,L1,-4,AVAILABLE",   // 2: negative quantity
+    "A-2,10,S,L1,5,SOLD",         // 3: unknown status
+    "A-3,10,S,L1,5,AVAILABLE",    // 4: fine
+    "A-3,10,S,L1,5,AVAILABLE",    // 5: the same place twice
+    "A-3,10,,,,",                 // 6: the same SKU again with no location
+    "A-3,10,S,L2,7,hold",         // 7: another place: fine, and the status is read in any capitals
+  ].join("\n"));
+  assert.deepEqual(issues.map((i) => i.line), [2, 3, 5, 6]);
+  assert.deepEqual(rows.map((r) => [r.sku, r.stock, r.locations?.length]), [["A-3", 5, 2]]);
+});
+
+test("names and sizes come from the SKU unless the sheet gives them, and the template reads cleanly", () => {
+  assert.deepEqual(deriveNameAndSize("10014-Bru Gold Coffee 100g", "", ""), { name: "Bru Gold Coffee", size: "100g" });
+  assert.deepEqual(deriveNameAndSize("10014-Bru Gold Coffee 100g", "Bru", "1 kg"), { name: "Bru", size: "1 kg" });
+  assert.deepEqual(deriveNameAndSize("DET-002", "", ""), { name: "DET-002", size: undefined });
+  const template = parseSkuCsv(skuTemplate());
+  assert.deepEqual(template.issues, []);
+  assert.equal(template.rows.length, 3);
+  assert.equal(template.rows[0].locations?.length, 2);
+});
+
+test("semicolon-separated files, odd header spellings and unknown columns are fine", () => {
+  const { rows, issues } = parseSkuCsv("sku;CURRENT-SALES-PRICE;sub brand;AUTOSTORE;SKU-001\n 10-Dove Soap 100g ;₹1,230;Fresh;x;y\n");
+  assert.deepEqual(issues, []);
+  assert.deepEqual([rows[0].sku, rows[0].price, rows[0].subBrand, rows[0].name], ["10-Dove Soap 100g", 1230, "Fresh", "Dove Soap"]);
 });

@@ -2,7 +2,7 @@
 // this browser's localStorage, so the app works with no server. Each resource switches to your API on its own (see ./index.ts).
 // shortcut: no real payments, no real database connections, and no per-customer order filtering (the store does that).
 import { isProduct, mergeRows, uniqueId } from "../lib/catalog.ts";
-import type { SkuRow } from "../lib/csv.ts";
+import { parseSkuCsv, type SkuRow } from "../lib/csv.ts";
 import { seedProducts, type Product } from "../lib/data.ts";
 import { SAMPLE_ORDERS, isOrder, makeOrders, withChannel, withOrderAt, withStep, withoutOrder, type Order } from "../lib/orderlogic.ts";
 import { ApiError } from "./http.ts";
@@ -49,6 +49,12 @@ function mockProducts(kv: KV): ProductsApi {
       const list = read();
       if (!list.some((p) => p.id === product.id)) { list.splice(Math.min(index, list.length), 0, product); write(list); }
       return product;
+    },
+    async validateFile(file) {
+      if (/\.xlsx?$/i.test(file.name)) return { rows: [], issues: [], fatal: "Excel files need the server. Save the file as .csv, or connect the API (see VITE_API_URL in .env.example)." };
+      if (!/\.csv$/i.test(file.name) && file.type !== "text/csv") return { rows: [], issues: [], fatal: "Choose a .csv file." };
+      if (file.size > 1_000_000) return { rows: [], issues: [], fatal: "That file is larger than 1 MB. Split it and upload each part." };
+      return parseSkuCsv(await file.text());
     },
     async importRows(rows) {
       const { products, added, updated } = mergeRows(read(), rows);

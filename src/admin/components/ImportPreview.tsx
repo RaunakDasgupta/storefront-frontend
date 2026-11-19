@@ -21,7 +21,7 @@ export function ImportPreview({ label, rows, issues, onImport, onCancel }: { lab
       {rows.length > 0 && (
         <div className="overflow-x-auto rounded-[10px] border border-line">
           <table className="tbl">
-            <thead><tr><th>Logo</th><th>SKU</th><th>Name</th><th className="max-sm:hidden">Category</th><th className="text-right">Price</th><th className="text-right max-sm:hidden">Stock</th><th>Change</th></tr></thead>
+            <thead><tr><th>Logo</th><th>SKU</th><th>Name</th><th className="max-sm:hidden">Brand</th><th className="max-sm:hidden">Category</th><th className="text-right">Price</th><th className="text-right max-sm:hidden">Stock</th><th>Change</th></tr></thead>
             <tbody>
               {rows.slice(0, PREVIEW_ROWS).map((r) => (
                 <tr key={r.sku}>
@@ -30,7 +30,7 @@ export function ImportPreview({ label, rows, issues, onImport, onCancel }: { lab
                       ? <img className="block size-8 shrink-0 rounded-md bg-soft object-cover" src={r.image} alt="" width={32} height={32} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/products/placeholder.svg"; }} />
                       : <span className="text-muted">None</span>}
                   </td>
-                  <td>{r.sku}</td><td>{r.name}{r.size && <span className="text-muted"> · {r.size}</span>}</td><td className="max-sm:hidden">{r.category}</td>
+                  <td>{r.sku}</td><td>{r.name}{r.size && <span className="text-muted"> · {r.size}</span>}</td><td className="max-sm:hidden">{r.brand ?? ""}</td><td className="max-sm:hidden">{r.category}</td>
                   <td className="text-right">{money(r.price)}</td><td className="text-right max-sm:hidden">{r.stock}</td>
                   <td><span className={exists(r.sku) ? "badge tone-paid" : "badge tone-fulfilled"}>{exists(r.sku) ? "Update" : "New"}</span></td>
                 </tr>

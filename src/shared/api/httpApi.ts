@@ -1,7 +1,7 @@
 // The same interfaces as ./mock.ts, talking to your server. The request and response shapes are documented in the README
 // ("Connecting a real API"). Everything that comes back is checked before the app uses it.
 import { isProduct } from "../lib/catalog.ts";
-import { isSkuRow } from "../lib/csv.ts";
+import { isSkuRow, type ParseResult } from "../lib/csv.ts";
 import { isOrder, withChannel, type Order } from "../lib/orderlogic.ts";
 import { ApiError, type Http } from "./http.ts";
 import type { AdminAuthApi, CustomerAuthApi, ImportApi, OrdersApi, PaymentsApi, ProductsApi, Session } from "./types.ts";
@@ -26,7 +26,15 @@ export const httpProducts = (http: Http, url: string): ProductsApi => ({
     return data;
   },
   async create(input) { return asProduct(await http(url, { method: "POST", body: input })); },
-  async update(id, edit) { return asProduct(await http(at(url, id), { method: "PATCH", body: edit })); },
+  // a cleared optional field is sent as null: an omitted one would mean "leave it as it is"
+  async update(id, edit) { return asProduct(await http(at(url, id), { method: "PATCH", body: { ...edit, size: edit.size ?? null, was: edit.was ?? null, image: edit.image ?? null } })); },
+  async validateFile(file) {
+    const form = new FormData();
+    form.append("file", file);
+    const d = (await http(at(url, "import", "validate"), { method: "POST", body: form })) as Partial<ParseResult> | null;
+    if (!Array.isArray(d?.rows) || !d.rows.every(isSkuRow) || !Array.isArray(d.issues)) throw unexpected("an import check");
+    return { rows: d.rows, issues: d.issues, fatal: typeof d.fatal === "string" ? d.fatal : undefined };
+  },
   async remove(id) { await http(at(url, id), { method: "DELETE" }); },
   async restore(product) { return asProduct(await http(at(url, product.id, "restore"), { method: "POST" })); },
   async importRows(rows) {

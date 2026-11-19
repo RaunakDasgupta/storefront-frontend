@@ -4,7 +4,7 @@ import type { SkuRow } from "../lib/csv";
 import type { Product } from "../lib/data";
 import type { NewProduct, ProductEdit } from "../lib/productform";
 import { useSharedDispatch, useSharedSelector } from "../store/typedHooks";
-import { addProduct, importSkus, loadCatalog, removeProduct, resetCatalog, restoreProduct, saveProduct, selectCatalogError, selectCatalogStatus, selectCategories, selectProducts } from "../store/catalogSlice";
+import { addProduct, importSkus, validateImportFile, loadCatalog, removeProduct, resetCatalog, restoreProduct, saveProduct, selectCatalogError, selectCatalogStatus, selectCategories, selectProducts } from "../store/catalogSlice";
 
 export function useCatalog() {
   const dispatch = useSharedDispatch();
@@ -32,6 +32,8 @@ export function useCatalog() {
     /** Returns the product with its position, so the delete can be undone. */
     remove: (id: string) => dispatch(removeProduct(id)),
     restore: (product: Product, index: number) => dispatch(restoreProduct(product, index)),
+    /** Checks a catalog sheet (nothing is saved): the rows that passed and the problem rows. */
+    validateFile: (file: File) => dispatch(validateImportFile(file)),
     /** Adds new SKUs and updates existing ones (matched by SKU). Imports never delete. */
     importRows: (rows: SkuRow[]) => dispatch(importSkus(rows)),
     reset: () => dispatch(resetCatalog()),

@@ -28,10 +28,17 @@ export function mergeRows(products: readonly Product[], rows: readonly SkuRow[])
     const i = next.findIndex((p) => p.sku.toLowerCase() === r.sku.toLowerCase());
     if (i >= 0) {
       // blank description / logo columns keep what is already there
-      next[i] = { ...next[i], name: r.name, size: r.size ?? next[i].size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb || next[i].blurb, image: r.image ?? next[i].image };
+      next[i] = {
+        ...next[i], name: r.name, size: r.size ?? next[i].size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb || next[i].blurb, image: r.image ?? next[i].image,
+        pid: r.pid ?? next[i].pid, country: r.country ?? next[i].country, businessGroup: r.businessGroup ?? next[i].businessGroup, brand: r.brand ?? next[i].brand,
+        subBrand: r.subBrand ?? next[i].subBrand, segment: r.segment ?? next[i].segment, form: r.form ?? next[i].form,
+      };
       updated++;
     } else {
-      next.push({ id: uniqueId(next, r.sku), sku: r.sku, name: r.name, size: r.size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb, image: r.image });
+      next.push({
+        id: uniqueId(next, r.sku), sku: r.sku, name: r.name, size: r.size, category: r.category, channel: r.channel, price: r.price, was: r.was, stock: r.stock, blurb: r.blurb, image: r.image,
+        pid: r.pid, country: r.country, businessGroup: r.businessGroup, brand: r.brand, subBrand: r.subBrand, segment: r.segment, form: r.form,
+      });
       added++;
     }
   }

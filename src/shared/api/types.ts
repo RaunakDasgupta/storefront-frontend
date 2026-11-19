@@ -1,7 +1,7 @@
 // The data layer's contract. Components and slices only know these interfaces. Each one has a mock version (sample
 // data kept in this browser) and an HTTP version (your real API); see ./index.ts for how one is picked.
 // Types only: no runtime code, so this file loads anywhere.
-import type { SkuRow } from "../lib/csv.ts";
+import type { ParseResult, SkuRow } from "../lib/csv.ts";
 import type { Channel, Product } from "../lib/data.ts";
 import type { Address, Order, OrderItem } from "../lib/orderlogic.ts";
 import type { NewProduct, ProductEdit } from "../lib/productform.ts";
@@ -31,6 +31,8 @@ export interface ProductsApi {
   remove(id: string): Promise<void>;
   /** Undo for `remove`. `index` is where it was in the list; a server may ignore it. */
   restore(product: Product, index: number): Promise<Product>;
+  /** Checks a catalog sheet (.csv, and .xlsx where the server supports it) without saving anything: the rows that passed, and the problem rows. */
+  validateFile(file: File): Promise<ParseResult>;
   /** Adds new SKUs and updates existing ones, matched by SKU. Never deletes. */
   importRows(rows: SkuRow[]): Promise<{ added: number; updated: number }>;
   /** Back to the sample products. Only the mock has it. */

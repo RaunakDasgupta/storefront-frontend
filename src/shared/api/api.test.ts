@@ -120,3 +120,27 @@ test("adding a product posts it to the products URL and returns what the server 
   assert.equal(`${calls[0].method} ${calls[0].url}`, "POST https://api.example.com/products");
   assert.deepEqual(JSON.parse(calls[0].body!), input);
 });
+
+test("checking a file uploads it as multipart and reads the server's verdict; the mock reads CSV itself and refuses Excel", async () => {
+  const row = { sku: "A", name: "A", category: "c", price: 1, stock: 1, blurb: "", channel: "retail" };
+  const { calls, fetchImpl } = fakeFetch({ body: { rows: [row], issues: [{ line: 3, message: "x" }], summary: { totalRows: 2 } } }, { body: { rows: [], issues: [], fatal: "The file is empty." } });
+  const live = createApi({ env: { VITE_API_URL: "https://api.example.com" }, fetchImpl, mockStorage: memoryKV() });
+  const checked = await live.products.validateFile(new File(["a,b"], "sheet.xlsx"));
+  assert.deepEqual([checked.rows.length, checked.issues[0].line, checked.fatal], [1, 3, undefined]);
+  assert.equal(`${calls[0].method} ${calls[0].url}`, "POST https://api.example.com/products/import/validate");
+  assert.ok(calls[0].body instanceof FormData || String(calls[0].body).includes("sheet.xlsx") || typeof calls[0].body !== "string");
+  assert.equal(calls[0].headers["Content-Type"], undefined, "the multipart boundary is set by fetch, not by us");
+  assert.equal((await live.products.validateFile(new File([""], "e.csv"))).fatal, "The file is empty.");
+
+  const mock = createApi({ env: {}, mockStorage: memoryKV() });
+  assert.match((await mock.products.validateFile(new File(["x"], "a.xlsx"))).fatal ?? "", /Excel files need the server/);
+  assert.equal((await mock.products.validateFile(new File(["x"], "a.pdf"))).fatal, "Choose a .csv file.");
+  assert.equal((await mock.products.validateFile(new File(["SKU,Current Sales Price\nA-1,5\n"], "a.csv"))).rows[0].price, 5);
+});
+
+test("editing sends null for a cleared optional field, because an omitted one would mean no change", async () => {
+  const { calls, fetchImpl } = fakeFetch({ body: seedProducts[0] });
+  const api = createApi({ env: { VITE_API_URL: "https://api.example.com" }, fetchImpl, mockStorage: memoryKV() });
+  await api.products.update("detergent", { name: "N", category: "c", channel: "retail", price: 1, stock: 1, blurb: "" });
+  assert.deepEqual(JSON.parse(calls[0].body!), { name: "N", category: "c", channel: "retail", price: 1, stock: 1, blurb: "", size: null, was: null, image: null });
+});

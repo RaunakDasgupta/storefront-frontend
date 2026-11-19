@@ -31,13 +31,15 @@ export function createHttp({ getToken, onUnauthorized, fetchImpl }: HttpOptions 
   const doFetch = fetchImpl ?? ((input, init) => fetch(input, init));
   return async (url, { method = "GET", body } = {}) => {
     const headers: Record<string, string> = { Accept: "application/json" };
-    if (body !== undefined) headers["Content-Type"] = "application/json";
+    // a file upload (FormData) sets its own Content-Type, with the multipart boundary
+    const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+    if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
     const token = getToken?.();
     if (token) headers.Authorization = `Bearer ${token}`;
 
     let res: Response;
     try {
-      res = await doFetch(url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+      res = await doFetch(url, { method, headers, body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body) });
     } catch {
       throw new ApiError("Can't reach the server. Check your connection and try again.");
     }

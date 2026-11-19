@@ -73,26 +73,42 @@ The admin portal is a dashboard: a **sidebar** with three sections (Overview, Or
 
 ### Importing SKUs
 
-On the **Import** tab of Product management (`/admin/products?tab=import`), pick where the SKUs come from: **CSV file**, **PostgreSQL**, **SQLite**, **Amazon Web Services** (S3 bucket or RDS) or **Google Cloud** (Cloud Storage, Cloud SQL or BigQuery). Every source ends in the same preview and import. The database and cloud sources are **demos**: a browser cannot open a database connection, so **Connect and preview** only checks the form (required fields, port range) and loads sample products (four new SKUs and one update) so you can try the flow. Credentials stay in the form and are never saved or sent. A real connection needs a server-side import service; the connector settings in `src/admin/lib/connectors.ts` show what each source would need.
+On the **Import** tab of Product management (`/admin/products?tab=import`), pick where the SKUs come from: **CSV file**, **PostgreSQL**, **SQLite**, **Amazon Web Services** (S3 bucket or RDS) or **Google Cloud** (Cloud Storage, Cloud SQL or BigQuery). Every source ends in the same preview and import. With the sample data the database and cloud sources are **demos**: a browser cannot open a database connection, so **Connect and preview** only checks the form (required fields, port range) and loads sample products (four new SKUs and one update) so you can try the flow. Credentials stay in the form and are never saved or sent. A real connection needs a server-side import service; the connector settings in `src/admin/lib/connectors.ts` show what each source would need. With the backend, **PostgreSQL**, **AWS RDS (PostgreSQL)** and **SQLite** connect for real (the backend reads one table, read-only, using the same column names as the sheet); S3, Google Cloud Storage, Cloud SQL and BigQuery answer "not enabled on this server".
 
-#### From a CSV file
+#### From the catalog sheet (CSV, or Excel with the backend)
 
-Drop in a `.csv` file with one SKU per row. You see a preview (with the logos, and whether each row is new or an update) and a list of problem rows before anything changes. **Download CSV template** gives a working example.
+The import reads the **catalog sheet**: the spreadsheet of SKUs, prices and stock (`Unilever_storefront_products`). One row per SKU, or one row per SKU and stock location. You see a preview (whether each row is new or an update) and a list of problem rows, with their spreadsheet line number, before anything changes. **Download CSV template** gives a working example.
 
-| Column             | Required | Notes                                                         |
-| ------------------ | -------- | ------------------------------------------------------------- |
-| `sku`              | yes      | Unique key. An existing SKU is updated, a new one is added.   |
-| `name`             | yes      | Up to 120 characters.                                         |
-| `size`             | no       | Pack size shown under the name, for example `1 kg` or `Carton of 12`. |
-| `price`            | yes      | Rupees, for example `1499` or `₹1,499`.                       |
-| `category`         | no       | Defaults to `General`.                                        |
-| `channel`          | no       | `retail` (default) or `bulk`. Bulk SKUs appear on the Bulk orders page. |
-| `compare_at_price` | no       | Shown as the crossed-out price when higher than `price`.      |
-| `stock`            | no       | Whole number, defaults to `0`.                                |
-| `description`      | no       | Up to 500 characters. Blank keeps the current description.    |
-| `logo_url`         | no       | Full `http(s)` link to the product logo or photo. Blank keeps the current image. |
+| Column | Required | Notes |
+| ------ | -------- | ----- |
+| `SKU` | yes | Unique (any capitals). The name and size come from it when there is no `Name` column: `10014-Bru Gold Coffee 100g` is *Bru Gold Coffee*, *100g*. |
+| `Current Sales Price` | yes | Rupees, for example `249` or `₹1,249`. |
+| `PID`, `Country`, `Business Group`, `Category`, `Brand`, `SubBrand`, `Segment`, `Form` | no | Descriptive. `Category` defaults to `General`. |
+| `system_id`, `location_id` | no | Where the stock sits, for example `AUTOSTORE` and `AS_BIN_A`. |
+| `quantity` | no | Whole number, blank means 0. |
+| `uom` | no | Unit of measure, defaults to `EA`. |
+| `status` | no | `AVAILABLE` (default), `BLOCKED`, `DAMAGED`, `HOLD` or `QUARANTINE`. **Only AVAILABLE stock counts as sellable stock.** |
+| `Name`, `Size`, `Channel` (`retail` / `bulk`), `Compare At Price`, `Description`, `Logo URL`, `Stock` | no | Optional extras. `Stock` is used only when the sheet has no stock columns. |
 
-Header names are case-insensitive, and `logo`, `image` and `image_url` also work for `logo_url`. Files are limited to 1 MB and 1,000 rows. Rows with problems are skipped and nothing is ever deleted. Imported SKUs appear in the storefront and the Products table straight away. They are stored in this browser's `localStorage`, and **Reset catalog** on the Products page restores the 28 sample products. Logo links load straight from the URL you give, so the image host must allow hotlinking; a broken link shows a placeholder icon.
+Header names ignore capitals, and spaces, dashes and underscores are interchangeable. Columns that are not listed (such as stray `AUTOSTORE` cells) are ignored. The same SKU on several rows is one product with several stock locations (its stock is the available quantity added up); the same SKU with no location, or the same location twice, is reported. Rows with problems are skipped and nothing is ever deleted.
+
+**With the sample data** the file is read in the browser: CSV only (comma, semicolon or tab separated), 1 MB, 1,000 rows, saved in `localStorage`. **With the backend** ([storefront-backend](https://github.com/RaunakDasgupta/storefront-backend)) the file is uploaded to `POST /products/import/validate`, which applies the same rules on the server and also reads `.xlsx` (up to 5 MB); **Import** then saves the rows that passed to the database. The rules exist twice, in `src/shared/lib/csv.ts` and in the backend's `app/services/catalog_sheet.py`: change them together.
+
+## Running with the backend
+
+The backend ([storefront-backend](https://github.com/RaunakDasgupta/storefront-backend), FastAPI + SQLAlchemy + Alembic + Postgres) implements every route in "Connecting a real API" below, with Swagger docs at `/docs`. Clone it next to this folder and set its `DATABASE_URL` (a Postgres, which can be on another machine) as its README explains, then from the backend folder:
+
+```bash
+make all      # the API on :8000, this app on :5173 (storefront) and :5173/admin
+```
+
+or by hand, with the backend running on port 8000:
+
+```bash
+VITE_API_URL=http://localhost:8000/api/v1 npm run dev
+```
+
+(or put that line in `.env.local`). Every resource then talks to the backend: the demo logins and the dummy card hint are replaced by the backend's accounts (`customer@storefront.test` / `customer123`, `admin@storefront.test` / `admin1234`, both seeded by the backend), and the "sample data" notices disappear.
 
 ## Prices and photos
 
@@ -160,7 +176,7 @@ All data goes through one layer, `src/shared/api/`, so swapping the sample data 
 
 | Resource | Variable (default path)          | Requests                                                                                                  |
 | -------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Products | `VITE_PRODUCTS_URL` (`/products`) | `GET` the list (array of products) · `POST` a new product (`{ sku, name, size?, category, channel, price, was?, stock, blurb, image? }`) → the created product with its id (answer `409` with a `message` when the SKU exists) · `PATCH /:id` with the edited fields → the product · `DELETE /:id` · `POST /:id/restore` → the product (the Undo after a delete, so delete should be a soft delete) · `POST /import` with `{ rows }` → `{ added, updated }` |
+| Products | `VITE_PRODUCTS_URL` (`/products`) | `GET` the list (array of products) · `POST` a new product (`{ sku, name, size?, category, channel, price, was?, stock, blurb, image? }`) → the created product with its id (answer `409` with a `message` when the SKU exists) · `PATCH /:id` with the edited fields → the product · `DELETE /:id` · `POST /:id/restore` → the product (the Undo after a delete, so delete should be a soft delete) · `POST /import` with `{ rows }` → `{ added, updated }` · `POST /import/validate` with a multipart `file` (.csv or .xlsx) → `{ rows, issues, fatal? }` (the import check; the rows are ready to POST to `/import`) |
 | Orders   | `VITE_ORDERS_URL` (`/orders`)     | `GET` the list (a customer's token returns their own, an admin's returns everyone's) · `POST` with `{ customer, shipping, paymentRef, groups }` → the created orders, one per group, ids assigned by the server · `PATCH /:id` with `{ step }` (0 to 3) → the order · `DELETE /:id` · `POST /:id/restore` → the order |
 | Customer sign-in | `VITE_CUSTOMER_AUTH_URL` (`/auth`) | `POST /login` with `{ email, password }` and `POST /register` with `{ name, email, password }`, both → `{ user: { name, email }, token }` |
 | Admin sign-in | `VITE_ADMIN_AUTH_URL` (`/admin/auth`) | `POST /login` with `{ identity, password }` (work email or employee ID) → `{ user: { name, email }, token }` |

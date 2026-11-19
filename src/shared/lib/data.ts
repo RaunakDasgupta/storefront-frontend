@@ -2,7 +2,19 @@
 // Seed product photos live in public/products/<id>.jpg (see README for credits).
 export type Channel = "retail" | "bulk";
 
-export type Product = {
+/** Descriptive fields from the catalog sheet. All optional: the storefront works without them. */
+export type ProductMeta = {
+  /** The product code in the sheet's PID column. */
+  pid?: string;
+  country?: string;
+  businessGroup?: string;
+  brand?: string;
+  subBrand?: string;
+  segment?: string;
+  form?: string;
+};
+
+export type Product = ProductMeta & {
   id: string;
   sku: string;
   name: string;

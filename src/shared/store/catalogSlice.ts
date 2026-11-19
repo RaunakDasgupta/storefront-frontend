@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { ThunkExtra } from "../api/types.ts";
-import type { SkuRow } from "../lib/csv.ts";
+import type { ParseResult, SkuRow } from "../lib/csv.ts";
 import type { Product } from "../lib/data.ts";
 import type { NewProduct, ProductEdit } from "../lib/productform.ts";
 import { messageOf } from "./errors.ts";
@@ -87,6 +87,9 @@ export const removeProduct = (id: string): SharedThunk<Promise<{ product: Produc
 export const restoreProduct = (product: Product, index: number): SharedThunk<Promise<void>> => async (dispatch, _getState, { api }) => {
   dispatch(productRestored({ product: await api.products.restore(product, index), index }));
 };
+
+/** Checks a catalog sheet without saving anything. Resolves with the rows that passed and the problem rows. */
+export const validateImportFile = (file: File): SharedThunk<Promise<ParseResult>> => (_dispatch, _getState, { api }) => api.products.validateFile(file);
 
 /** Imports rows, reloads the catalog and says how many SKUs were added and updated. */
 export const importSkus = (rows: SkuRow[]): SharedThunk<Promise<{ added: number; updated: number }>> => async (dispatch, _getState, { api }) => {

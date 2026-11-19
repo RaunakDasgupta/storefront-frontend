@@ -1,20 +1,22 @@
 import { useState, type DragEvent } from "react";
 import { Link } from "react-router-dom";
 import { useCatalog } from "../../shared/hooks/useCatalog";
-import { MAX_ROWS, parseSkuCsv, skuTemplate, type CsvIssue, type SkuRow } from "../../shared/lib/csv";
+import { MAX_ROWS, skuTemplate, type CsvIssue, type SkuRow } from "../../shared/lib/csv";
 import { messageOf } from "../../shared/store/errors";
+import { useAppSelector } from "../store/typedHooks";
 import { ConnectorForm } from "./ConnectorForm";
 import { ImportPreview } from "./ImportPreview";
 import { CONNECTORS } from "../lib/connectors";
 import { CARD } from "../ui";
 
-const MAX_BYTES = 1_000_000;
 const SOURCES = [{ id: "csv", label: "CSV file", badge: "CSV", description: "Upload a file from your computer" }, ...CONNECTORS];
 type Preview = { label: string; rows: SkuRow[]; issues: CsvIssue[] };
 
 /** The Import tab of Product management: pick where the SKUs come from (a CSV file, a database or a cloud service), review what will change, then import it into the catalog. */
 export function ImportPanel() {
-  const { importRows } = useCatalog();
+  const { importRows, validateFile } = useCatalog();
+  // with a server, Excel files work too (the server reads them)
+  const server = useAppSelector((s) => s.meta.sources.products === "api");
   const [source, setSource] = useState("csv");
   const [preview, setPreview] = useState<Preview | null>(null);
   const [problem, setProblem] = useState("");
@@ -34,11 +36,13 @@ export function ImportPanel() {
     setDone(null);
     setProblem("");
     setPreview(null);
-    if (!/\.csv$/i.test(file.name) && file.type !== "text/csv") return setProblem("Choose a .csv file.");
-    if (file.size > MAX_BYTES) return setProblem("That file is larger than 1 MB. Split it and upload each part.");
-    const result = parseSkuCsv(await file.text());
-    if (result.fatal) return setProblem(`${file.name}: ${result.fatal}`);
-    setPreview({ label: file.name, rows: result.rows, issues: result.issues });
+    try {
+      const result = await validateFile(file);
+      if (result.fatal) return setProblem(`${file.name}: ${result.fatal}`);
+      setPreview({ label: file.name, rows: result.rows, issues: result.issues });
+    } catch (e) {
+      setProblem(messageOf(e));
+    }
   }
 
   function onDrop(e: DragEvent) {
@@ -51,7 +55,7 @@ export function ImportPanel() {
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p className="text-muted">Add or update products from a CSV file, a database or a cloud service.</p>
-        <a className="btn btn-secondary btn-inline px-[18px] py-[9px]" download="sku-template.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(skuTemplate(window.location.origin))}`}>
+        <a className="btn btn-secondary btn-inline px-[18px] py-[9px]" download="sku-template.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(skuTemplate())}`}>
           Download CSV template
         </a>
       </div>
@@ -73,18 +77,27 @@ export function ImportPanel() {
           ) : (
             <>
               <label className={`relative mb-0 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-[1.5px] border-dashed bg-brand-tint px-4 py-9 text-center transition-colors hover:border-brand focus-within:border-brand focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus ${dragging ? "border-brand" : "border-brand-line"}`} onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop}>
-                <input className="absolute inset-0 size-full cursor-pointer opacity-0" type="file" accept=".csv,text/csv" onChange={(e) => { void load(e.target.files?.[0]); e.target.value = ""; }} />
-                <strong>Drop a CSV here or choose a file</strong>
-                <span className="text-muted">Up to {MAX_ROWS.toLocaleString("en-IN")} rows, 1 MB.</span>
+                <input className="absolute inset-0 size-full cursor-pointer opacity-0" type="file" accept={server ? ".csv,.xlsx,text/csv" : ".csv,text/csv"} onChange={(e) => { void load(e.target.files?.[0]); e.target.value = ""; }} />
+                <strong>{server ? "Drop a CSV or Excel file here or choose a file" : "Drop a CSV here or choose a file"}</strong>
+                <span className="text-muted">Up to {MAX_ROWS.toLocaleString("en-IN")} rows, {server ? "5" : "1"} MB.</span>
               </label>
 
               <details>
-                <summary className="p-0 font-[550]">CSV format</summary>
-                <p className="mt-2 text-muted">
-                  One SKU per row, with a header row. Required columns: <code>sku</code>, <code>name</code>, <code>price</code>. Optional:
-                  {" "}<code>size</code>, <code>category</code>, <code>channel</code> (<code>retail</code> or <code>bulk</code>), <code>compare_at_price</code>, <code>stock</code>, <code>description</code> and <code>logo_url</code> (a full https link to the product logo or photo).
-                  A SKU that already exists is updated, a new SKU is added, and nothing is deleted.
-                </p>
+                <summary className="p-0 font-[550]">Sheet format</summary>
+                <div className="mt-2 flex flex-col gap-2 text-muted">
+                  <p>
+                    One row per SKU, with a header row (capitals, spaces and dashes in the names do not matter; columns that are not listed are ignored).
+                    Required: <code>SKU</code> and <code>Current Sales Price</code>. The name and size come from the SKU when there is no <code>Name</code> column:
+                    {" "}<code>10014-Bru Gold Coffee 100g</code> becomes <em>Bru Gold Coffee</em>, <em>100g</em>.
+                  </p>
+                  <p>
+                    Optional: <code>PID</code>, <code>Country</code>, <code>Business Group</code>, <code>Category</code>, <code>Brand</code>, <code>SubBrand</code>, <code>Segment</code>, <code>Form</code>,
+                    and the stock columns <code>system_id</code>, <code>location_id</code>, <code>quantity</code>, <code>uom</code> and <code>status</code> (AVAILABLE, BLOCKED, DAMAGED, HOLD or QUARANTINE;
+                    only AVAILABLE stock can be sold). The same SKU on several rows adds stock locations. Also accepted: <code>Name</code>, <code>Size</code>, <code>Channel</code> (<code>retail</code> or <code>bulk</code>),
+                    {" "}<code>Compare At Price</code>, <code>Description</code> and <code>Logo URL</code>.
+                  </p>
+                  <p>A SKU that already exists is updated, a new SKU is added, and nothing is deleted. Download the template for an example.</p>
+                </div>
               </details>
             </>
           )}
