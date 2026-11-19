@@ -92,11 +92,11 @@ The import reads the **catalog sheet**: the spreadsheet of SKUs, prices and stoc
 
 Header names ignore capitals, and spaces, dashes and underscores are interchangeable. Columns that are not listed (such as stray `AUTOSTORE` cells) are ignored. The same SKU on several rows is one product with several stock locations (its stock is the available quantity added up); the same SKU with no location, or the same location twice, is reported. Rows with problems are skipped and nothing is ever deleted.
 
-**With the sample data** the file is read in the browser: CSV only (comma, semicolon or tab separated), 1 MB, 1,000 rows, saved in `localStorage`. **With the backend** ([storefront-backend](https://github.com/RaunakDasgupta/storefront-backend)) the file is uploaded to `POST /products/import/validate`, which applies the same rules on the server and also reads `.xlsx` (up to 5 MB); **Import** then saves the rows that passed to the database. The rules exist twice, in `src/shared/lib/csv.ts` and in the backend's `app/services/catalog_sheet.py`: change them together.
+**With the sample data** the file is read in the browser: CSV only (comma, semicolon or tab separated), 1 MB, 1,000 rows, saved in `localStorage`. **With the backend** (storefront-backend) the file is uploaded to `POST /products/import/validate`, which applies the same rules on the server and also reads `.xlsx` (up to 5 MB); **Import** then saves the rows that passed to the database. The rules exist twice, in `src/shared/lib/csv.ts` and in the backend's `app/services/catalog_sheet.py`: change them together.
 
 ## Running with the backend
 
-The backend ([storefront-backend](https://github.com/RaunakDasgupta/storefront-backend): FastAPI + SQLAlchemy + Postgres) is a **separate program with its own repo**. You start each one on its own, in its own terminal, with plain commands. It implements every route in "Connecting a real API" below, with Swagger docs at `/docs`.
+The backend (storefront-backend: FastAPI + SQLAlchemy + Postgres) is a **separate program with its own repo**. You start each one on its own, in its own terminal, with plain commands. It implements every route in "Connecting a real API" below, with Swagger docs at `/docs`.
 
 **1. The backend** (see its README for the full steps, including `DATABASE_URL` for a Postgres on another machine):
 
