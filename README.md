@@ -96,19 +96,29 @@ Header names ignore capitals, and spaces, dashes and underscores are interchange
 
 ## Running with the backend
 
-The backend ([storefront-backend](https://github.com/RaunakDasgupta/storefront-backend), FastAPI + SQLAlchemy + Alembic + Postgres) implements every route in "Connecting a real API" below, with Swagger docs at `/docs`. Clone it next to this folder and set its `DATABASE_URL` (a Postgres, which can be on another machine) as its README explains, then from the backend folder:
+The backend ([storefront-backend](https://github.com/RaunakDasgupta/storefront-backend): FastAPI + SQLAlchemy + Alembic + Postgres) is a **separate program with its own repo**. You start each one on its own, in its own terminal, with plain commands. It implements every route in "Connecting a real API" below, with Swagger docs at `/docs`.
+
+**1. The backend** (see its README for the full steps, including `DATABASE_URL` for a Postgres on another machine):
 
 ```bash
-make all      # the API on :8000, this app on :5173 (storefront) and :5173/admin
+cd storefront-backend
+source .venv/bin/activate
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-or by hand, with the backend running on port 8000:
+**2. This app**, pointed at it:
 
 ```bash
-VITE_API_URL=http://localhost:8000/api/v1 npm run dev
+cp .env.example .env.local       # then set:  VITE_API_URL=http://localhost:8000/api/v1
+npm install
+npm run dev
 ```
 
-(or put that line in `.env.local`). Every resource then talks to the backend: the demo logins and the dummy card hint are replaced by the backend's accounts (`customer@storefront.test` / `customer123`, `admin@storefront.test` / `admin1234`, both seeded by the backend), and the "sample data" notices disappear.
+(or for one run only: `VITE_API_URL=http://localhost:8000/api/v1 npm run dev`; restart `npm run dev` after changing it.) With `VITE_API_URL` set, every resource talks to the backend: the demo logins and the dummy card hint are replaced by the backend's accounts (`customer@storefront.test` / `customer123`, `admin@storefront.test` / `admin1234`, both seeded by the backend) and the "sample data" notices disappear. **Without it, this app runs on its own built-in sample data, so it works with the backend off.**
+
+- **Backend on another machine:** set `VITE_API_URL=http://THAT-MACHINE:8000/api/v1`, and add this app's address to `CORS_ORIGINS` in the backend's `.env`.
+- **Showing this app from another machine:** `npm run dev -- --host`. The browser calls the API at `VITE_API_URL`, so use an address the browser can reach, not `localhost`.
+- **A production build:** `VITE_API_URL=https://api.example.com/api/v1 npm run build` (the URL is baked in at build time).
 
 ## Prices and photos
 
