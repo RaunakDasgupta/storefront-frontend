@@ -96,7 +96,7 @@ Header names ignore capitals, and spaces, dashes and underscores are interchange
 
 ## Running with the backend
 
-The backend ([storefront-backend](https://github.com/RaunakDasgupta/storefront-backend): FastAPI + SQLAlchemy + Alembic + Postgres) is a **separate program with its own repo**. You start each one on its own, in its own terminal, with plain commands. It implements every route in "Connecting a real API" below, with Swagger docs at `/docs`.
+The backend ([storefront-backend](https://github.com/RaunakDasgupta/storefront-backend): FastAPI + SQLAlchemy + Postgres) is a **separate program with its own repo**. You start each one on its own, in its own terminal, with plain commands. It implements every route in "Connecting a real API" below, with Swagger docs at `/docs`.
 
 **1. The backend** (see its README for the full steps, including `DATABASE_URL` for a Postgres on another machine):
 
